@@ -6,9 +6,11 @@ mustach: mustach-tool.c  mustach.c  mustach.h  mustach-json-c.c  mustach-json-c.
 
 test: mustach
 	@make -C test1 test
+	@make -C test2 test
 
 clean:
 	rm -f mustach
 	@make -C test1 clean
+	@make -C test2 clean
 
 
