@@ -51,13 +51,13 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 			return depth ? MUSTACH_ERROR_UNEXPECTED_END : 0;
 		}
 		if (emit)
-			fwrite(template, beg - template, 1, file);
+			fwrite(template, (size_t)(beg - template), 1, file);
 		term = strstr(template, clstr);
 		if (term == NULL)
 			return MUSTACH_ERROR_UNEXPECTED_END;
 		template = term + cllen;
 		beg += oplen;
-		len = term - beg;
+		len = (size_t)(term - beg);
 		c = *beg;
 		switch(c) {
 		case '!':
