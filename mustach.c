@@ -162,7 +162,7 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 
 int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE *file)
 {
-	int rc = itf->start(closure);
+	int rc = itf->start ? itf->start(closure) : 0;
 	if (rc == 0)
 		rc = process(template, itf, closure, file, "{{", "}}");
 	return rc;
