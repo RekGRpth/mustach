@@ -38,6 +38,27 @@ struct expl {
 	} stack[MAX_DEPTH];
 };
 
+static char *key(char **head)
+{
+	char *r, *i, *w, c;
+
+	i = *head;
+	if (!*i)
+		r = NULL;
+	else {
+		c = *(r = w = i);
+		while (c && c != '.') {
+			if (c == '\\' && (i[1] == '.' || i[1] == '\\'))
+				c = *++i;
+			*w++ = c;
+			c = *++i;
+		}
+		*w = 0;
+		*head = i + !!c;
+	}
+	return r;
+}
+
 static struct json_object *find(struct expl *e, const char *name)
 {
 	int i;
@@ -45,18 +66,18 @@ static struct json_object *find(struct expl *e, const char *name)
 	char *n, *c;
 
 	n = strdupa(name);
-	c = strtok(n, ".");
+	c = key(&n);
 	o = NULL;
 	i = e->depth;
 	while (i >= 0 && !json_object_object_get_ex(e->stack[i].obj, c, &o))
 		i--;
 	if (i < 0)
 		return NULL;
-	c = strtok(NULL, ".");
+	c = key(&n);
 	while(c) {
 		if (!json_object_object_get_ex(o, c, &o))
 			return NULL;
-		c = strtok(NULL, ".");
+		c = key(&n);
 	}
 	return o;
 }
