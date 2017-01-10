@@ -63,6 +63,18 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		case '!':
 		case '=':
 			break;
+		case '{':
+			for (l = 0 ; clstr[l] == '}' ; l++);
+			if (clstr[l]) {
+				if (!len || beg[len-1] != '}')
+					return MUSTACH_ERROR_BAD_UNESCAPE_TAG;
+				len--;
+			} else {
+				if (term[l] != '}')
+					return MUSTACH_ERROR_BAD_UNESCAPE_TAG;
+				template++;
+			}
+			c = '&';
 		case '^':
 		case '#':
 		case '/':

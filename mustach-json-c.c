@@ -72,12 +72,27 @@ static int start(void *closure)
 	return 0;
 }
 
+static void print(FILE *file, const char *string, int escape)
+{
+	if (!escape)
+		fprintf(file, "%s", string);
+	else if (*string)
+		do {
+			switch(*string) {
+			case '<': fputs("&lt;", file); break;
+			case '>': fputs("&gt;", file); break;
+			case '&': fputs("&amp;", file); break;
+			default: putc(*string, file); break;
+			}
+		} while(*++string);
+}
+
 static int put(void *closure, const char *name, int escape, FILE *file)
 {
 	struct expl *e = closure;
 	struct json_object *o = find(e, name);
 	if (o)
-		fprintf(file, "%s", json_object_get_string(o));
+		print(file, json_object_get_string(o), escape);
 	return 0;
 }
 

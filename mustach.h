@@ -62,14 +62,15 @@ struct mustach_itf {
 	int (*partial)(void *closure, const char *name, char **result);
 };
 
-#define MUSTACH_OK                     0
-#define MUSTACH_ERROR_SYSTEM          -1
-#define MUSTACH_ERROR_UNEXPECTED_END  -2
-#define MUSTACH_ERROR_EMPTY_TAG       -3
-#define MUSTACH_ERROR_TAG_TOO_LONG    -4
-#define MUSTACH_ERROR_BAD_SEPARATORS  -5
-#define MUSTACH_ERROR_TOO_DEPTH       -6
-#define MUSTACH_ERROR_CLOSING         -7
+#define MUSTACH_OK                       0
+#define MUSTACH_ERROR_SYSTEM            -1
+#define MUSTACH_ERROR_UNEXPECTED_END    -2
+#define MUSTACH_ERROR_EMPTY_TAG         -3
+#define MUSTACH_ERROR_TAG_TOO_LONG      -4
+#define MUSTACH_ERROR_BAD_SEPARATORS    -5
+#define MUSTACH_ERROR_TOO_DEPTH         -6
+#define MUSTACH_ERROR_CLOSING           -7
+#define MUSTACH_ERROR_BAD_UNESCAPE_TAG  -8
 
 /**
  * fmustach - Renders the mustache 'template' in 'file' for 'itf' and 'closure'.

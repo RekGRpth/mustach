@@ -1,0 +1,9 @@
+* {{name}}
+* {{age}}
+* {{company}}
+* {{&company}}
+* {{{company}}}
+{{=<% %>=}}
+* <%company%>
+* <%&company%>
+* <%{company}%>

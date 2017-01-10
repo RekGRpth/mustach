@@ -24,10 +24,17 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include <json-c/json.h>
 
 #include "mustach-json-c.h"
+
+static void help(char *prog)
+{
+	printf("usage: %s json-file mustach-templates...\n", basename(prog));
+	exit(0);
+}
 
 static char *readfile(const char *filename)
 {
@@ -48,8 +55,11 @@ int main(int ac, char **av)
 {
 	struct json_object *o;
 	char *t;
+	char *prog = *av;
 
 	if (*++av) {
+		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
+			help(prog);
 		o = json_object_from_file(*av++);
 		while(o && *av) {
 			t = readfile(*av++);
