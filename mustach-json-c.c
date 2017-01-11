@@ -42,19 +42,19 @@ static char *key(char **head)
 {
 	char *r, *i, *w, c;
 
-	i = *head;
-	if (!*i)
+	c = *(i = *head);
+	if (!c || c == '=')
 		r = NULL;
 	else {
-		c = *(r = w = i);
-		while (c && c != '.') {
-			if (c == '\\' && (i[1] == '.' || i[1] == '\\'))
+		r = w = i;
+		while (c && c != '.' && c != '=') {
+			if (c == '\\' && (i[1] == '.' || i[1] == '\\' || i[1] == '='))
 				c = *++i;
 			*w++ = c;
 			c = *++i;
 		}
 		*w = 0;
-		*head = i + !!c;
+		*head = i + (c == '.');
 	}
 	return r;
 }
@@ -79,6 +79,8 @@ static struct json_object *find(struct expl *e, const char *name)
 			return NULL;
 		c = key(&n);
 	}
+	if (*n == '=' && strcmp(++n, json_object_get_string(o)))
+		return NULL;
 	return o;
 }
 
