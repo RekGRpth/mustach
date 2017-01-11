@@ -117,9 +117,10 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		case '^':
 		case '#':
 			/* begin section */
-			if (rc == DEPTH_MAX)
+			if (depth == DEPTH_MAX)
 				return MUSTACH_ERROR_TOO_DEPTH;
-			if (emit) {
+			rc = emit;
+			if (rc) {
 				rc = itf->enter(closure, name);
 				if (rc < 0)
 					return rc;
