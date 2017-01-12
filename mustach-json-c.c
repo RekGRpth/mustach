@@ -38,23 +38,38 @@ struct expl {
 	} stack[MAX_DEPTH];
 };
 
+static char *keyval(char *head)
+{
+	char *w, c;
+
+	c = *(w = head);
+	while (c && c != '=') {
+		if (c == '\\' && head[1] == '=')
+			c = *++head;
+		*w++ = c;
+		c = *++head;
+	}
+	*w = 0;
+	return c == '=' ? ++head : NULL;
+}
+
 static char *key(char **head)
 {
 	char *r, *i, *w, c;
 
 	c = *(i = *head);
-	if (!c || c == '=')
+	if (!c)
 		r = NULL;
 	else {
 		r = w = i;
-		while (c && c != '.' && c != '=') {
-			if (c == '\\' && (i[1] == '.' || i[1] == '\\' || i[1] == '='))
+		while (c && c != '.') {
+			if (c == '\\' && (i[1] == '.' || i[1] == '\\'))
 				c = *++i;
 			*w++ = c;
 			c = *++i;
 		}
 		*w = 0;
-		*head = i + (c == '.');
+		*head = i + !!c;
 	}
 	return r;
 }
@@ -63,9 +78,10 @@ static struct json_object *find(struct expl *e, const char *name)
 {
 	int i;
 	struct json_object *o;
-	char *n, *c;
+	char *n, *c, *v;
 
 	n = strdupa(name);
+	v = keyval(n);
 	c = key(&n);
 	o = NULL;
 	i = e->depth;
@@ -79,7 +95,7 @@ static struct json_object *find(struct expl *e, const char *name)
 			return NULL;
 		c = key(&n);
 	}
-	if (*n == '=' && strcmp(++n, json_object_get_string(o)))
+	if (v && strcmp(v, json_object_get_string(o)))
 		return NULL;
 	return o;
 }

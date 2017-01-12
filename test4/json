@@ -1,4 +1,5 @@
 {
   "person": { "name": "Jon", "age": 25 },
-  "person.name": "!is it really valid?!"
+  "person.name": "Fred",
+  "person.name=Fred": "The other Fred."
 }
