@@ -32,6 +32,7 @@
  * All other functions should normally return 0.
  *
  * @start: Starts the mustach processing of the closure
+ *         'start' is optional (can be NULL)
  *
  * @put: Writes the value of 'name' to 'file' with 'escape' or not
  *
@@ -48,10 +49,6 @@
  *        Musts return 0 when there is no item to activate.
  *
  * @leave: Leaves the last entered section
- *
- * @partial: Returns an allocated string for the partial content for 'name'.
- *           The returned string (in 'result') will be freed by mustach
- *           'partial' is optional, it cans be NULL.
  */
 struct mustach_itf {
 	int (*start)(void *closure);
@@ -59,7 +56,6 @@ struct mustach_itf {
 	int (*enter)(void *closure, const char *name);
 	int (*next)(void *closure);
 	int (*leave)(void *closure);
-	int (*partial)(void *closure, const char *name, char **result);
 };
 
 #define MUSTACH_OK                       0

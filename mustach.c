@@ -30,6 +30,30 @@
 #define NAME_LENGTH_MAX   1024
 #define DEPTH_MAX         256
 
+static int getpartial(struct mustach_itf *itf, void *closure, const char *name, char **result)
+{
+	int rc;
+	FILE *file;
+	size_t size;
+
+	*result = NULL;
+	file = open_memstream(result, &size);
+	if (file == NULL)
+		rc = MUSTACH_ERROR_SYSTEM;
+	else {
+		rc = itf->put(closure, name, 0, file);
+		if (rc == 0)
+			/* adds terminating null */
+			rc = fputc(0, file) ? MUSTACH_ERROR_SYSTEM : 0;
+		fclose(file);
+		if (rc < 0) {
+			free(result);
+			*result = NULL;
+		}
+	}
+	return rc;
+}
+
 static int process(const char *template, struct mustach_itf *itf, void *closure, FILE *file, const char *opstr, const char *clstr)
 {
 	char name[NAME_LENGTH_MAX + 1], *partial, c;
@@ -151,9 +175,9 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 			break;
 		case '>':
 			/* partials */
-			if (emit && itf->partial) {
-				rc = itf->partial(closure, name, &partial);
-				if (rc == 0 && partial) {
+			if (emit) {
+				rc = getpartial(itf, closure, name, &partial);
+				if (rc == 0) {
 					rc = process(partial, itf, closure, file, opstr, clstr);
 					free(partial);
 				}

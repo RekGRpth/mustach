@@ -183,21 +183,12 @@ static int leave(void *closure)
 	return 0;
 }
 
-static int partial(void *closure, const char *name, char **result)
-{
-	struct expl *e = closure;
-	struct json_object *o = find(e, name);
-	*result = strdup(json_object_get_string(o));
-	return 0;
-}
-
 static struct mustach_itf itf = {
 	.start = start,
 	.put = put,
 	.enter = enter,
 	.next = next,
-	.leave = leave,
-	.partial = partial
+	.leave = leave
 };
 
 int fmustach_json_c(const char *template, struct json_object *root, FILE *file)
