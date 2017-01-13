@@ -201,21 +201,29 @@ int mustach(const char *template, struct mustach_itf *itf, void *closure, char *
 {
 	int rc;
 	FILE *file;
+	size_t s;
 
+	*result = NULL;
+	if (size == NULL)
+		size = &s;
 	file = open_memstream(result, size);
 	if (file == NULL) {
 		rc = MUSTACH_ERROR_SYSTEM;
 		errno = ENOMEM;
 	} else {
-		*result = NULL;
 		rc = fmustach(template, itf, closure, file);
 		if (rc == 0)
-			fwrite(&rc, 1, 1, file); /* adds terminating null */
+			/* adds terminating null */
+			rc = fputc(0, file) ? MUSTACH_ERROR_SYSTEM : 0;
 		fclose(file);
-		if (rc < 0)
+		if (rc >= 0)
+			/* removes terminating null of the length */
+			(*size)--;
+		else {
 			free(*result);
-		else
-			(*size)--; /* removes terminating null of the length */
+			*result = NULL;
+			*size = 0;
+		}
 	}
 	return rc;
 }
