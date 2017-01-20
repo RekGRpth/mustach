@@ -83,6 +83,8 @@ static struct json_object *find(struct expl *e, const char *name)
 	n = strdupa(name);
 	v = keyval(n);
 	c = key(&n);
+	if (c == NULL)
+		return NULL;
 	o = NULL;
 	i = e->depth;
 	while (i >= 0 && !json_object_object_get_ex(e->stack[i].obj, c, &o))

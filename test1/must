@@ -28,3 +28,11 @@ ggggggggg
 {{> special}}
 jjjjjjjjj
 end
+
+{{:#sharp}}
+{{:!bang}}
+{{:/slash}}
+{{:^circ}}
+{{:\=equal}}
+{{::colon}}
+{{:>greater}}
