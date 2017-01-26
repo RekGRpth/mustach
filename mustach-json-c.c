@@ -38,6 +38,7 @@ struct expl {
 	} stack[MAX_DEPTH];
 };
 
+#if !defined(NO_EXTENSION_FOR_MUSTACH) && !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
 static char *keyval(char *head)
 {
 	char *w, c;
@@ -52,6 +53,7 @@ static char *keyval(char *head)
 	*w = 0;
 	return c == '=' ? ++head : NULL;
 }
+#endif
 
 static char *key(char **head)
 {
@@ -81,7 +83,10 @@ static struct json_object *find(struct expl *e, const char *name)
 	char *n, *c, *v;
 
 	n = strdupa(name);
+	v = NULL;
+#if !defined(NO_EXTENSION_FOR_MUSTACH) && !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
 	v = keyval(n);
+#endif
 	c = key(&n);
 	if (c == NULL)
 		return NULL;

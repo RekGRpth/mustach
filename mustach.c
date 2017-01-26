@@ -104,7 +104,9 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		case '/':
 		case '&':
 		case '>':
+#if !defined(NO_EXTENSION_FOR_MUSTACH) && !defined(NO_COLON_EXTENSION_FOR_MUSTACH)
 		case ':':
+#endif
 			beg++; len--;
 		default:
 			while (len && isspace(beg[0])) { beg++; len--; }
