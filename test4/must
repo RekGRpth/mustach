@@ -34,4 +34,11 @@ Hello Fred#2
 No Fred#2? Hey Fred#2...
 {{/person\.name\=Fred=The other Fred.}}
 
+{{#persons}}
+{{#lang=!fr}}Hello {{name}}, {{age}} years{{/lang=!fr}}
+{{#lang=fr}}Salut {{name}}, {{age}} ans{{/lang=fr}}
+{{/persons}}
 
+{{#persons}}
+{{name}}: {{age=24}}/{{age}}/{{age=!27}}
+{{/persons}}

@@ -1,5 +1,9 @@
 {
   "person": { "name": "Jon", "age": 25 },
   "person.name": "Fred",
-  "person.name=Fred": "The other Fred."
+  "person.name=Fred": "The other Fred.",
+  "persons": [
+	{ "name": "Jon", "age": 25, "lang": "en" },
+	{ "name": "Henry", "age": 27, "lang": "en" },
+	{ "name": "Amed", "age": 24, "lang": "fr" } ]
 }

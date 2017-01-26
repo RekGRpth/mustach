@@ -25,4 +25,58 @@ The tool **mustach** is build using Makefile. Its usage is:
 
 and it prints the result of applying the templates files to the json file.
 
+Extensions
+==========
+
+By default, the current implementation provide the following extensions.
+
+Explicit substitution
+---------------------
+
+This is a core extension implemented in file **mustach.c**.
+
+In somecases the name of the key used for substition begins with a
+character reserved for mustach: one of '#', '^', '/', '&', '{', '>' and '='.
+This extension introduces the special character ':' to explicitely
+tell mustach to just substitute the value. So ':' becomes a new special
+character!
+
+Test of the value
+-----------------
+
+This is a tool extension implmented in file **mustach-json-c.c**.
+
+This extension allows to test the value of the selected key.
+It is allowed to write key=value (matching test) or key=!value
+(not matching test) in any query.
+
+Removing extensions
+-------------------
+
+When compiling mustach.c or mustach-json-c.c,
+extensions can be removed by defining macros
+using option -D.
+
+The possible macros are:
+
+- NO_COLON_EXTENSION_FOR_MUSTACH
+
+  This macro remove the ability to use colon (:)
+  as explicit command for variable substituion.
+  This extension allows to have name starting
+  with one of the mustach character :#^/&{=<
+
+- NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
+
+  This macro allows the tool to check the whether
+  the actual value is equal to an expected value.
+  This is useful in {{#key=val}} or {{^key=val}}
+  with the corresponding {{/key=val}}.
+  It can also be used in {{key=val}} but this
+  doesn't seem to be useful.
+
+- NO_EXTENSION_FOR_MUSTACH
+
+  This macro disables any current or futur
+  extension.
 

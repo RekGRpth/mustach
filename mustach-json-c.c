@@ -102,8 +102,11 @@ static struct json_object *find(struct expl *e, const char *name)
 			return NULL;
 		c = key(&n);
 	}
-	if (v && strcmp(v, json_object_get_string(o)))
-		return NULL;
+	if (v) {
+		i = v[0] == '!';
+		if (i == !strcmp(&v[i], json_object_get_string(o)))
+			o = NULL;
+	}
 	return o;
 }
 
