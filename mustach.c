@@ -47,7 +47,7 @@ static int getpartial(struct mustach_itf *itf, void *closure, const char *name, 
 			rc = fputc(0, file) ? MUSTACH_ERROR_SYSTEM : 0;
 		fclose(file);
 		if (rc < 0) {
-			free(result);
+			free(*result);
 			*result = NULL;
 		}
 	}
