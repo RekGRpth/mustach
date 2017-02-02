@@ -7,3 +7,9 @@
 * <%company%>
 * <%&company%>
 * <%{company}%>
+
+<%={{ }}=%>
+* <ul>{{#names}}<li>{{.}}</li>{{/names}}</ul>
+* skills: <ul>{{#skills}}<li>{{.}}</li>{{/skills}}</ul>
+{{#age}}* age: {{.}}{{/age}}
+

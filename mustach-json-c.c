@@ -87,20 +87,25 @@ static struct json_object *find(struct expl *e, const char *name)
 #if !defined(NO_EXTENSION_FOR_MUSTACH) && !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
 	v = keyval(n);
 #endif
-	c = key(&n);
-	if (c == NULL)
-		return NULL;
-	o = NULL;
-	i = e->depth;
-	while (i >= 0 && !json_object_object_get_ex(e->stack[i].obj, c, &o))
-		i--;
-	if (i < 0)
-		return NULL;
-	c = key(&n);
-	while(c) {
-		if (!json_object_object_get_ex(o, c, &o))
+	if (n[0] == '.' && !n[1]) {
+		/* case of . alone */
+		o = e->stack[e->depth].obj;
+	} else {
+		c = key(&n);
+		if (c == NULL)
+			return NULL;
+		o = NULL;
+		i = e->depth;
+		while (i >= 0 && !json_object_object_get_ex(e->stack[i].obj, c, &o))
+			i--;
+		if (i < 0)
 			return NULL;
 		c = key(&n);
+		while(c) {
+			if (!json_object_object_get_ex(o, c, &o))
+				return NULL;
+			c = key(&n);
+		}
 	}
 	if (v) {
 		i = v[0] == '!';
