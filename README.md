@@ -75,6 +75,17 @@ The possible macros are:
   It can also be used in {{key=val}} but this
   doesn't seem to be useful.
 
+- NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
+
+  This macro removes the possible use of JSON pointers.
+  JSON pointers are defined by IETF RFC 6901.
+  If not set, any key starting with / is a JSON pointer.
+  This implies to use the colon to introduce keys.
+  So NO_COLON_EXTENSION_FOR_MUSTACH implies
+  NO_JSON_POINTER_EXTENSION_FOR_MUSTACH.
+  A special escaping is used for = signs when
+  values comparison is enabled: ~= leaves = in the key.
+
 - NO_EXTENSION_FOR_MUSTACH
 
   This macro disables any current or futur

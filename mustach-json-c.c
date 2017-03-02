@@ -28,6 +28,24 @@
 
 #define MAX_DEPTH 256
 
+#if defined(NO_EXTENSION_FOR_MUSTACH)
+# if !defined(NO_COLON_EXTENSION_FOR_MUSTACH)
+#  define NO_COLON_EXTENSION_FOR_MUSTACH
+# endif
+# if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
+#  define NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
+# endif
+# if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
+#  define NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
+# endif
+#endif
+
+#if defined(NO_COLON_EXTENSION_FOR_MUSTACH)
+# if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
+#  define NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
+# endif
+#endif
+
 struct expl {
 	struct json_object *root;
 	int depth;
@@ -38,14 +56,20 @@ struct expl {
 	} stack[MAX_DEPTH];
 };
 
-#if !defined(NO_EXTENSION_FOR_MUSTACH) && !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
-static char *keyval(char *head)
+#if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
+static char *keyval(char *head, int isptr)
 {
 	char *w, c;
 
 	c = *(w = head);
 	while (c && c != '=') {
-		if (c == '\\' && head[1] == '=')
+#if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
+		if (isptr) {
+			if (isptr && c == '~' && head[1] == '=')
+				c = *++head;
+		} else
+#endif
+		if (!isptr && c == '\\' && head[1] == '=')
 			c = *++head;
 		*w++ = c;
 		c = *++head;
@@ -55,7 +79,7 @@ static char *keyval(char *head)
 }
 #endif
 
-static char *key(char **head)
+static char *key(char **head, int isptr)
 {
 	char *r, *i, *w, c;
 
@@ -64,6 +88,19 @@ static char *key(char **head)
 		r = NULL;
 	else {
 		r = w = i;
+#if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
+		if (isptr)
+			while (c && c != '/') {
+				if (c == '~')
+					switch (i[1]) {
+					case '1': c = '/';
+					case '0': i++;
+					}
+				*w++ = c;
+				c = *++i;
+			}
+		else
+#endif
 		while (c && c != '.') {
 			if (c == '\\' && (i[1] == '.' || i[1] == '\\'))
 				c = *++i;
@@ -78,20 +115,26 @@ static char *key(char **head)
 
 static struct json_object *find(struct expl *e, const char *name)
 {
-	int i;
+	int i, isptr;
 	struct json_object *o;
 	char *n, *c, *v;
 
 	n = strdupa(name);
+	isptr = 0;
+#if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
+	isptr = n[0] == '/';
+	n += isptr;
+#endif
+
 	v = NULL;
-#if !defined(NO_EXTENSION_FOR_MUSTACH) && !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
-	v = keyval(n);
+#if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
+	v = keyval(n, isptr);
 #endif
 	if (n[0] == '.' && !n[1]) {
 		/* case of . alone */
 		o = e->stack[e->depth].obj;
 	} else {
-		c = key(&n);
+		c = key(&n, isptr);
 		if (c == NULL)
 			return NULL;
 		o = NULL;
@@ -100,11 +143,11 @@ static struct json_object *find(struct expl *e, const char *name)
 			i--;
 		if (i < 0)
 			return NULL;
-		c = key(&n);
+		c = key(&n, isptr);
 		while(c) {
 			if (!json_object_object_get_ex(o, c, &o))
 				return NULL;
-			c = key(&n);
+			c = key(&n, isptr);
 		}
 	}
 	if (v) {

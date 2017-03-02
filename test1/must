@@ -31,7 +31,9 @@ end
 
 {{:#sharp}}
 {{:!bang}}
-{{:/slash}}
+{{:~tilde}}
+{{:/~0tilde}}
+{{:/~1slash}} see json pointers IETF RFC 6901
 {{:^circ}}
 {{:\=equal}}
 {{::colon}}
