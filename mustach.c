@@ -76,11 +76,11 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		}
 		if (emit)
 			fwrite(template, (size_t)(beg - template), 1, file);
-		term = strstr(template, clstr);
+		beg += oplen;
+		term = strstr(beg, clstr);
 		if (term == NULL)
 			return MUSTACH_ERROR_UNEXPECTED_END;
 		template = term + cllen;
-		beg += oplen;
 		len = (size_t)(term - beg);
 		c = *beg;
 		switch(c) {
