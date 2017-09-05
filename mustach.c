@@ -99,6 +99,7 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 				template++;
 			}
 			c = '&';
+			/*@fallthrough@*/
 		case '^':
 		case '#':
 		case '/':
