@@ -93,7 +93,7 @@ static char *key(char **head, int isptr)
 			while (c && c != '/') {
 				if (c == '~')
 					switch (i[1]) {
-					case '1': c = '/';
+					case '1': c = '/'; /*@fallthrough@*/
 					case '0': i++;
 					}
 				*w++ = c;
