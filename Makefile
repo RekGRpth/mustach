@@ -1,6 +1,6 @@
 
 mustach: mustach-tool.c  mustach.c  mustach.h  mustach-json-c.c  mustach-json-c.h
-	$(CC) -g -o mustach mustach-tool.c  mustach.c  mustach-json-c.c -ljson-c
+	$(CC) $(CFLAGS) -g -o mustach mustach-tool.c  mustach.c  mustach-json-c.c -ljson-c
 
 .PHONY: test clean
 
