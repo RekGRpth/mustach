@@ -49,6 +49,76 @@
   })
 #endif
 
+#if !defined(NO_OPEN_MEMSTREAM)
+static FILE *memfile_open(char **buffer, size_t *size)
+{
+	return open_memstream(buffer, size);
+}
+static void memfile_abort(FILE *file, char **buffer, size_t *size)
+{
+	fclose(file);
+	free(*buffer);
+	*buffer = NULL;
+	*size = 0;
+}
+static int memfile_close(FILE *file, char **buffer, size_t *size)
+{
+	int rc;
+
+	/* adds terminating null */
+	rc = fputc(0, file) ? MUSTACH_ERROR_SYSTEM : 0;
+	fclose(file);
+	if (rc == 0)
+		/* removes terminating null of the length */
+		(*size)--;
+	else {
+		free(*buffer);
+		*buffer = NULL;
+		*size = 0;
+	}
+	return rc;
+}
+#else
+static FILE *memfile_open(char **buffer, size_t *size)
+{
+	return tmpfile();
+}
+static void memfile_abort(FILE *file, char **buffer, size_t *size)
+{
+	fclose(file);
+	*buffer = NULL;
+	*size = 0;
+}
+static int memfile_close(FILE *file, char **buffer, size_t *size)
+{
+	int rc;
+	size_t s;
+	char *b;
+
+	s = (size_t)ftell(file);
+	b = malloc(s + 1);
+	if (b == NULL) {
+		rc = MUSTACH_ERROR_SYSTEM;
+		errno = ENOMEM;
+		s = 0;
+	} else {
+		rewind(file);
+		if (1 == fread(b, s, 1, file)) {
+			rc = 0;
+			b[s] = 0;
+		} else {
+			rc = MUSTACH_ERROR_SYSTEM;
+			free(b);
+			b = NULL;
+			s = 0;
+		}
+	}
+	*buffer = b;
+	*size = s;
+	return rc;
+}
+#endif
+
 static int getpartial(struct mustach_itf *itf, void *closure, const char *name, char **result)
 {
 	int rc;
@@ -56,19 +126,15 @@ static int getpartial(struct mustach_itf *itf, void *closure, const char *name, 
 	size_t size;
 
 	*result = NULL;
-	file = open_memstream(result, &size);
+	file = memfile_open(result, &size);
 	if (file == NULL)
 		rc = MUSTACH_ERROR_SYSTEM;
 	else {
 		rc = itf->put(closure, name, 0, file);
-		if (rc == 0)
-			/* adds terminating null */
-			rc = fputc(0, file) ? MUSTACH_ERROR_SYSTEM : 0;
-		fclose(file);
-		if (rc < 0) {
-			free(*result);
-			*result = NULL;
-		}
+		if (rc < 0)
+			memfile_abort(file, result, &size);
+		else
+			rc = memfile_close(file, result, &size);
 	}
 	return rc;
 }
@@ -253,24 +319,15 @@ int mustach(const char *template, struct mustach_itf *itf, void *closure, char *
 	*result = NULL;
 	if (size == NULL)
 		size = &s;
-	file = open_memstream(result, size);
-	if (file == NULL) {
+	file = memfile_open(result, size);
+	if (file == NULL)
 		rc = MUSTACH_ERROR_SYSTEM;
-		errno = ENOMEM;
-	} else {
+	else {
 		rc = fmustach(template, itf, closure, file);
-		if (rc == 0)
-			/* adds terminating null */
-			rc = fputc(0, file) ? MUSTACH_ERROR_SYSTEM : 0;
-		fclose(file);
-		if (rc >= 0)
-			/* removes terminating null of the length */
-			(*size)--;
-		else {
-			free(*result);
-			*result = NULL;
-			*size = 0;
-		}
+		if (rc < 0)
+			memfile_abort(file, result, size);
+		else
+			rc = memfile_close(file, result, size);
 	}
 	return rc;
 }

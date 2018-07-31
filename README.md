@@ -28,6 +28,15 @@ The tool **mustach** is build using `make`,  its usage is:
 
 It then outputs the result of applying the templates files to the JSON file.
 
+Portability
+===========
+
+Some system does not provide *open_memstream*. In that case, tell your
+prefered compiler to declare the preprocessor symbol **NO_OPEN_MEMSTREAM**.
+Example:
+
+	gcc -DNO_OPEN_MEMSTREAM
+
 Extensions
 ==========
 
