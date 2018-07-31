@@ -31,6 +31,18 @@
 
 #include "mustach-json-c.h"
 
+static const char *errors[] = {
+	"??? unreferenced ???",
+	"system",
+	"unexpected end",
+	"empty tag",
+	"tag too long",
+	"bad separators",
+	"too depth",
+	"closing",
+	"bad unescape tag"
+};
+
 static void help(char *prog)
 {
 	printf("usage: %s json-file mustach-templates...\n", basename(prog));
@@ -57,19 +69,33 @@ int main(int ac, char **av)
 	struct json_object *o;
 	char *t;
 	char *prog = *av;
+	int s;
 
 	if (*++av) {
 		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
 			help(prog);
-		o = json_object_from_file(*av++);
-		while(o && *av) {
-			t = readfile(*av++);
-			fmustach_json_c(t, o, stdout);
+		o = json_object_from_file(*av);
+		if (json_util_get_last_err() != NULL) {
+			fprintf(stderr, "Bad json: %s (file %s)\n", json_util_get_last_err(), *av);
+			exit(1);
+		}
+		else if (o == NULL) {
+			fprintf(stderr, "Aborted: null json (file %s)\n", *av);
+			exit(1);
+		}
+		while(*++av) {
+			t = readfile(*av);
+			s = fmustach_json_c(t, o, stdout);
+			if (s != 0) {
+				s = -s;
+				if (s < 1 || s >= (int)(sizeof errors / sizeof * errors))
+					s = 0;
+				fprintf(stderr, "Template error %s (file %s)\n", errors[s], *av);
+			}
 			free(t);
 		}
 		json_object_put(o);
 	}
 	return 0;
 }
-
 
