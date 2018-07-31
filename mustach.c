@@ -30,6 +30,25 @@
 #define NAME_LENGTH_MAX   1024
 #define DEPTH_MAX         256
 
+#ifndef strndupa
+# define strndupa(s, l)				\
+  ({						\
+	const char *old = (s);			\
+	size_t len = (l);			\
+	char *new = (char *) alloca (len + 1);	\
+	new[len] = 0;				\
+	(char *) memcpy (new, old, len);	\
+  })
+#endif
+
+#ifndef strdupa
+# define strdupa(s)				\
+  ({						\
+	const char *S = (s);			\
+	strndupa(S, strlen(S));			\
+  })
+#endif
+
 static int getpartial(struct mustach_itf *itf, void *closure, const char *name, char **result)
 {
 	int rc;
