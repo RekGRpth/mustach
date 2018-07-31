@@ -17,7 +17,10 @@ The current source files are:
 - **mustach-tool.c** simple tool for applying template files to a JSON file
 
 The file **mustach-json-c.c** is the main example of use of **mustach** core
-and it is also a practical implementation that can be used.
+and it is also a practical implementation that can be used. It uses the library
+json-c. (NOTE for Mac OS: available through homebrew).
+
+HELP REQUESTED TO GIVE EXAMPLE BASED ON OTHER LIBRARIES (ex: janson, ...).
 
 The tool **mustach** is build using `make`,  its usage is:
 
