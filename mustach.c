@@ -30,25 +30,6 @@
 #define NAME_LENGTH_MAX   1024
 #define DEPTH_MAX         256
 
-#ifndef strndupa
-# define strndupa(s, l)				\
-  ({						\
-	const char *old = (s);			\
-	size_t len = (l);			\
-	char *new = (char *) alloca (len + 1);	\
-	new[len] = 0;				\
-	(char *) memcpy (new, old, len);	\
-  })
-#endif
-
-#ifndef strdupa
-# define strdupa(s)				\
-  ({						\
-	const char *S = (s);			\
-	strndupa(S, strlen(S));			\
-  })
-#endif
-
 #if !defined(NO_OPEN_MEMSTREAM)
 static FILE *memfile_open(char **buffer, size_t *size)
 {
@@ -141,7 +122,7 @@ static int getpartial(struct mustach_itf *itf, void *closure, const char *name, 
 
 static int process(const char *template, struct mustach_itf *itf, void *closure, FILE *file, const char *opstr, const char *clstr)
 {
-	char name[NAME_LENGTH_MAX + 1], *partial, c;
+	char name[NAME_LENGTH_MAX + 1], *partial, c, *tmp;
 	const char *beg, *term;
 	struct { const char *name, *again; size_t length; int emit, entered; } stack[DEPTH_MAX];
 	size_t oplen, cllen, len, l;
@@ -219,13 +200,19 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 			for (l = 0; l < len && !isspace(beg[l]) ; l++);
 			if (l == len)
 				return MUSTACH_ERROR_BAD_SEPARATORS;
-			opstr = strndupa(beg, l);
+			oplen = l;
+			tmp = alloca(oplen + 1);
+			memcpy(tmp, beg, oplen);
+			tmp[oplen] = 0;
+			opstr = tmp;
 			while (l < len && isspace(beg[l])) l++;
 			if (l == len)
 				return MUSTACH_ERROR_BAD_SEPARATORS;
-			clstr = strndupa(beg + l, len - l);
-			oplen = strlen(opstr);
-			cllen = strlen(clstr);
+			cllen = len - l;
+			tmp = alloca(cllen + 1);
+			memcpy(tmp, beg + l, cllen);
+			tmp[cllen] = 0;
+			clstr = tmp;
 			break;
 		case '^':
 		case '#':
