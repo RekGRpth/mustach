@@ -119,7 +119,8 @@ static struct json_object *find(struct expl *e, const char *name)
 	struct json_object *o;
 	char *n, *c, *v;
 
-	n = strdupa(name);
+	n = alloca(1 + strlen(name));
+	strcpy(n, name);
 	isptr = 0;
 #if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
 	isptr = n[0] == '/';
