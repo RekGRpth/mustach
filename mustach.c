@@ -178,8 +178,10 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		default:
 			while (len && isspace(beg[0])) { beg++; len--; }
 			while (len && isspace(beg[len-1])) len--;
+#if defined(NO_EXTENSION_FOR_MUSTACH) || defined(NO_ALLOW_EMPTY_TAG)
 			if (len == 0)
 				return MUSTACH_ERROR_EMPTY_TAG;
+#endif
 			if (len > NAME_LENGTH_MAX)
 				return MUSTACH_ERROR_TAG_TOO_LONG;
 			memcpy(name, beg, len);

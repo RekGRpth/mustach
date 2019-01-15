@@ -98,6 +98,10 @@ The possible macros are:
   A special escaping is used for "=" signs when
   values comparison is enabled: "~=" leaves "=" in the key.
 
+- `NO_ALLOW_EMPTY_TAG'
+
+  Generate the error MUSTACH_ERROR_EMPTY_TAG automatically.
+
 - `NO_EXTENSION_FOR_MUSTACH`
 
   This macro disables any current or future

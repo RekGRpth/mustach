@@ -29,12 +29,17 @@
  *
  * The functions enter and next should return 0 or 1.
  *
- * All other functions should normally return 0.
+ * All other functions should normally return 0. If it returns
+ * a negative value, it means an error that stop the process
+ * and that is reported to the caller.
  *
  * @start: Starts the mustach processing of the closure
  *         'start' is optional (can be NULL)
  *
  * @put: Writes the value of 'name' to 'file' with 'escape' or not
+ *       As an extension (see NO_ALLOW_EMPTY_TAG), the 'name' can be
+ *       the empty string. In that later case an implemntation can
+ *       return MUSTACH_ERROR_EMPTY_TAG to refuse empty names.
  *
  * @enter: Enters the section of 'name' if possible.
  *         Musts return 1 if entered or 0 if not entered.
