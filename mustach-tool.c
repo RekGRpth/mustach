@@ -75,11 +75,14 @@ int main(int ac, char **av)
 		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
 			help(prog);
 		o = json_object_from_file(*av);
+#if JSON_C_VERSION_NUM >= 0x000D00
 		if (json_util_get_last_err() != NULL) {
 			fprintf(stderr, "Bad json: %s (file %s)\n", json_util_get_last_err(), *av);
 			exit(1);
 		}
-		else if (o == NULL) {
+		else
+#endif
+		if (o == NULL) {
 			fprintf(stderr, "Aborted: null json (file %s)\n", *av);
 			exit(1);
 		}
