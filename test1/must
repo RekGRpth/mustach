@@ -20,9 +20,12 @@ Shown.
 {{/person?}}
 
 {{=%(% %)%=}}
-zzzzzzz
+=====================================
 %(%! gros commentaire %)%
-aaaaaaaa
+%(%#repo%)%
+  <b>%(%name%)%</b> reviewers:%(%#who%)% %(%reviewer%)%%(%/who%)% commiters:%(%#who%)% %(%commiter%)%%(%/who%)%
+%(%/repo%)%
+=====================================
 %(%={{ }}=%)%
 ggggggggg
 {{> special}}
