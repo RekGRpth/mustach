@@ -38,6 +38,9 @@
 # if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
 #  define NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
 # endif
+# if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+#  define NO_OBJECT_ITERATION_FOR_MUSTACH
+# endif
 #endif
 
 #if defined(NO_COLON_EXTENSION_FOR_MUSTACH)
@@ -49,9 +52,16 @@
 struct expl {
 	struct json_object *root;
 	int depth;
+#if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+	int found_objiter;
+#endif
 	struct {
 		struct json_object *cont;
 		struct json_object *obj;
+#if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+		struct json_object_iterator biter, eiter;
+		int is_objiter;
+#endif
 		int index, count;
 	} stack[MAX_DEPTH];
 };
@@ -116,7 +126,7 @@ static char *key(char **head, int isptr)
 static struct json_object *find(struct expl *e, const char *name)
 {
 	int i, isptr;
-	struct json_object *o;
+	struct json_object *o, *no;
 	char *n, *c, *v;
 
 	n = alloca(1 + strlen(name));
@@ -131,6 +141,9 @@ static struct json_object *find(struct expl *e, const char *name)
 #if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
 	v = keyval(n, isptr);
 #endif
+#if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+	e->found_objiter = 0;
+#endif
 	if (n[0] == '.' && !n[1]) {
 		/* case of . alone */
 		o = e->stack[e->depth].obj;
@@ -142,12 +155,28 @@ static struct json_object *find(struct expl *e, const char *name)
 		i = e->depth;
 		while (i >= 0 && !json_object_object_get_ex(e->stack[i].obj, c, &o))
 			i--;
-		if (i < 0)
+		if (i < 0) {
+#if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+			o = e->stack[e->depth].obj;
+			if (c[0] == '*' && !c[1] && !v && !key(&n, isptr) && json_object_is_type(o, json_type_object)) {
+				e->found_objiter = 1;
+				return o;
+			}
+#endif
 			return NULL;
+		}
 		c = key(&n, isptr);
 		while(c) {
-			if (!json_object_object_get_ex(o, c, &o))
+			if (!json_object_object_get_ex(o, c, &no)) {
+#if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+				if (c[0] == '*' && !c[1] && !v && !key(&n, isptr) && json_object_is_type(o, json_type_object)) {
+					e->found_objiter = 1;
+					return o;
+				}
+#endif
 				return NULL;
+			}
+			o = no;
 			c = key(&n, isptr);
 		}
 	}
@@ -188,9 +217,19 @@ static void print(FILE *file, const char *string, int escape)
 static int put(void *closure, const char *name, int escape, FILE *file)
 {
 	struct expl *e = closure;
-	struct json_object *o = find(e, name);
-	if (o)
-		print(file, json_object_get_string(o), escape);
+	struct json_object *o;
+	const char *s;
+
+#if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+	if (name[0] == '*' && !name[1] && e->stack[e->depth].is_objiter)
+		s = json_object_iter_peek_name(&e->stack[e->depth].biter);
+	else
+		s = (o = find(e, name)) && !e->found_objiter ? json_object_get_string(o) : NULL;
+#else
+	s = (o = find(e, name)) ? json_object_get_string(o) : NULL;
+#endif
+	if (s)
+		print(file, s, escape);
 	return 0;
 }
 
@@ -209,11 +248,27 @@ static int enter(void *closure, const char *name)
 		e->stack[e->depth].cont = o;
 		e->stack[e->depth].obj = json_object_array_get_idx(o, 0);
 		e->stack[e->depth].index = 0;
+#if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+		e->stack[e->depth].is_objiter = 0;
+	} else if (json_object_is_type(o, json_type_object) && e->found_objiter) {
+		e->stack[e->depth].biter = json_object_iter_begin(o);
+		e->stack[e->depth].eiter = json_object_iter_end(o);
+		if (json_object_iter_equal(&e->stack[e->depth].biter, &e->stack[e->depth].eiter)) {
+			e->depth--;
+			return 0;
+		}
+		e->stack[e->depth].obj = json_object_iter_peek_value(&e->stack[e->depth].biter);
+		e->stack[e->depth].cont = o;
+		e->stack[e->depth].is_objiter = 1;
+#endif
 	} else if (json_object_is_type(o, json_type_object) || json_object_get_boolean(o)) {
 		e->stack[e->depth].count = 1;
 		e->stack[e->depth].cont = NULL;
 		e->stack[e->depth].obj = o;
 		e->stack[e->depth].index = 0;
+#if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+		e->stack[e->depth].is_objiter = 0;
+#endif
 	} else {
 		e->depth--;
 		return 0;
@@ -226,6 +281,15 @@ static int next(void *closure)
 	struct expl *e = closure;
 	if (e->depth <= 0)
 		return MUSTACH_ERROR_CLOSING;
+#if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
+	if (e->stack[e->depth].is_objiter) {
+		json_object_iter_next(&e->stack[e->depth].biter);
+		if (json_object_iter_equal(&e->stack[e->depth].biter, &e->stack[e->depth].eiter))
+			return 0;
+		e->stack[e->depth].obj = json_object_iter_peek_value(&e->stack[e->depth].biter);
+		return 1;
+	}
+#endif
 	e->stack[e->depth].index++;
 	if (e->stack[e->depth].index >= e->stack[e->depth].count)
 		return 0;

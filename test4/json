@@ -5,5 +5,9 @@
   "persons": [
 	{ "name": "Jon", "age": 25, "lang": "en" },
 	{ "name": "Henry", "age": 27, "lang": "en" },
-	{ "name": "Amed", "age": 24, "lang": "fr" } ]
+	{ "name": "Amed", "age": 24, "lang": "fr" } ],
+  "fellows": {
+	"Jon": { "age": 25, "lang": "en" },
+	"Henry": { "age": 27, "lang": "en" },
+	"Amed": { "age": 24, "lang": "fr" } }
 }

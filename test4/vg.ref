@@ -6,7 +6,7 @@ Command: ../mustach json must
 
 HEAP SUMMARY:
     in use at exit: 0 bytes in 0 blocks
-  total heap usage: 81 allocs, 81 frees, 13,037 bytes allocated
+  total heap usage: 142 allocs, 142 frees, 18,276 bytes allocated
 
 All heap blocks were freed -- no leaks are possible
 
