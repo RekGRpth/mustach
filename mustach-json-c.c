@@ -238,7 +238,7 @@ static int enter(void *closure, const char *name)
 	struct expl *e = closure;
 	struct json_object *o = find(e, name);
 	if (++e->depth >= MAX_DEPTH)
-		return MUSTACH_ERROR_TOO_DEPTH;
+		return MUSTACH_ERROR_TOO_DEEP;
 	if (json_object_is_type(o, json_type_array)) {
 		e->stack[e->depth].count = json_object_array_length(o);
 		if (e->stack[e->depth].count == 0) {

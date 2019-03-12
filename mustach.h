@@ -69,9 +69,12 @@ struct mustach_itf {
 #define MUSTACH_ERROR_EMPTY_TAG         -3
 #define MUSTACH_ERROR_TAG_TOO_LONG      -4
 #define MUSTACH_ERROR_BAD_SEPARATORS    -5
-#define MUSTACH_ERROR_TOO_DEPTH         -6
+#define MUSTACH_ERROR_TOO_DEEP          -6
 #define MUSTACH_ERROR_CLOSING           -7
 #define MUSTACH_ERROR_BAD_UNESCAPE_TAG  -8
+
+/* compatibility with older bad name */
+#define MUSTACH_ERROR_TOO_DEPTH         MUSTACH_ERROR_TOO_DEEP
 
 /**
  * fmustach - Renders the mustache 'template' in 'file' for 'itf' and 'closure'.
