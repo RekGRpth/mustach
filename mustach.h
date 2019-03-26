@@ -38,7 +38,7 @@
  *
  * @put: Writes the value of 'name' to 'file' with 'escape' or not
  *       As an extension (see NO_ALLOW_EMPTY_TAG), the 'name' can be
- *       the empty string. In that later case an implemntation can
+ *       the empty string. In that later case an implementation can
  *       return MUSTACH_ERROR_EMPTY_TAG to refuse empty names.
  *
  * @enter: Enters the section of 'name' if possible.
