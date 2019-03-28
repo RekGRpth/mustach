@@ -102,7 +102,7 @@ The possible macros are:
 
   Generate the error MUSTACH_ERROR_EMPTY_TAG automatically.
 
-- NO_OBJECT_ITERATION_FOR_MUSTACH
+- `NO_OBJECT_ITERATION_FOR_MUSTACH`
 
   Disable the object iteration extension. That extension allows
   to iterate over the keys of an object. The iteration on object
