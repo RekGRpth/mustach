@@ -119,16 +119,19 @@ int main(int ac, char **av)
 	if (*++av) {
 		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
 			help(prog);
-		o = json_object_from_file(*av);
+		if (av[0][0] == '-' && !av[0][1])
+			o = json_object_from_fd(0);
+		else
+			o = json_object_from_file(av[0]);
 #if JSON_C_VERSION_NUM >= 0x000D00
 		if (json_util_get_last_err() != NULL) {
-			fprintf(stderr, "Bad json: %s (file %s)\n", json_util_get_last_err(), *av);
+			fprintf(stderr, "Bad json: %s (file %s)\n", json_util_get_last_err(), av[0]);
 			exit(1);
 		}
 		else
 #endif
 		if (o == NULL) {
-			fprintf(stderr, "Aborted: null json (file %s)\n", *av);
+			fprintf(stderr, "Aborted: null json (file %s)\n", av[0]);
 			exit(1);
 		}
 		while(*++av) {
