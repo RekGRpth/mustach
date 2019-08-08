@@ -29,6 +29,9 @@
 #define MAX_DEPTH 256
 
 #if defined(NO_EXTENSION_FOR_MUSTACH)
+# if !defined(NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH)
+#  define NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
+# endif
 # if !defined(NO_COLON_EXTENSION_FOR_MUSTACH)
 #  define NO_COLON_EXTENSION_FOR_MUSTACH
 # endif
@@ -144,10 +147,13 @@ static struct json_object *find(struct expl *e, const char *name)
 #if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
 	e->found_objiter = 0;
 #endif
+#if !defined(NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH)
 	if (n[0] == '.' && !n[1]) {
 		/* case of . alone */
 		o = e->stack[e->depth].obj;
-	} else {
+	} else
+#endif
+	{
 		c = key(&n, isptr);
 		if (c == NULL)
 			return NULL;
