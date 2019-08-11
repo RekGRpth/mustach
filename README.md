@@ -48,9 +48,9 @@ Explicit Substitution
 This is a core extension implemented in file **mustach.c**.
 
 In somecases the name of the key used for substition begins with a
-character reserved for mustach: one of '#', '^', '/', '&', '{', '>' and '='.
-This extension introduces the special character ':' to explicitly
-tell mustach to just substitute the value. So ':' becomes a new special
+character reserved for mustach: one of `#`, `^`, `/`, `&`, `{`, `>` and `=`.
+This extension introduces the special character `:` to explicitly
+tell mustach to just substitute the value. So `:` becomes a new special
 character.
 
 Value Testing
@@ -59,7 +59,7 @@ Value Testing
 This is a tool extension implmented in file **mustach-json-c.c**.
 
 This extension allows you to test the value of the selected key.
-It is allowed to write key=value (matching test) or key=!value
+It is allowed to write `key=value` (matching test) or `key=!value`
 (not matching test) in any query.
 
 Access to current value
@@ -93,7 +93,7 @@ The possible macros are:
   This macro remove the ability to use colon (:)
   as explicit command for variable substituion.
   This extension allows to have name starting
-  with one of the mustach character :#^/&{=<
+  with one of the mustach character `:#^/&{=>`
 
 - `NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH`
 
@@ -127,7 +127,7 @@ The possible macros are:
   of iterating over object keys, the single key `{{*}}` returns the
   key and `{{.}}` returns the value.
 
-- NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
+- `NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH`
 
   Disable access to current object value using single dot
   like in `{{.}}`.
@@ -136,4 +136,3 @@ The possible macros are:
 
   This macro disables any current or future
   extensions.
-
