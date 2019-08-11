@@ -66,17 +66,17 @@ Access to current value
 -----------------------
 
 The value of the current field can be accessed using single dot like
-in `{{#key}}{{.}}{{/key}}' that applied to `{"key":3.14}' produces `3.14'
-and `{{#array}} {{.}}{{/array}}' applied to `{"array":[1,2]}' produces
-` 1 2'.
+in `{{#key}}{{.}}{{/key}}` that applied to `{"key":3.14}` produces `3.14`
+and `{{#array}} {{.}}{{/array}}` applied to `{"array":[1,2]}` produces
+` 1 2`.
 
 Iteration on objects
 --------------------
 
-Using the pattern `{{#X.*}}...{{/X.*}}' it is possible to iterate on
-fields of `X'. Example: `{{s.*}} {{*}}:{{.}}{{/s.*}}' applied on
-`{"s":{"a":1,"b":true}}' produces ` a:1 b:true'. Here the single star
-`{{*}}' is replaced by the iterated key and the single dot `{{.}}' is
+Using the pattern `{{#X.*}}...{{/X.*}}` it is possible to iterate on
+fields of `X`. Example: `{{s.*}} {{*}}:{{.}}{{/s.*}}` applied on
+`{"s":{"a":1,"b":true}}` produces ` a:1 b:true`. Here the single star
+`{{*}}` is replaced by the iterated key and the single dot `{{.}}` is
 replaced by its value.
 
 Removing Extensions
@@ -130,7 +130,7 @@ The possible macros are:
 - NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
 
   Disable access to current object value using single dot
-  like in `{{.}}'.
+  like in `{{.}}`.
 
 - `NO_EXTENSION_FOR_MUSTACH`
 
