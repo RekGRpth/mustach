@@ -137,11 +137,13 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		if (beg == NULL) {
 			/* no more mustach */
 			if (emit)
-				fwrite(template, strlen(template), 1, file);
+				if (template[0] && fwrite(template, strlen(template), 1, file) != 1)
+					return MUSTACH_ERROR_SYSTEM;
 			return depth ? MUSTACH_ERROR_UNEXPECTED_END : 0;
 		}
 		if (emit)
-			fwrite(template, (size_t)(beg - template), 1, file);
+			if (beg != template && fwrite(template, (size_t)(beg - template), 1, file) != 1)
+				return MUSTACH_ERROR_SYSTEM;
 		beg += oplen;
 		term = strstr(beg, clstr);
 		if (term == NULL)
