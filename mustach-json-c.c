@@ -320,12 +320,23 @@ static int leave(void *closure)
 	return 0;
 }
 
+static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
+{
+	struct expl *e = closure;
+	const char *s;
+
+	s = item(e, name);
+	sbuf->value = s ? s : "";
+	return 0;
+}
+
 static struct mustach_itf itf = {
 	.start = start,
 	.put = put,
 	.enter = enter,
 	.next = next,
-	.leave = leave
+	.leave = leave,
+	.partial = partial
 };
 
 int fmustach_json_c(const char *template, struct json_object *root, FILE *file)

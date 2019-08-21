@@ -20,6 +20,8 @@
 #ifndef _mustach_h_included_
 #define _mustach_h_included_
 
+struct mustach_sbuf; /* see below */
+
 /**
  * mustach_itf - interface for callbacks
  *
@@ -54,6 +56,10 @@
  *        Musts return 0 when there is no item to activate.
  *
  * @leave: Leaves the last entered section
+ *
+ * @partial: If defined (can be NULL for compatibility), that function is
+ *           called with the 'name' of the partial. It must fill 'sbuf'
+ *           with the returned content and its release method. @see mustach_sbuf
  */
 struct mustach_itf {
 	int (*start)(void *closure);
@@ -61,6 +67,38 @@ struct mustach_itf {
 	int (*enter)(void *closure, const char *name);
 	int (*next)(void *closure);
 	int (*leave)(void *closure);
+	int (*partial)(void *closure, const char *name, struct mustach_sbuf *sbuf);
+};
+
+/**
+ * mustach_sbuf - Interface for handling zero terminated strings
+ *
+ * That structure is used for returning zero terminated strings -in 'value'-
+ * to mustach. The callee can provide a function for releasing the returned
+ * 'value'. Three methods for releasing the string are possible.
+ *
+ *  1. no release: set either 'freecb' or 'releasecb' with NULL (done by default)
+ *  2. release without closure: set 'freecb' to its expected value
+ *  3. release with closure: set 'releasecb' and 'closure' to their expected values
+ *
+ * @value: The value of the string. That value is not changed by mustach -const-.
+ *
+ * @freecb: The function to call for freeing the value without closure.
+ *          For convenience, signature of that callback is compatible with 'free'.
+ *          Can be NULL.
+ *
+ * @releasecb: The function to release with closure.
+ *             Can be NULL.
+ *
+ * @closure: The closure to use for 'releasecb'.
+ */
+struct mustach_sbuf {
+	const char *value;
+	union {
+		void (*freecb)(void*);
+		void (*releasecb)(const char *value, void *closure);
+	};
+	void *closure;
 };
 
 /*

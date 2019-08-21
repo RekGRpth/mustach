@@ -30,6 +30,19 @@
 #define NAME_LENGTH_MAX   1024
 #define DEPTH_MAX         256
 
+static inline void sbuf_reset(struct mustach_sbuf *sbuf)
+{
+	sbuf->value = NULL;
+	sbuf->freecb = NULL;
+	sbuf->closure = NULL;
+}
+
+static inline void sbuf_release(struct mustach_sbuf *sbuf)
+{
+	if (sbuf->releasecb)
+		sbuf->releasecb(sbuf->value, sbuf->closure);
+}
+
 #if !defined(NO_OPEN_MEMSTREAM)
 static FILE *memfile_open(char **buffer, size_t *size)
 {
@@ -100,29 +113,41 @@ static int memfile_close(FILE *file, char **buffer, size_t *size)
 }
 #endif
 
-static int getpartial(struct mustach_itf *itf, void *closure, const char *name, char **result)
+static int divert(struct mustach_itf *itf, void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	int rc;
 	FILE *file;
 	size_t size;
+	char *result;
 
-	*result = NULL;
-	file = memfile_open(result, &size);
+	result = NULL;
+	file = memfile_open(&result, &size);
 	if (file == NULL)
 		rc = MUSTACH_ERROR_SYSTEM;
 	else {
 		rc = itf->put(closure, name, 0, file);
 		if (rc < 0)
-			memfile_abort(file, result, &size);
-		else
-			rc = memfile_close(file, result, &size);
+			memfile_abort(file, &result, &size);
+		else {
+			rc = memfile_close(file, &result, &size);
+			if (rc == 0) {
+				sbuf->value = result;
+				sbuf->freecb = free;
+			}
+		}
 	}
 	return rc;
 }
 
+static int partial(struct mustach_itf *itf, void *closure, const char *name, struct mustach_sbuf *sbuf)
+{
+	return itf->partial ? itf->partial(closure, name, sbuf) : divert(itf, closure, name, sbuf);
+}
+
 static int process(const char *template, struct mustach_itf *itf, void *closure, FILE *file, const char *opstr, const char *clstr)
 {
-	char name[NAME_LENGTH_MAX + 1], *partial, c, *tmp;
+	struct mustach_sbuf sbuf;
+	char name[NAME_LENGTH_MAX + 1], c, *tmp;
 	const char *beg, *term;
 	struct { const char *name, *again; size_t length; int emit, entered; } stack[DEPTH_MAX];
 	size_t oplen, cllen, len, l;
@@ -256,10 +281,11 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		case '>':
 			/* partials */
 			if (emit) {
-				rc = getpartial(itf, closure, name, &partial);
+				sbuf_reset(&sbuf);
+				rc = partial(itf, closure, name, &sbuf);
 				if (rc == 0) {
-					rc = process(partial, itf, closure, file, opstr, clstr);
-					free(partial);
+					rc = process(sbuf.value, itf, closure, file, opstr, clstr);
+					sbuf_release(&sbuf);
 				}
 				if (rc < 0)
 					return rc;
