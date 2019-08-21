@@ -220,9 +220,8 @@ static void print(FILE *file, const char *string, int escape)
 		} while(*++string);
 }
 
-static int put(void *closure, const char *name, int escape, FILE *file)
+static const char *item(struct expl *e, const char *name)
 {
-	struct expl *e = closure;
 	struct json_object *o;
 	const char *s;
 
@@ -234,6 +233,15 @@ static int put(void *closure, const char *name, int escape, FILE *file)
 #else
 	s = (o = find(e, name)) ? json_object_get_string(o) : NULL;
 #endif
+	return s;
+}
+
+static int put(void *closure, const char *name, int escape, FILE *file)
+{
+	struct expl *e = closure;
+	const char *s;
+
+	s = item(e, name);
 	if (s)
 		print(file, s, escape);
 	return 0;
