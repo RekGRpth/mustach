@@ -63,6 +63,9 @@ struct mustach_itf {
 	int (*leave)(void *closure);
 };
 
+/*
+ * Definition of error codes returned by mustach
+ */
 #define MUSTACH_OK                       0
 #define MUSTACH_ERROR_SYSTEM            -1
 #define MUSTACH_ERROR_UNEXPECTED_END    -2
