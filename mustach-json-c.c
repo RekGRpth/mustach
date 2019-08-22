@@ -394,6 +394,19 @@ static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 	return 0;
 }
 
+static int get(void *closure, const char *name, struct mustach_sbuf *sbuf)
+{
+	struct expl *e = closure;
+	const char *s;
+
+	s = item(e, name);
+	if (s)
+		sbuf->value = s;
+	else
+		sbuf->value = "";
+	return 0;
+}
+
 static struct mustach_itf itf = {
 	.start = start,
 	.put = put,
@@ -401,6 +414,7 @@ static struct mustach_itf itf = {
 	.next = next,
 	.leave = leave,
 	.partial = partial,
+	.get = get,
 	.emit = emit
 };
 

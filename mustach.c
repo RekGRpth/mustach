@@ -113,6 +113,33 @@ static int memfile_close(FILE *file, char **buffer, size_t *size)
 }
 #endif
 
+static int emit(struct mustach_itf *itf, void *closure, const char *buffer, size_t size, int escape, FILE *file)
+{
+	if (itf->emit)
+		return itf->emit(closure, buffer, size, escape, file);
+	return fwrite(buffer, size, 1, file) != 1 ? MUSTACH_ERROR_SYSTEM : MUSTACH_OK;
+}
+
+static int put(struct mustach_itf *itf, void *closure, const char *name, int escape, FILE *file)
+{
+	int rc;
+	struct mustach_sbuf sbuf;
+
+	if (itf->put)
+		rc = itf->put(closure, name, escape, file);
+	else if (!itf->get)
+		rc = MUSTACH_ERROR_INVALID_ITF;
+	else {
+		sbuf_reset(&sbuf);
+		rc = itf->get(closure, name, &sbuf);
+		if (rc >= 0) {
+			rc = emit(itf, closure, sbuf.value, strlen(sbuf.value), escape, file);
+			sbuf_release(&sbuf);
+		}
+	}
+	return rc;
+}
+
 static int divert(struct mustach_itf *itf, void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	int rc;
@@ -125,7 +152,7 @@ static int divert(struct mustach_itf *itf, void *closure, const char *name, stru
 	if (file == NULL)
 		rc = MUSTACH_ERROR_SYSTEM;
 	else {
-		rc = itf->put(closure, name, 0, file);
+		rc = put(itf, closure, name, 0, file);
 		if (rc < 0)
 			memfile_abort(file, &result, &size);
 		else {
@@ -141,14 +168,9 @@ static int divert(struct mustach_itf *itf, void *closure, const char *name, stru
 
 static int partial(struct mustach_itf *itf, void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
-	return itf->partial ? itf->partial(closure, name, sbuf) : divert(itf, closure, name, sbuf);
-}
-
-static int emit(struct mustach_itf *itf, void *closure, const char *buffer, size_t size, int escape, FILE *file)
-{
-	if (itf->emit)
-		return itf->emit(closure, buffer, size, escape, file);
-	return fwrite(buffer, size, 1, file) != 1 ? MUSTACH_ERROR_SYSTEM : 0;
+	return itf->partial ? itf->partial(closure, name, sbuf)
+	                    : itf->get ? itf->get(closure, name, sbuf)
+	                               : divert(itf, closure, name, sbuf);
 }
 
 static int process(const char *template, struct mustach_itf *itf, void *closure, FILE *file, const char *opstr, const char *clstr)
@@ -305,7 +327,7 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		default:
 			/* replacement */
 			if (enabled) {
-				rc = itf->put(closure, name, c != '&', file);
+				rc = put(itf, closure, name, c != '&', file);
 				if (rc < 0)
 					return rc;
 			}

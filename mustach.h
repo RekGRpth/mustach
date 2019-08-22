@@ -35,10 +35,11 @@ struct mustach_sbuf; /* see below */
  * a negative value, it means an error that stop the process
  * and that is reported to the caller.
  *
- * @start: Starts the mustach processing of the closure
- *         'start' is optional (can be NULL)
+ * @start: If defined (can be NULL), starts the mustach processing
+ *         of the closure.
  *
- * @put: Writes the value of 'name' to 'file' with 'escape' or not
+ * @put: If defined (can be NULL), writes the value of 'name'
+ *       to 'file' with 'escape' or not.
  *       As an extension (see NO_ALLOW_EMPTY_TAG), the 'name' can be
  *       the empty string. In that later case an implementation can
  *       return MUSTACH_ERROR_EMPTY_TAG to refuse empty names.
@@ -57,15 +58,28 @@ struct mustach_sbuf; /* see below */
  *
  * @leave: Leaves the last entered section
  *
- * @partial: If defined (can be NULL for compatibility), that function is
- *           called with the 'name' of the partial. It must fill 'sbuf'
- *           with the returned content and its release method. @see mustach_sbuf
+ * @partial: If defined (can be NULL), returns in 'sbuf' the content of the
+ *           partial of 'name'. @see mustach_sbuf
+ *           If NULL but 'get' not NULL, 'get' is used instead of partial.
+ *           If NULL and 'get' NULL and 'put' NULL, 'put' is called with a true FILE.
+ *           If NULL and 'get' NULL and 'put' NULL the error MUSTACH_ERROR_INVALID_ITF
+ *           is returned.
  *
- * @emit: If defined, that function is called instead of 'fwrite' to output
- *        text. It implies that if you define the 'partial' callback, the meaning
- *        of 'FILE *file' is abstract for mustach and then you can pass any kind
- *        of pointer (including NULL) to the function 'fmustach'. An example of
- *        a such behaviour is given by the implementation of 'umustach_json_c'.
+ * @emit: If defined (can be NULL), writes the 'buffer' of 'size' with 'escape'.
+ *        If NULL the standard function 'fwrite' is used with a true FILE.
+ *        If not NULL that function is called instead of 'fwrite' to output
+ *        text.
+ *        It implies that if you define either 'partial' or 'get' callback,
+ *        the meaning of 'FILE *file' is abstract for mustach's process and
+ *        then you can use 'FILE*file' pass any kind of pointer (including NULL)
+ *        to the function 'fmustach'. An example of a such behaviour is given by
+ *        the implementation of 'umustach_json_c'.
+ *
+ * @get: If defined (can be NULL), returns in 'sbuf' the value of 'name'.
+ *       As an extension (see NO_ALLOW_EMPTY_TAG), the 'name' can be
+ *       the empty string. In that later case an implementation can
+ *       return MUSTACH_ERROR_EMPTY_TAG to refuse empty names.
+ *
  */
 struct mustach_itf {
 	int (*start)(void *closure);
@@ -75,6 +89,7 @@ struct mustach_itf {
 	int (*leave)(void *closure);
 	int (*partial)(void *closure, const char *name, struct mustach_sbuf *sbuf);
 	int (*emit)(void *closure, const char *buffer, size_t size, int escape, FILE *file);
+	int (*get)(void *closure, const char *name, struct mustach_sbuf *sbuf);
 };
 
 /**
@@ -120,6 +135,7 @@ struct mustach_sbuf {
 #define MUSTACH_ERROR_TOO_DEEP          -6
 #define MUSTACH_ERROR_CLOSING           -7
 #define MUSTACH_ERROR_BAD_UNESCAPE_TAG  -8
+#define MUSTACH_ERROR_INVALID_ITF       -9
 
 /* compatibility with older bad name */
 #define MUSTACH_ERROR_TOO_DEPTH         MUSTACH_ERROR_TOO_DEEP
