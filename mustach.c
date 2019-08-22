@@ -149,11 +149,11 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 	struct mustach_sbuf sbuf;
 	char name[NAME_LENGTH_MAX + 1], c, *tmp;
 	const char *beg, *term;
-	struct { const char *name, *again; size_t length; int emit, entered; } stack[DEPTH_MAX];
+	struct { const char *name, *again; size_t length; int enabled, entered; } stack[DEPTH_MAX];
 	size_t oplen, cllen, len, l;
-	int depth, rc, emit;
+	int depth, rc, enabled;
 
-	emit = 1;
+	enabled = 1;
 	oplen = strlen(opstr);
 	cllen = strlen(clstr);
 	depth = 0;
@@ -161,12 +161,12 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		beg = strstr(template, opstr);
 		if (beg == NULL) {
 			/* no more mustach */
-			if (emit)
+			if (enabled)
 				if (template[0] && fwrite(template, strlen(template), 1, file) != 1)
 					return MUSTACH_ERROR_SYSTEM;
 			return depth ? MUSTACH_ERROR_UNEXPECTED_END : 0;
 		}
-		if (emit)
+		if (enabled)
 			if (beg != template && fwrite(template, (size_t)(beg - template), 1, file) != 1)
 				return MUSTACH_ERROR_SYSTEM;
 		beg += oplen;
@@ -248,7 +248,7 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 			/* begin section */
 			if (depth == DEPTH_MAX)
 				return MUSTACH_ERROR_TOO_DEEP;
-			rc = emit;
+			rc = enabled;
 			if (rc) {
 				rc = itf->enter(closure, name);
 				if (rc < 0)
@@ -257,30 +257,30 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 			stack[depth].name = beg;
 			stack[depth].again = template;
 			stack[depth].length = len;
-			stack[depth].emit = emit;
+			stack[depth].enabled = enabled;
 			stack[depth].entered = rc;
 			if ((c == '#') == (rc == 0))
-				emit = 0;
+				enabled = 0;
 			depth++;
 			break;
 		case '/':
 			/* end section */
 			if (depth-- == 0 || len != stack[depth].length || memcmp(stack[depth].name, name, len))
 				return MUSTACH_ERROR_CLOSING;
-			rc = emit && stack[depth].entered ? itf->next(closure) : 0;
+			rc = enabled && stack[depth].entered ? itf->next(closure) : 0;
 			if (rc < 0)
 				return rc;
 			if (rc) {
 				template = stack[depth++].again;
 			} else {
-				emit = stack[depth].emit;
-				if (emit && stack[depth].entered)
+				enabled = stack[depth].enabled;
+				if (enabled && stack[depth].entered)
 					itf->leave(closure);
 			}
 			break;
 		case '>':
 			/* partials */
-			if (emit) {
+			if (enabled) {
 				sbuf_reset(&sbuf);
 				rc = partial(itf, closure, name, &sbuf);
 				if (rc == 0) {
@@ -293,7 +293,7 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 			break;
 		default:
 			/* replacement */
-			if (emit) {
+			if (enabled) {
 				rc = itf->put(closure, name, c != '&', file);
 				if (rc < 0)
 					return rc;
