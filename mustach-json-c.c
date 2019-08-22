@@ -320,13 +320,65 @@ static int leave(void *closure)
 	return 0;
 }
 
+static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
+{
+	static char extension[] = ".mustache";
+	int rc;
+	size_t s;
+	FILE *file;
+	char *path, *buffer;
+
+	/* allocate path */
+	s = strlen(name);
+	path = malloc(s + sizeof extension);
+	if (path == NULL)
+		return MUSTACH_ERROR_SYSTEM;
+
+	/* try without extension first */
+	memcpy(path, name, s + 1);
+	file = fopen(path, "r");
+	if (file == NULL) {
+		memcpy(&path[s], extension, sizeof extension);
+		file = fopen(path, "r");
+	}
+	free(path);
+
+	/* if file opened */
+	if (file != NULL) {
+		/* compute file size */
+		if (fseek(file, 0, SEEK_END) >= 0
+		 && (s = (size_t)ftell(file)) >= 0
+		 && fseek(file, 0, SEEK_SET) >= 0) {
+			/* allocate value */
+			buffer = malloc(s + 1);
+			if (buffer != NULL) {
+				/* read value */
+				if (1 == fread(buffer, s, 1, file)) {
+					/* force zero at end */
+					sbuf->value = buffer;
+					buffer[s] = 0;
+					sbuf->freecb = free;
+					fclose(file);
+					return 0;
+				}
+				free(buffer);
+			}
+		}
+		fclose(file);
+	}
+	return MUSTACH_ERROR_SYSTEM;
+}
+
 static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct expl *e = closure;
 	const char *s;
 
 	s = item(e, name);
-	sbuf->value = s ? s : "";
+	if (s)
+		sbuf->value = s;
+	else if (get_partial_from_file(name, sbuf) < 0)
+		sbuf->value = "";
 	return 0;
 }
 
