@@ -25,6 +25,7 @@
 #include <json-c/json.h>
 
 #include "mustach.h"
+#include "mustach-json-c.h"
 
 #define MAX_DEPTH 256
 
@@ -54,6 +55,7 @@
 
 struct expl {
 	struct json_object *root;
+	mustach_json_c_write_cb writecb;
 	int depth;
 #if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
 	int found_objiter;
@@ -205,19 +207,29 @@ static int start(void *closure)
 	return 0;
 }
 
-static void print(FILE *file, const char *string, int escape)
+static int write(struct expl *e, const char *buffer, size_t size, FILE *file)
 {
+	if (e->writecb)
+		return e->writecb(file, buffer, size);
+	return fwrite(buffer, size, 1, file) == 1 ? 0 : MUSTACH_ERROR_SYSTEM;
+}
+
+static int emit(void *closure, const char *buffer, size_t size, int escape, FILE *file)
+{
+	struct expl *e = closure;
 	if (!escape)
-		fprintf(file, "%s", string);
-	else if (*string)
+		write(e, buffer, size, file);
+	else
 		do {
-			switch(*string) {
-			case '<': fputs("&lt;", file); break;
-			case '>': fputs("&gt;", file); break;
-			case '&': fputs("&amp;", file); break;
-			default: putc(*string, file); break;
+			switch(*buffer) {
+			case '<': write(e, "&lt;", 4, file); break;
+			case '>': write(e, "&gt;", 4, file); break;
+			case '&': write(e, "&amp;", 5, file); break;
+			default: write(e, buffer, 1, file); break;
 			}
-		} while(*++string);
+			buffer++;
+		} while(--size);
+	return 0;
 }
 
 static const char *item(struct expl *e, const char *name)
@@ -243,7 +255,7 @@ static int put(void *closure, const char *name, int escape, FILE *file)
 
 	s = item(e, name);
 	if (s)
-		print(file, s, escape);
+		emit(closure, s, strlen(s), escape, file);
 	return 0;
 }
 
@@ -388,13 +400,15 @@ static struct mustach_itf itf = {
 	.enter = enter,
 	.next = next,
 	.leave = leave,
-	.partial = partial
+	.partial = partial,
+	.emit = emit
 };
 
 int fmustach_json_c(const char *template, struct json_object *root, FILE *file)
 {
 	struct expl e;
 	e.root = root;
+	e.writecb = NULL;
 	return fmustach(template, &itf, &e, file);
 }
 
@@ -402,6 +416,7 @@ int fdmustach_json_c(const char *template, struct json_object *root, int fd)
 {
 	struct expl e;
 	e.root = root;
+	e.writecb = NULL;
 	return fdmustach(template, &itf, &e, fd);
 }
 
@@ -409,6 +424,15 @@ int mustach_json_c(const char *template, struct json_object *root, char **result
 {
 	struct expl e;
 	e.root = root;
+	e.writecb = NULL;
 	return mustach(template, &itf, &e, result, size);
+}
+
+int umustach_json_c(const char *template, struct json_object *root, mustach_json_c_write_cb writecb, void *closure)
+{
+	struct expl e;
+	e.root = root;
+	e.writecb = writecb;
+	return fmustach(template, &itf, &e, closure);
 }
 

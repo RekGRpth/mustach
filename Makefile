@@ -10,6 +10,7 @@ test: mustach
 	@make -C test3 test
 	@make -C test4 test
 	@make -C test5 test
+	@make -C test6 test
 
 clean:
 	rm -f mustach
@@ -18,5 +19,6 @@ clean:
 	@make -C test3 clean
 	@make -C test4 clean
 	@make -C test5 clean
+	@make -C test6 clean
 
 

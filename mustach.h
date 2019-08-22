@@ -60,6 +60,12 @@ struct mustach_sbuf; /* see below */
  * @partial: If defined (can be NULL for compatibility), that function is
  *           called with the 'name' of the partial. It must fill 'sbuf'
  *           with the returned content and its release method. @see mustach_sbuf
+ *
+ * @emit: If defined, that function is called instead of 'fwrite' to output
+ *        text. It implies that if you define the 'partial' callback, the meaning
+ *        of 'FILE *file' is abstract for mustach and then you can pass any kind
+ *        of pointer (including NULL) to the function 'fmustach'. An example of
+ *        a such behaviour is given by the implementation of 'umustach_json_c'.
  */
 struct mustach_itf {
 	int (*start)(void *closure);
@@ -68,6 +74,7 @@ struct mustach_itf {
 	int (*next)(void *closure);
 	int (*leave)(void *closure);
 	int (*partial)(void *closure, const char *name, struct mustach_sbuf *sbuf);
+	int (*emit)(void *closure, const char *buffer, size_t size, int escape, FILE *file);
 };
 
 /**

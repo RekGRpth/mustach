@@ -60,5 +60,19 @@ extern int fdmustach_json_c(const char *template, struct json_object *root, int 
  */
 extern int mustach_json_c(const char *template, struct json_object *root, char **result, size_t *size);
 
+/**
+ * umustach_json_c - Renders the mustache 'template' for 'root' to custom writer 'writecb' with 'closure'.
+ *
+ * @template: the template string to instanciate
+ * @root:     the root json object to render
+ * @writecb:  the function that write values
+ * @closure:  the closure for the write function
+ *
+ * Returns 0 in case of success, -1 with errno set in case of system error
+ * a other negative value in case of error.
+ */
+typedef int (*mustach_json_c_write_cb)(void*closure, const char*buffer, size_t size);
+extern int umustach_json_c(const char *template, struct json_object *root, mustach_json_c_write_cb writecb, void *closure);
+
 #endif
 

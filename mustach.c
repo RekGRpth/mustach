@@ -144,6 +144,13 @@ static int partial(struct mustach_itf *itf, void *closure, const char *name, str
 	return itf->partial ? itf->partial(closure, name, sbuf) : divert(itf, closure, name, sbuf);
 }
 
+static int emit(struct mustach_itf *itf, void *closure, const char *buffer, size_t size, int escape, FILE *file)
+{
+	if (itf->emit)
+		return itf->emit(closure, buffer, size, escape, file);
+	return fwrite(buffer, size, 1, file) != 1 ? MUSTACH_ERROR_SYSTEM : 0;
+}
+
 static int process(const char *template, struct mustach_itf *itf, void *closure, FILE *file, const char *opstr, const char *clstr)
 {
 	struct mustach_sbuf sbuf;
@@ -161,14 +168,18 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 		beg = strstr(template, opstr);
 		if (beg == NULL) {
 			/* no more mustach */
-			if (enabled)
-				if (template[0] && fwrite(template, strlen(template), 1, file) != 1)
-					return MUSTACH_ERROR_SYSTEM;
+			if (enabled && template[0]) {
+				rc = emit(itf, closure, template, strlen(template), 0, file);
+				if (rc < 0)
+					return rc;
+			}
 			return depth ? MUSTACH_ERROR_UNEXPECTED_END : 0;
 		}
-		if (enabled)
-			if (beg != template && fwrite(template, (size_t)(beg - template), 1, file) != 1)
-				return MUSTACH_ERROR_SYSTEM;
+		if (enabled && beg != template) {
+			rc = emit(itf, closure, template, (size_t)(beg - template), 0, file);
+			if (rc < 0)
+				return rc;
+		}
 		beg += oplen;
 		term = strstr(beg, clstr);
 		if (term == NULL)
