@@ -31,9 +31,9 @@ struct mustach_sbuf; /* see below */
  *
  * The functions enter and next should return 0 or 1.
  *
- * All other functions should normally return 0. If it returns
- * a negative value, it means an error that stop the process
- * and that is reported to the caller.
+ * All other functions should normally return MUSTACH_OK (zero).
+ * If it returns a negative value, it means an error that stop
+ * the process and that is reported to the caller.
  *
  * @start: If defined (can be NULL), starts the mustach processing
  *         of the closure.
@@ -136,9 +136,12 @@ struct mustach_sbuf {
 #define MUSTACH_ERROR_CLOSING           -7
 #define MUSTACH_ERROR_BAD_UNESCAPE_TAG  -8
 #define MUSTACH_ERROR_INVALID_ITF       -9
+#define MUSTACH_ERROR_ITEM_NOT_FOUND    -10
+#define MUSTACH_ERROR_PARTIAL_NOT_FOUND -11
 
-/* compatibility with older bad name */
-#define MUSTACH_ERROR_TOO_DEPTH         MUSTACH_ERROR_TOO_DEEP
+/* You can use definition below for user specific error */
+#define MUSTACH_ERROR_USER_BASE         -100
+#define MUSTACH_ERROR_USER(x)           (MUSTACH_ERROR_USER_BASE-(x))
 
 /**
  * fmustach - Renders the mustache 'template' in 'file' for 'itf' and 'closure'.

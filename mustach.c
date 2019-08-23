@@ -195,7 +195,7 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 				if (rc < 0)
 					return rc;
 			}
-			return depth ? MUSTACH_ERROR_UNEXPECTED_END : 0;
+			return depth ? MUSTACH_ERROR_UNEXPECTED_END : MUSTACH_OK;
 		}
 		if (enabled && beg != template) {
 			rc = emit(itf, closure, template, (size_t)(beg - template), 0, file);
@@ -316,7 +316,7 @@ static int process(const char *template, struct mustach_itf *itf, void *closure,
 			if (enabled) {
 				sbuf_reset(&sbuf);
 				rc = partial(itf, closure, name, &sbuf);
-				if (rc == 0) {
+				if (rc >= 0) {
 					rc = process(sbuf.value, itf, closure, file, opstr, clstr);
 					sbuf_release(&sbuf);
 				}

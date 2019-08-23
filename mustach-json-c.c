@@ -204,14 +204,14 @@ static int start(void *closure)
 	e->stack[0].obj = e->root;
 	e->stack[0].index = 0;
 	e->stack[0].count = 1;
-	return 0;
+	return MUSTACH_OK;
 }
 
 static int write(struct expl *e, const char *buffer, size_t size, FILE *file)
 {
 	if (e->writecb)
 		return e->writecb(file, buffer, size);
-	return fwrite(buffer, size, 1, file) == 1 ? 0 : MUSTACH_ERROR_SYSTEM;
+	return fwrite(buffer, size, 1, file) == 1 ? MUSTACH_OK : MUSTACH_ERROR_SYSTEM;
 }
 
 static int emit(void *closure, const char *buffer, size_t size, int escape, FILE *file)
@@ -229,7 +229,7 @@ static int emit(void *closure, const char *buffer, size_t size, int escape, FILE
 			}
 			buffer++;
 		} while(--size);
-	return 0;
+	return MUSTACH_OK;
 }
 
 static const char *item(struct expl *e, const char *name)
@@ -256,7 +256,7 @@ static int put(void *closure, const char *name, int escape, FILE *file)
 	s = item(e, name);
 	if (s)
 		emit(closure, s, strlen(s), escape, file);
-	return 0;
+	return MUSTACH_OK;
 }
 
 static int enter(void *closure, const char *name)
@@ -371,7 +371,7 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 					buffer[s] = 0;
 					sbuf->freecb = free;
 					fclose(file);
-					return 0;
+					return MUSTACH_OK;
 				}
 				free(buffer);
 			}
@@ -391,7 +391,7 @@ static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 		sbuf->value = s;
 	else if (get_partial_from_file(name, sbuf) < 0)
 		sbuf->value = "";
-	return 0;
+	return MUSTACH_OK;
 }
 
 static int get(void *closure, const char *name, struct mustach_sbuf *sbuf)
@@ -404,7 +404,7 @@ static int get(void *closure, const char *name, struct mustach_sbuf *sbuf)
 		sbuf->value = s;
 	else
 		sbuf->value = "";
-	return 0;
+	return MUSTACH_OK;
 }
 
 static struct mustach_itf itf = {
