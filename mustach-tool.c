@@ -42,7 +42,10 @@ static const char *errors[] = {
 	"bad separators",
 	"too depth",
 	"closing",
-	"bad unescape tag"
+	"bad unescape tag",
+	"invalid interface",
+	"item not found",
+	"partial not found"
 };
 
 static void help(char *prog)

@@ -209,12 +209,10 @@ static int start(void *closure)
 
 static int write(struct expl *e, const char *buffer, size_t size, FILE *file)
 {
-	if (e->writecb)
-		return e->writecb(file, buffer, size);
-	return fwrite(buffer, size, 1, file) == 1 ? MUSTACH_OK : MUSTACH_ERROR_SYSTEM;
+	return e->writecb(file, buffer, size);
 }
 
-static int emit(void *closure, const char *buffer, size_t size, int escape, FILE *file)
+static int emituw(void *closure, const char *buffer, size_t size, int escape, FILE *file)
 {
 	struct expl *e = closure;
 	if (!escape)
@@ -246,17 +244,6 @@ static const char *item(struct expl *e, const char *name)
 	s = (o = find(e, name)) ? json_object_get_string(o) : NULL;
 #endif
 	return s;
-}
-
-static int put(void *closure, const char *name, int escape, FILE *file)
-{
-	struct expl *e = closure;
-	const char *s;
-
-	s = item(e, name);
-	if (s)
-		emit(closure, s, strlen(s), escape, file);
-	return MUSTACH_OK;
 }
 
 static int enter(void *closure, const char *name)
@@ -409,20 +396,30 @@ static int get(void *closure, const char *name, struct mustach_sbuf *sbuf)
 
 static struct mustach_itf itf = {
 	.start = start,
-	.put = put,
+	.put = NULL,
 	.enter = enter,
 	.next = next,
 	.leave = leave,
 	.partial = partial,
 	.get = get,
-	.emit = emit
+	.emit = NULL
+};
+
+static struct mustach_itf itfuw = {
+	.start = start,
+	.put = NULL,
+	.enter = enter,
+	.next = next,
+	.leave = leave,
+	.partial = partial,
+	.get = get,
+	.emit = emituw
 };
 
 int fmustach_json_c(const char *template, struct json_object *root, FILE *file)
 {
 	struct expl e;
 	e.root = root;
-	e.writecb = NULL;
 	return fmustach(template, &itf, &e, file);
 }
 
@@ -430,7 +427,6 @@ int fdmustach_json_c(const char *template, struct json_object *root, int fd)
 {
 	struct expl e;
 	e.root = root;
-	e.writecb = NULL;
 	return fdmustach(template, &itf, &e, fd);
 }
 
@@ -447,6 +443,6 @@ int umustach_json_c(const char *template, struct json_object *root, mustach_json
 	struct expl e;
 	e.root = root;
 	e.writecb = writecb;
-	return fmustach(template, &itf, &e, closure);
+	return fmustach(template, &itfuw, &e, closure);
 }
 

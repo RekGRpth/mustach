@@ -43,6 +43,8 @@ struct mustach_sbuf; /* see below */
  *       As an extension (see NO_ALLOW_EMPTY_TAG), the 'name' can be
  *       the empty string. In that later case an implementation can
  *       return MUSTACH_ERROR_EMPTY_TAG to refuse empty names.
+ *       If NULL and 'get' NULL the error MUSTACH_ERROR_INVALID_ITF
+ *       is returned.
  *
  * @enter: Enters the section of 'name' if possible.
  *         Musts return 1 if entered or 0 if not entered.
@@ -62,8 +64,6 @@ struct mustach_sbuf; /* see below */
  *           partial of 'name'. @see mustach_sbuf
  *           If NULL but 'get' not NULL, 'get' is used instead of partial.
  *           If NULL and 'get' NULL and 'put' NULL, 'put' is called with a true FILE.
- *           If NULL and 'get' NULL and 'put' NULL the error MUSTACH_ERROR_INVALID_ITF
- *           is returned.
  *
  * @emit: If defined (can be NULL), writes the 'buffer' of 'size' with 'escape'.
  *        If NULL the standard function 'fwrite' is used with a true FILE.
@@ -79,7 +79,8 @@ struct mustach_sbuf; /* see below */
  *       As an extension (see NO_ALLOW_EMPTY_TAG), the 'name' can be
  *       the empty string. In that later case an implementation can
  *       return MUSTACH_ERROR_EMPTY_TAG to refuse empty names.
- *
+ *       If NULL and 'put' NULL the error MUSTACH_ERROR_INVALID_ITF
+ *       is returned.
  */
 struct mustach_itf {
 	int (*start)(void *closure);

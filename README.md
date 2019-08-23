@@ -37,6 +37,15 @@ Example:
 
 	gcc -DNO_OPEN_MEMSTREAM
 
+Integration
+===========
+
+The file **mustach-json-c.c** provides a good example of integration.
+
+If you intend to use basic HTML/XML escaping and standard C FILE, the callbacks
+of the interface **mustach_itf** that you have to implement are:
+`enter`, `next`, `leave`, `get`.
+
 Extensions
 ==========
 
