@@ -63,7 +63,8 @@ struct mustach_sbuf; /* see below */
  * @partial: If defined (can be NULL), returns in 'sbuf' the content of the
  *           partial of 'name'. @see mustach_sbuf
  *           If NULL but 'get' not NULL, 'get' is used instead of partial.
- *           If NULL and 'get' NULL and 'put' NULL, 'put' is called with a true FILE.
+ *           If NULL and 'get' NULL and 'put' not NULL, 'put' is called with
+ *           a true FILE.
  *
  * @emit: If defined (can be NULL), writes the 'buffer' of 'size' with 'escape'.
  *        If NULL the standard function 'fwrite' is used with a true FILE.
@@ -81,6 +82,29 @@ struct mustach_sbuf; /* see below */
  *       return MUSTACH_ERROR_EMPTY_TAG to refuse empty names.
  *       If NULL and 'put' NULL the error MUSTACH_ERROR_INVALID_ITF
  *       is returned.
+ *
+ * The array below summarize status of callbacks:
+ *
+ *    FULLY OPTIONAL:   start partial
+ *    MANDATORY:        enter next leave
+ *    COMBINATORIAL:    put emit get
+ *
+ * Not definig a MANDATORY callback returns error MUSTACH_ERROR_INVALID_ITF.
+ *
+ * For COMBINATORIAL callbacks the array below summarize possible combinations:
+ *
+ *  combination  : put     : emit    : get     : abstract FILE
+ *  -------------+---------+---------+---------+-----------------------
+ *  HISTORIC     : defined : NULL    : NULL    : NO: standard FILE
+ *  MINIMAL      : NULL    : NULL    : defined : NO: standard FILE
+ *  CUSTOM       : NULL    : defined : defined : YES: abstract FILE
+ *  DANGEROUS    : defined : defined : any     : YES or NO, depends on 'partial'
+ *  FORBIDEN     : NULL    : any     : NULL    : -
+ *
+ * The DANGEROUS case is special: it allows abstract FILE if 'partial' is defined
+ * but forbids abstract FILE when 'partial' is NULL.
+ *
+ * The FORBIDEN case returns error MUSTACH_ERROR_INVALID_ITF.
  */
 struct mustach_itf {
 	int (*start)(void *closure);

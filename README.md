@@ -8,6 +8,8 @@ The main site for `mustach` is on [gitlab](https://gitlab.com/jobol/mustach).
 The best way to use mustach is to copy the files **mustach.h** and **mustach.c**
 directly into your project and use it.
 
+The file **mustch.h** is the main documentation. Look at it.
+
 The current source files are:
 
 - **mustach.c** core implementation of mustache in C
@@ -40,11 +42,17 @@ Example:
 Integration
 ===========
 
+The file **mustch.h** is the main documentation. Look at it.
+
 The file **mustach-json-c.c** provides a good example of integration.
 
 If you intend to use basic HTML/XML escaping and standard C FILE, the callbacks
 of the interface **mustach_itf** that you have to implement are:
 `enter`, `next`, `leave`, `get`.
+
+If you intend to use specific escaping and/or specific output, the callbacks
+of the interface **mustach_itf** that you have to implement are:
+`enter`, `next`, `leave`, `get` and `emit`.
 
 Extensions
 ==========

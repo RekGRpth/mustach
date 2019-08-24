@@ -126,7 +126,7 @@ static inline void sbuf_release(struct mustach_sbuf *sbuf)
 		sbuf->releasecb(sbuf->value, sbuf->closure);
 }
 
-static int emit_wrap(void *closure, const char *buffer, size_t size, int escape, FILE *file)
+static int iwrap_emit(void *closure, const char *buffer, size_t size, int escape, FILE *file)
 {
 	size_t i, j;
 
@@ -162,7 +162,7 @@ static int emit_wrap(void *closure, const char *buffer, size_t size, int escape,
 	return MUSTACH_OK;
 }
 
-static int put_wrap(void *closure, const char *name, int escape, FILE *file)
+static int iwrap_put(void *closure, const char *name, int escape, FILE *file)
 {
 	struct iwrap *iwrap = closure;
 	int rc;
@@ -180,7 +180,7 @@ static int put_wrap(void *closure, const char *name, int escape, FILE *file)
 	return rc;
 }
 
-static int partial_wrap(void *closure, const char *name, struct mustach_sbuf *sbuf)
+static int iwrap_partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct iwrap *iwrap = closure;
 	int rc;
@@ -383,7 +383,7 @@ int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE 
 		iwrap.put = itf->put;
 		iwrap.closure_put = closure;
 	} else {
-		iwrap.put = put_wrap;
+		iwrap.put = iwrap_put;
 		iwrap.closure_put = &iwrap;
 	}
 	if (itf->partial) {
@@ -393,10 +393,10 @@ int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE 
 		iwrap.partial = itf->get;
 		iwrap.closure_partial = closure;
 	} else {
-		iwrap.partial = partial_wrap;
+		iwrap.partial = iwrap_partial;
 		iwrap.closure_partial = &iwrap;
 	}
-	iwrap.emit = itf->emit ?: emit_wrap;
+	iwrap.emit = itf->emit ?: iwrap_emit;
 	iwrap.enter = itf->enter;
 	iwrap.next = itf->next;
 	iwrap.leave = itf->leave;
