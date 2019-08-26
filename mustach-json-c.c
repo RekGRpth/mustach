@@ -33,9 +33,6 @@
 # if !defined(NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH)
 #  define NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
 # endif
-# if !defined(NO_COLON_EXTENSION_FOR_MUSTACH)
-#  define NO_COLON_EXTENSION_FOR_MUSTACH
-# endif
 # if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
 #  define NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
 # endif
@@ -45,12 +42,14 @@
 # if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
 #  define NO_OBJECT_ITERATION_FOR_MUSTACH
 # endif
+# if !defined(NO_INCLUDE_PARTIAL_FALLBACK)
+#  define NO_INCLUDE_PARTIAL_FALLBACK
+# endif
 #endif
 
-#if defined(NO_COLON_EXTENSION_FOR_MUSTACH)
-# if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
-#  define NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
-# endif
+#if !defined(NO_INCLUDE_PARTIAL_FALLBACK) \
+  &&  !defined(INCLUDE_PARTIAL_EXTENSION)
+# define INCLUDE_PARTIAL_EXTENSION ".mustache"
 #endif
 
 struct expl {
@@ -319,9 +318,10 @@ static int leave(void *closure)
 	return 0;
 }
 
+#if !defined(NO_INCLUDE_PARTIAL_FALLBACK)
 static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 {
-	static char extension[] = ".mustache";
+	static char extension[] = INCLUDE_PARTIAL_EXTENSION;
 	int rc;
 	size_t s;
 	FILE *file;
@@ -380,6 +380,7 @@ static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 		sbuf->value = "";
 	return MUSTACH_OK;
 }
+#endif
 
 static int get(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
@@ -400,7 +401,11 @@ static struct mustach_itf itf = {
 	.enter = enter,
 	.next = next,
 	.leave = leave,
+#if !defined(NO_INCLUDE_PARTIAL_FALLBACK)
 	.partial = partial,
+#else
+	.partial =NULL,
+#endif
 	.get = get,
 	.emit = NULL
 };
@@ -411,7 +416,11 @@ static struct mustach_itf itfuw = {
 	.enter = enter,
 	.next = next,
 	.leave = leave,
+#if !defined(NO_INCLUDE_PARTIAL_FALLBACK)
 	.partial = partial,
+#else
+	.partial =NULL,
+#endif
 	.get = get,
 	.emit = emituw
 };

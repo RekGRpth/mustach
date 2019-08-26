@@ -103,7 +103,18 @@ When compiling mustach.c or mustach-json-c.c,
 extensions can be removed by defining macros
 using option -D.
 
-The possible macros are:
+The possible macros are of 3 categories, the global,
+the mustach core specific and the mustach-json-c example
+of implementation specific.
+
+### Global macro
+
+- `NO_EXTENSION_FOR_MUSTACH`
+
+  This macro disables any current or future
+  extensions for the core or the example.
+
+### Macros for the core mustach engine (mustach.c)
 
 - `NO_COLON_EXTENSION_FOR_MUSTACH`
 
@@ -111,6 +122,13 @@ The possible macros are:
   as explicit command for variable substituion.
   This extension allows to have name starting
   with one of the mustach character `:#^/&{=>`
+
+- `NO_ALLOW_EMPTY_TAG`
+
+  Generate the error MUSTACH_ERROR_EMPTY_TAG automatically
+  when an empty tag is encountered.
+
+### Macros for the implementation example (mustach-json-c.c)
 
 - `NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH`
 
@@ -132,10 +150,6 @@ The possible macros are:
   A special escaping is used for "=" signs when
   values comparison is enabled: "~=" leaves "=" in the key.
 
-- `NO_ALLOW_EMPTY_TAG`
-
-  Generate the error MUSTACH_ERROR_EMPTY_TAG automatically.
-
 - `NO_OBJECT_ITERATION_FOR_MUSTACH`
 
   Disable the object iteration extension. That extension allows
@@ -149,7 +163,15 @@ The possible macros are:
   Disable access to current object value using single dot
   like in `{{.}}`.
 
-- `NO_EXTENSION_FOR_MUSTACH`
+- `NO_INCLUDE_PARTIAL_FALLBACK`
 
-  This macro disables any current or future
-  extensions.
+  Disable include of file by partial pattern like `{{> name}}`.
+  By default if a such pattern is found, **mustach** search
+  for `name` in the current json context. This what is done
+  historically and when `NO_INCLUDE_PARTIAL_FALLBACK` is defined.
+  When `NO_INCLUDE_PARTIAL_FALLBACK` is defined, if the value is
+  found in the json context, the files `name` and `name.mustache`
+  are searched in that order and the first file found is used
+  as partial content. The macro `INCLUDE_PARTIAL_EXTENSION` can
+  be use for changing the extension added.
+
