@@ -98,13 +98,18 @@ struct mustach_sbuf; /* see below */
  *  HISTORIC     : defined : NULL    : NULL    : NO: standard FILE
  *  MINIMAL      : NULL    : NULL    : defined : NO: standard FILE
  *  CUSTOM       : NULL    : defined : defined : YES: abstract FILE
+ *  DUCK         : defined : NULL    : defined : NO: standard FILE
  *  DANGEROUS    : defined : defined : any     : YES or NO, depends on 'partial'
- *  FORBIDEN     : NULL    : any     : NULL    : -
+ *  INVALID      : NULL    : any     : NULL    : -
+ *
+ * The DUCK case runs on one leg. 'get' is not used if 'partial' is defined
+ * but is used for 'partial' if 'partial' is NULL. Thus for clarity, do not use
+ * it that way but define 'partial' and let 'get' NULL.
  *
  * The DANGEROUS case is special: it allows abstract FILE if 'partial' is defined
  * but forbids abstract FILE when 'partial' is NULL.
  *
- * The FORBIDEN case returns error MUSTACH_ERROR_INVALID_ITF.
+ * The INVALID case returns error MUSTACH_ERROR_INVALID_ITF.
  */
 struct mustach_itf {
 	int (*start)(void *closure);
