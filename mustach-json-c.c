@@ -400,7 +400,8 @@ static struct mustach_itf itf = {
 	.partial =NULL,
 #endif
 	.get = get,
-	.emit = NULL
+	.emit = NULL,
+	.stop = NULL
 };
 
 static struct mustach_itf itfuw = {
@@ -415,7 +416,8 @@ static struct mustach_itf itfuw = {
 	.partial =NULL,
 #endif
 	.get = get,
-	.emit = emituw
+	.emit = emituw,
+	.stop = NULL
 };
 
 int fmustach_json_c(const char *template, struct json_object *root, FILE *file)

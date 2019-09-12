@@ -379,9 +379,11 @@ int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE 
 	int rc;
 	struct iwrap iwrap;
 
+	/* check validity */
 	if (!itf->enter || !itf->next || !itf->leave || (!itf->put && !itf->get))
 		return MUSTACH_ERROR_INVALID_ITF;
 
+	/* init wrap structure */
 	iwrap.closure = closure;
 	if (itf->put) {
 		iwrap.put = itf->put;
@@ -406,9 +408,12 @@ int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE 
 	iwrap.leave = itf->leave;
 	iwrap.get = itf->get;
 
+	/* process */
 	rc = itf->start ? itf->start(closure) : 0;
 	if (rc == 0)
 		rc = process(template, &iwrap, file, "{{", "}}");
+	if (itf->stop)
+		itf->stop(closure, rc);
 	return rc;
 }
 

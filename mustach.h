@@ -46,7 +46,8 @@ struct mustach_sbuf; /* see below */
  * the process and that is reported to the caller.
  *
  * @start: If defined (can be NULL), starts the mustach processing
- *         of the closure.
+ *         of the closure, called at the very beginning before any
+ *         mustach processing occurs.
  *
  * @put: If defined (can be NULL), writes the value of 'name'
  *       to 'file' with 'escape' or not.
@@ -93,6 +94,11 @@ struct mustach_sbuf; /* see below */
  *       If NULL and 'put' NULL the error MUSTACH_ERROR_INVALID_ITF
  *       is returned.
  *
+ * @stop: If defined (can be NULL), stops the mustach processing
+ *        of the closure, called at the very end after all mustach
+ *        processing occurerd. The status returned by the processing
+ *        is passed to the stop.
+ *
  * The array below summarize status of callbacks:
  *
  *    FULLY OPTIONAL:   start partial
@@ -130,6 +136,7 @@ struct mustach_itf {
 	int (*partial)(void *closure, const char *name, struct mustach_sbuf *sbuf);
 	int (*emit)(void *closure, const char *buffer, size_t size, int escape, FILE *file);
 	int (*get)(void *closure, const char *name, struct mustach_sbuf *sbuf);
+	void (*stop)(void *closure, int status);
 };
 
 /**
