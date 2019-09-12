@@ -27,24 +27,17 @@
 #include "mustach.h"
 #include "mustach-json-c.h"
 
-#define MAX_DEPTH 256
-
 #if defined(NO_EXTENSION_FOR_MUSTACH)
-# if !defined(NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH)
-#  define NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
-# endif
-# if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
-#  define NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
-# endif
-# if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
-#  define NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
-# endif
-# if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
-#  define NO_OBJECT_ITERATION_FOR_MUSTACH
-# endif
-# if !defined(NO_INCLUDE_PARTIAL_FALLBACK)
-#  define NO_INCLUDE_PARTIAL_FALLBACK
-# endif
+# undef  NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
+# define NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
+# undef  NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
+# define NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
+# undef  NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
+# define NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
+# undef  NO_OBJECT_ITERATION_FOR_MUSTACH
+# define NO_OBJECT_ITERATION_FOR_MUSTACH
+# undef  NO_INCLUDE_PARTIAL_FALLBACK
+# define NO_INCLUDE_PARTIAL_FALLBACK
 #endif
 
 #if !defined(NO_INCLUDE_PARTIAL_FALLBACK) \
@@ -67,7 +60,7 @@ struct expl {
 		int is_objiter;
 #endif
 		int index, count;
-	} stack[MAX_DEPTH];
+	} stack[MUSTACH_MAX_DEPTH];
 };
 
 #if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
@@ -249,7 +242,7 @@ static int enter(void *closure, const char *name)
 {
 	struct expl *e = closure;
 	struct json_object *o = find(e, name);
-	if (++e->depth >= MAX_DEPTH)
+	if (++e->depth >= MUSTACH_MAX_DEPTH)
 		return MUSTACH_ERROR_TOO_DEEP;
 	if (json_object_is_type(o, json_type_array)) {
 		e->stack[e->depth].count = json_object_array_length(o);

@@ -27,8 +27,12 @@
 
 #include "mustach.h"
 
-#define NAME_LENGTH_MAX   1024
-#define DEPTH_MAX         256
+#if defined(NO_EXTENSION_FOR_MUSTACH)
+# undef  NO_COLON_EXTENSION_FOR_MUSTACH
+# define NO_COLON_EXTENSION_FOR_MUSTACH
+# undef  NO_ALLOW_EMPTY_TAG
+# define NO_ALLOW_EMPTY_TAG
+#endif
 
 struct iwrap {
 	int (*emit)(void *closure, const char *buffer, size_t size, int escape, FILE *file);
@@ -210,9 +214,9 @@ static int iwrap_partial(void *closure, const char *name, struct mustach_sbuf *s
 static int process(const char *template, struct iwrap *iwrap, FILE *file, const char *opstr, const char *clstr)
 {
 	struct mustach_sbuf sbuf;
-	char name[NAME_LENGTH_MAX + 1], c, *tmp;
+	char name[MUSTACH_MAX_LENGTH + 1], c, *tmp;
 	const char *beg, *term;
-	struct { const char *name, *again; size_t length; int enabled, entered; } stack[DEPTH_MAX];
+	struct { const char *name, *again; size_t length; int enabled, entered; } stack[MUSTACH_MAX_DEPTH];
 	size_t oplen, cllen, len, l;
 	int depth, rc, enabled;
 
@@ -265,18 +269,18 @@ static int process(const char *template, struct iwrap *iwrap, FILE *file, const 
 		case '/':
 		case '&':
 		case '>':
-#if !defined(NO_EXTENSION_FOR_MUSTACH) && !defined(NO_COLON_EXTENSION_FOR_MUSTACH)
+#if !defined(NO_COLON_EXTENSION_FOR_MUSTACH)
 		case ':':
 #endif
 			beg++; len--;
 		default:
 			while (len && isspace(beg[0])) { beg++; len--; }
 			while (len && isspace(beg[len-1])) len--;
-#if defined(NO_EXTENSION_FOR_MUSTACH) || defined(NO_ALLOW_EMPTY_TAG)
+#if !defined(NO_ALLOW_EMPTY_TAG)
 			if (len == 0)
 				return MUSTACH_ERROR_EMPTY_TAG;
 #endif
-			if (len > NAME_LENGTH_MAX)
+			if (len > MUSTACH_MAX_LENGTH)
 				return MUSTACH_ERROR_TAG_TOO_LONG;
 			memcpy(name, beg, len);
 			name[len] = 0;
@@ -313,7 +317,7 @@ static int process(const char *template, struct iwrap *iwrap, FILE *file, const 
 		case '^':
 		case '#':
 			/* begin section */
-			if (depth == DEPTH_MAX)
+			if (depth == MUSTACH_MAX_DEPTH)
 				return MUSTACH_ERROR_TOO_DEEP;
 			rc = enabled;
 			if (rc) {

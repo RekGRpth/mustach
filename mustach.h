@@ -23,6 +23,16 @@
 struct mustach_sbuf; /* see below */
 
 /**
+ * Maximum nested imbrications supported
+ */
+#define MUSTACH_MAX_DEPTH  256
+
+/**
+ * Maximum length of tags in mustaches {{...}}
+ */
+#define MUSTACH_MAX_LENGTH 1024
+
+/**
  * mustach_itf - interface for callbacks
  *
  * All of this function should return a negative value to stop
