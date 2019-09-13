@@ -25,7 +25,7 @@ struct mustach_sbuf; /* see below */
 /**
  * Current version of mustach and its derivates
  */
-#define MUSTACH_VERSION 98
+#define MUSTACH_VERSION 99
 #define MUSTACH_VERSION_MAJOR (MUSTACH_VERSION / 100)
 #define MUSTACH_VERSION_MINOR (MUSTACH_VERSION % 100)
 

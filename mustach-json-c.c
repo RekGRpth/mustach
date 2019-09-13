@@ -32,6 +32,8 @@
 # define NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
 # undef  NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
 # define NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
+# undef  NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH
+# define NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH
 # undef  NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
 # define NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
 # undef  NO_OBJECT_ITERATION_FOR_MUSTACH
@@ -43,6 +45,10 @@
 #if !defined(NO_INCLUDE_PARTIAL_FALLBACK) \
   &&  !defined(INCLUDE_PARTIAL_EXTENSION)
 # define INCLUDE_PARTIAL_EXTENSION ".mustache"
+#endif
+
+#if !defined(NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH)
+# undef NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
 #endif
 
 struct expl {
@@ -63,26 +69,91 @@ struct expl {
 	} stack[MUSTACH_MAX_DEPTH];
 };
 
-#if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
-static char *keyval(char *head, int isptr)
-{
-	char *w, c;
+enum comp {
+	C_no = 0,
+	C_eq = 1,
+	C_lt = 5,
+	C_le = 6,
+	C_gt = 9,
+	C_ge = 10
+};
 
-	c = *(w = head);
-	while (c && c != '=') {
-#if !defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
-		if (isptr) {
-			if (isptr && c == '~' && head[1] == '=')
-				c = *++head;
-		} else
+#if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
+static enum comp getcomp(char *head)
+{
+	return head[0] == '=' ? C_eq
+#if !defined(NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH)
+		: head[0] == '<' ? (head[1] == '=' ? C_le : C_lt)
+		: head[0] == '>' ? (head[1] == '=' ? C_ge : C_gt)
 #endif
-		if (!isptr && c == '\\' && head[1] == '=')
-			c = *++head;
-		*w++ = c;
+		: C_no;
+}
+
+static char *keyval(char *head, int isptr, enum comp *comp)
+{
+	char *w, c, s;
+	enum comp k;
+
+	k = C_no;
+#if !defined(NO_USE_VALUE_ESCAPE_FIRST_EXTENSION_FOR_MUSTACH)
+	s = getcomp(head) != C_no;
+#else
+	s = 0;
+#endif
+	c = *(w = head);
+	while (c && (s || (k = getcomp(head)) == C_no)) {
+		if (s)
+			s = 0;
+		else
+			s = (isptr ? c == '~' : c == '\\')
+			    && (getcomp(head + 1) != C_no);
+		if (!s)
+			*w++ = c;
 		c = *++head;
 	}
 	*w = 0;
-	return c == '=' ? ++head : NULL;
+	*comp = k;
+	return k == C_no ? NULL : &head[k & 3];
+}
+
+static int compare(struct json_object *o, const char *value)
+{
+	switch (json_object_get_type(o)) {
+	case json_type_double:
+		return json_object_get_double(o) - atof(value);
+	case json_type_int:
+		return json_object_get_int64(o) - (int64_t)atoll(value);
+	default:
+		return strcmp(json_object_get_string(o), value);
+	}
+}
+
+static int evalcomp(struct json_object *o, char *value, enum comp k)
+{
+	int r, c;
+
+	c = compare(o, value);
+	switch (k) {
+	case C_eq: r = c == 0; break;
+#if !defined(NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH)
+	case C_lt: r = c < 0; break;
+	case C_le: r = c <= 0; break;
+	case C_gt: r = c > 0; break;
+	case C_ge: r = c >= 0; break;
+#endif
+	default: r = 0; break;
+	}
+	return r;
+}
+#else
+static inline char *keyval(char *head, int isptr, enum comp *comp)
+{
+	*comp = C_no;
+	return NULL;
+}
+static inline int compare(struct json_object *o, char *value, enum comp k)
+{
+	return 0;
 }
 #endif
 
@@ -125,6 +196,7 @@ static struct json_object *find(struct expl *e, const char *name)
 	int i, isptr;
 	struct json_object *o, *no;
 	char *n, *c, *v;
+	enum comp k;
 
 	n = alloca(1 + strlen(name));
 	strcpy(n, name);
@@ -134,10 +206,7 @@ static struct json_object *find(struct expl *e, const char *name)
 	n += isptr;
 #endif
 
-	v = NULL;
-#if !defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
-	v = keyval(n, isptr);
-#endif
+	v = keyval(n, isptr, &k);
 #if !defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
 	e->found_objiter = 0;
 #endif
@@ -182,7 +251,7 @@ static struct json_object *find(struct expl *e, const char *name)
 	}
 	if (v) {
 		i = v[0] == '!';
-		if (i == !strcmp(&v[i], json_object_get_string(o)))
+		if (i == evalcomp(o, &v[i], k))
 			o = NULL;
 	}
 	return o;

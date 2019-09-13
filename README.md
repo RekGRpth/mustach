@@ -1,7 +1,8 @@
-Introduction to Mustach 0.98
+Introduction to Mustach 0.99
 ============================
 
-`mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache") template library.
+`mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache")
+template specification.
 
 The main site for `mustach` is on [gitlab](https://gitlab.com/jobol/mustach).
 
@@ -73,14 +74,20 @@ This extension introduces the special character `:` to explicitly
 tell mustach to just substitute the value. So `:` becomes a new special
 character.
 
-Value Testing
--------------
+Value Testing and Comparing
+---------------------------
 
-This is a tool extension implmented in file **mustach-json-c.c**.
+This are a tool extension implemented in file **mustach-json-c.c**.
 
-This extension allows you to test the value of the selected key.
-It is allowed to write `key=value` (matching test) or `key=!value`
+These extensions allows you to test the value of the selected key.
+They allow to write `key=value` (matching test) or `key=!value`
 (not matching test) in any query.
+
+The specific comparison extension also allows to compare if greater,
+lesser, etc.. than a value. It allows to write `key>value`.
+
+It the comparator sign appears in the first column it is ignored
+as if it was escaped.
 
 Access to current value
 -----------------------
@@ -135,12 +142,28 @@ of implementation specific.
 
 - `NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH`
 
-  This macro allows the program to check the whether
+  This macro allows the program to check whether
   the actual value is equal to an expected value.
   This is useful in `{{#key=val}}` or `{{^key=val}}`
   with the corresponding `{{/key=val}}`.
   It can also be used in `{{key=val}}` but this
   doesn't seem to be useful.
+
+- `NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH`
+
+  This macro allows the program to compare the actual
+  value with an expected value. The comparison operators
+  are `=`, `>`, `<`, `>=`, `<=`. The meaning of the
+  comparison numeric or alphabetic depends on the type
+  of the inspected value. Also the result of the comparison
+  can be inverted if the value starts with `!`.
+  Example of use: `{{key>=val}}`, or `{{#key>=val}}` and
+  `{{^key>=val}}` with their matching `{{/key>=val}}`.
+
+- `NO_USE_VALUE_ESCAPE_FIRST_EXTENSION_FOR_MUSTACH`
+
+  This macro fordids automatic escaping of coparison
+  sign appearing at first column.
 
 - `NO_JSON_POINTER_EXTENSION_FOR_MUSTACH`
 
@@ -150,8 +173,8 @@ of implementation specific.
   This implies to use the colon to introduce keys.
   So `NO_COLON_EXTENSION_FOR_MUSTACH` implies
   `NO_JSON_POINTER_EXTENSION_FOR_MUSTACH`.
-  A special escaping is used for "=" signs when
-  values comparison is enabled: "~=" leaves "=" in the key.
+  A special escaping is used for `=`, `<`, `>` signs when
+  values comparisons are enabled: `~=` gives `=` in the key.
 
 - `NO_OBJECT_ITERATION_FOR_MUSTACH`
 
