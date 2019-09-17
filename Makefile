@@ -1,7 +1,7 @@
 DESTDIR ?=
 PREFIX  ?= /usr/local
 
-CFLAGS += -fPIC
+CFLAGS += -fPIC -Wall -Wextra
 
 lib_OBJ  = mustach.o mustach-json-c.o
 tool_OBJ = mustach.o mustach-json-c.o mustach-tool.o
