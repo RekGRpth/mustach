@@ -29,20 +29,20 @@ mustach-json.o: mustach.h mustach-json-c.h
 mustach-tool.o: mustach.h mustach-json-c.h
 
 test: mustach
-	@make -C test1 test
-	@make -C test2 test
-	@make -C test3 test
-	@make -C test4 test
-	@make -C test5 test
-	@make -C test6 test
+	@$(MAKE) -C test1 test
+	@$(MAKE) -C test2 test
+	@$(MAKE) -C test3 test
+	@$(MAKE) -C test4 test
+	@$(MAKE) -C test5 test
+	@$(MAKE) -C test6 test
 
 clean:
 	rm -f mustach mustach.so *.o
-	@make -C test1 clean
-	@make -C test2 clean
-	@make -C test3 clean
-	@make -C test4 clean
-	@make -C test5 clean
-	@make -C test6 clean
+	@$(MAKE) -C test1 clean
+	@$(MAKE) -C test2 clean
+	@$(MAKE) -C test3 clean
+	@$(MAKE) -C test4 clean
+	@$(MAKE) -C test5 clean
+	@$(MAKE) -C test6 clean
 
 .PHONY: test clean install uninstall
