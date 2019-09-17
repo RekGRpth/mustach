@@ -8,6 +8,9 @@ The main site for `mustach` is on [gitlab](https://gitlab.com/jobol/mustach).
 The best way to use mustach is to copy the files **mustach.h** and **mustach.c**
 directly into your project and use it.
 
+Alternatively, make and meson files are provided for building `mustach` and a
+`mustach.so` shared library are included.
+
 The file **mustch.h** is the main documentation. Look at it.
 
 The current source files are:
