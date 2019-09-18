@@ -11,7 +11,7 @@ directly into your project and use it.
 Alternatively, make and meson files are provided for building `mustach` and a
 `mustach.so` shared library are included.
 
-The file **mustch.h** is the main documentation. Look at it.
+The file **mustach.h** is the main documentation. Look at it.
 
 The current source files are:
 
@@ -45,7 +45,7 @@ Example:
 Integration
 ===========
 
-The file **mustch.h** is the main documentation. Look at it.
+The file **mustach.h** is the main documentation. Look at it.
 
 The file **mustach-json-c.c** provides a good example of integration.
 
