@@ -6,18 +6,22 @@ CFLAGS += -fPIC -Wall -Wextra
 
 lib_OBJ  = mustach.o mustach-json-c.o
 tool_OBJ = mustach.o mustach-json-c.o mustach-tool.o
+HEADERS  = mustach.h mustach-json-c.h
 
 all: mustach libmustach.so
 
 install: mustach libmustach.so
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -d $(DESTDIR)$(PREFIX)/lib
+	install -d $(DESTDIR)$(PREFIX)/include/mustach
 	install -m0755 mustach       $(DESTDIR)$(PREFIX)/bin/
 	install -m0755 libmustach.so $(DESTDIR)$(PREFIX)/lib/
+	install -m0644 $(HEADERS)    $(DESTDIR)$(PREFIX)/include/mustach
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/mustach
 	rm -f $(DESTDIR)$(PREFIX)/lib/libmustach.so
+	rm -rf $(DESTDIR)$(PREFIX)/include/mustach
 
 mustach: $(tool_OBJ)
 	$(CC) $(LDFLAGS) -o mustach $(tool_OBJ) $(LDLIBS)
