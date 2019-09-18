@@ -1,6 +1,7 @@
 DESTDIR ?=
 PREFIX  ?= /usr/local
 
+LDLIBS += -ljson-c
 CFLAGS += -fPIC -Wall -Wextra
 
 lib_OBJ  = mustach.o mustach-json-c.o
@@ -19,10 +20,10 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/lib/libmustach.so
 
 mustach: $(tool_OBJ)
-	$(CC) $(LDFLAGS) -o mustach $(tool_OBJ) $(LDLIBS) -ljson-c
+	$(CC) $(LDFLAGS) -o mustach $(tool_OBJ) $(LDLIBS)
 
 libmustach.so: $(lib_OBJ)
-	$(CC) $(LDFLAGS) -shared -o libmustach.so $(lib_OBJ) $(LDLIBS) -ljson-c
+	$(CC) $(LDFLAGS) -shared -o libmustach.so $(lib_OBJ) $(LDLIBS)
 
 mustach.o:      mustach.h
 mustach-json.o: mustach.h mustach-json-c.h
