@@ -315,7 +315,6 @@ static int leave(void *closure)
 static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 {
 	static char extension[] = INCLUDE_PARTIAL_EXTENSION;
-	int rc;
 	ssize_t s;
 	FILE *file;
 	char *path, *buffer;
