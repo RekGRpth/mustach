@@ -134,6 +134,8 @@ static int iwrap_emit(void *closure, const char *buffer, size_t size, int escape
 {
 	size_t i, j;
 
+	(void)closure; /* unused */
+
 	if (!escape)
 		return fwrite(buffer, size, 1, file) != 1 ? MUSTACH_ERROR_SYSTEM : MUSTACH_OK;
 

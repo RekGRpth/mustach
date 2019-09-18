@@ -119,6 +119,8 @@ int main(int ac, char **av)
 	char *prog = *av;
 	int s;
 
+	(void)ac; /* unused */
+
 	if (*++av) {
 		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
 			help(prog);
