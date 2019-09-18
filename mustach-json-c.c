@@ -316,7 +316,7 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 {
 	static char extension[] = INCLUDE_PARTIAL_EXTENSION;
 	int rc;
-	size_t s;
+	ssize_t s;
 	FILE *file;
 	char *path, *buffer;
 
@@ -327,7 +327,7 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 		return MUSTACH_ERROR_SYSTEM;
 
 	/* try without extension first */
-	memcpy(path, name, s + 1);
+	memcpy(path, name, (size_t)(s + 1));
 	file = fopen(path, "r");
 	if (file == NULL) {
 		memcpy(&path[s], extension, sizeof extension);
@@ -339,13 +339,13 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 	if (file != NULL) {
 		/* compute file size */
 		if (fseek(file, 0, SEEK_END) >= 0
-		 && (s = (size_t)ftell(file)) >= 0
+		 && (s = ftell(file)) >= 0
 		 && fseek(file, 0, SEEK_SET) >= 0) {
 			/* allocate value */
 			buffer = malloc(s + 1);
 			if (buffer != NULL) {
 				/* read value */
-				if (1 == fread(buffer, s, 1, file)) {
+				if (1 == fread(buffer, (size_t)s, 1, file)) {
 					/* force zero at end */
 					sbuf->value = buffer;
 					buffer[s] = 0;
