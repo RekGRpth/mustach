@@ -6,23 +6,23 @@ CFLAGS += -fPIC -Wall -Wextra
 lib_OBJ  = mustach.o mustach-json-c.o
 tool_OBJ = mustach.o mustach-json-c.o mustach-tool.o
 
-all: mustach mustach.so
+all: mustach libmustach.so
 
-install: mustach mustach.so
+install: mustach libmustach.so
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -d $(DESTDIR)$(PREFIX)/lib
-	install -m0755 mustach    $(DESTDIR)$(PREFIX)/bin/
-	install -m0755 mustach.so $(DESTDIR)$(PREFIX)/lib/
+	install -m0755 mustach       $(DESTDIR)$(PREFIX)/bin/
+	install -m0755 libmustach.so $(DESTDIR)$(PREFIX)/lib/
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/mustach
-	rm -f $(DESTDIR)$(PREFIX)/lib/mustach.so
+	rm -f $(DESTDIR)$(PREFIX)/lib/libmustach.so
 
 mustach: $(tool_OBJ)
 	$(CC) $(LDFLAGS) -o mustach $(tool_OBJ) $(LDLIBS) -ljson-c
 
-mustach.so: $(lib_OBJ)
-	$(CC) $(LDFLAGS) -shared -o mustach.so $(lib_OBJ) $(LDLIBS) -ljson-c
+libmustach.so: $(lib_OBJ)
+	$(CC) $(LDFLAGS) -shared -o libmustach.so $(lib_OBJ) $(LDLIBS) -ljson-c
 
 mustach.o:      mustach.h
 mustach-json.o: mustach.h mustach-json-c.h
@@ -37,7 +37,7 @@ test: mustach
 	@$(MAKE) -C test6 test
 
 clean:
-	rm -f mustach mustach.so *.o
+	rm -f mustach libmustach.so *.o
 	@$(MAKE) -C test1 clean
 	@$(MAKE) -C test2 clean
 	@$(MAKE) -C test3 clean
