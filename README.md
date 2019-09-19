@@ -1,5 +1,5 @@
-Introduction to Mustach
-=======================
+Introduction to Mustach 0.98
+============================
 
 `mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache") template library.
 
@@ -8,8 +8,8 @@ The main site for `mustach` is on [gitlab](https://gitlab.com/jobol/mustach).
 The best way to use mustach is to copy the files **mustach.h** and **mustach.c**
 directly into your project and use it.
 
-Alternatively, make and meson files are provided for building `mustach` and a
-`mustach.so` shared library are included.
+Alternatively, make and meson files are provided for building `mustach` and 
+`libmustach.so` shared library.
 
 The file **mustach.h** is the main documentation. Look at it.
 
