@@ -1,7 +1,7 @@
 image: debian:experimental
 
 before_script:
-  - apt-get update -qq && apt-get install -y -qq libjson-c-dev gcc make valgrind
+  - apt-get update -qq && apt-get install -y -qq libjson-c-dev libjansson-dev gcc make valgrind
 
 build:
   script: make

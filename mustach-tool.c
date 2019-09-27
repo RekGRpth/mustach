@@ -17,7 +17,8 @@
 #include <string.h>
 #include <libgen.h>
 
-#include "mustach-json-c.h"
+#define MUSTACH_TOOL_JSON_C  0
+#define MUSTACH_TOOL_JANSSON 1
 
 static const size_t BLOCKSIZE = 8192;
 
@@ -100,6 +101,10 @@ static char *readfile(const char *filename)
 	return result;
 }
 
+#if MUSTACH_TOOL_JSON_C
+
+#include "mustach-json-c.h"
+
 int main(int ac, char **av)
 {
 	struct json_object *o;
@@ -143,3 +148,47 @@ int main(int ac, char **av)
 	return 0;
 }
 
+#elif MUSTACH_TOOL_JANSSON
+
+#include "mustach-jansson.h"
+
+int main(int ac, char **av)
+{
+	json_t *o;
+	json_error_t e;
+	char *t;
+	char *prog = *av;
+	int s;
+
+	(void)ac; /* unused */
+
+	if (*++av) {
+		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
+			help(prog);
+		if (av[0][0] == '-' && !av[0][1])
+			o = json_loadfd(0, JSON_DECODE_ANY, &e);
+		else
+			o = json_load_file(av[0], JSON_DECODE_ANY, &e);
+		if (o == NULL) {
+			fprintf(stderr, "Bad json: %s (file %s)\n", e.text, av[0]);
+			exit(1);
+		}
+		while(*++av) {
+			t = readfile(*av);
+			s = fmustach_jansson(t, o, stdout);
+			if (s != 0) {
+				s = -s;
+				if (s < 1 || s >= (int)(sizeof errors / sizeof * errors))
+					s = 0;
+				fprintf(stderr, "Template error %s (file %s)\n", errors[s], *av);
+			}
+			free(t);
+		}
+		json_decref(o);
+	}
+	return 0;
+}
+
+#else
+#error "no defined json library"
+#endif

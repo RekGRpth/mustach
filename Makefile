@@ -6,11 +6,14 @@ INCLUDEDIR ?= $(PREFIX)/include
 SOVER = .0
 SOVEREV = .0.99
 
-CFLAGS += -fPIC -Wall -Wextra
-LDLIBS += -ljson-c
+#CFLAGS += -fPIC -Wall -Wextra
+CFLAGS += -fPIC -Wall -Wextra -g
+#LDLIBS += -ljson-c
+LDLIBS += -ljansson
 
-lib_OBJ  = mustach.o mustach-json-c.o
-tool_OBJ = mustach.o mustach-json-c.o mustach-tool.o
+#lib_OBJ  = mustach.o mustach-wrap.o mustach-json-c.o
+lib_OBJ  = mustach.o mustach-wrap.o mustach-jansson.o
+tool_OBJ = $(lib_OBJ) mustach-tool.o
 HEADERS  = mustach.h mustach-json-c.h
 
 lib_LDFLAGS  += -shared
@@ -42,9 +45,11 @@ mustach: $(tool_OBJ)
 libmustach.so$(SOVEREV): $(lib_OBJ)
 	$(CC) $(LDFLAGS) $(lib_LDFLAGS) -o libmustach.so$(SOVEREV) $(lib_OBJ) $(LDLIBS)
 
-mustach.o:      mustach.h
-mustach-json.o: mustach.h mustach-json-c.h
-mustach-tool.o: mustach.h mustach-json-c.h
+mustach.o:            mustach.h
+mustach-wrap.o:       mustach.h mustach-wrap.h
+mustach-json-c.o:     mustach.h mustach-wrap.h mustach-json-c.h
+mustach-jansson.o:    mustach.h mustach-wrap.h mustach-jansson.h
+mustach-tool.o:       mustach.h mustach-json-c.h mustach-jansson.h
 
 test: mustach
 	@$(MAKE) -C test1 test
