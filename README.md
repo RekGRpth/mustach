@@ -1,12 +1,20 @@
-# Introduction to Mustach 0.99
+# Introduction to Mustach 1.00
 
 `mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache")
 template specification.
 
 The main site for `mustach` is on [gitlab](https://gitlab.com/jobol/mustach).
 
-The best way to use mustach is to copy the files **mustach.h** and **mustach.c**
+The rough way to use mustach is to copy the files **mustach.h** and **mustach.c**
 directly into your project and use it.
+
+If you are using one of the JSON libraries listed below, you can get extended feature
+by also including **mustach-wrap.h**, **mustach-wrap.c**, **mustach-XXX.h** and
+**mustach-XXX.c** in your project (see below for **XXX**)
+
+- [json-c](https://github.com/json-c/json-c): use **XXX** = **json-c**
+- [jansson](http://www.digip.org/jansson/): use **XXX** = **jansson**
+- [cJSON](https://github.com/DaveGamble/cJSON): use **XXX** = **cjson**
 
 Alternatively, make and meson files are provided for building `mustach` and 
 `libmustach.so` shared library.
@@ -30,9 +38,12 @@ make
 
 See http://pkgsrc.se/devel/mustach
 
-## Known projects using Mustash
+## Known projects using Mustach
 
-- [Integration with kore](https://github.com/cavalo-mORTO/kore_mustach)
+This [wiki page](https://gitlab.com/jobol/mustach/-/wikis/projects-using-mustach)
+lists the known project that are using mustach and that kindly told it.
+
+Don't hesitate to tell us if you are interested to be listed there.
 
 ## Using Mustach from sources
 
@@ -178,7 +189,7 @@ of implementation specific.
 
 - `NO_USE_VALUE_ESCAPE_FIRST_EXTENSION_FOR_MUSTACH`
 
-  This macro fordids automatic escaping of coparison
+  This macro fordids automatic escaping of comparison
   sign appearing at first column.
 
 - `NO_JSON_POINTER_EXTENSION_FOR_MUSTACH`

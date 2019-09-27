@@ -3,14 +3,20 @@ PREFIX  ?= /usr/local
 BINDIR  ?= $(PREFIX)/bin
 LIBDIR  ?= $(PREFIX)/lib
 INCLUDEDIR ?= $(PREFIX)/include
-SOVER = .0
-SOVEREV = .0.99
+SOVER = .1
+SOVEREV = .1.00
 
-CFLAGS += -fPIC -Wall -Wextra
+OBJS = mustach.o  mustach-cjson.o  mustach-jansson.o  mustach-json-c.o  mustach-tool.o  mustach-wrap.o
+#CFLAGS += -fPIC -Wall -Wextra
+CFLAGS += -fPIC -Wall -Wextra -g
 LDLIBS += -ljson-c
+#LDLIBS += -ljansson
+#LDLIBS += -lcjson
 
-lib_OBJ  = mustach.o mustach-json-c.o
-tool_OBJ = mustach.o mustach-json-c.o mustach-tool.o
+lib_OBJ  = mustach.o mustach-wrap.o mustach-json-c.o
+#lib_OBJ  = mustach.o mustach-wrap.o mustach-jansson.o
+#lib_OBJ  = mustach.o mustach-wrap.o mustach-cjson.o
+tool_OBJ = $(lib_OBJ) mustach-tool.o
 HEADERS  = mustach.h mustach-json-c.h
 
 lib_LDFLAGS  += -shared
@@ -18,7 +24,7 @@ ifeq ($(shell uname),Darwin)
  lib_LDFLAGS += -install_name $(LIBDIR)/libmustach.so$(SOVEREV)
 endif
 
-all: mustach libmustach.so$(SOVEREV)
+all: mustach libmustach.so$(SOVEREV) $(OBJS)
 
 install: all
 	install -d $(DESTDIR)$(BINDIR)
@@ -42,9 +48,12 @@ mustach: $(tool_OBJ)
 libmustach.so$(SOVEREV): $(lib_OBJ)
 	$(CC) $(LDFLAGS) $(lib_LDFLAGS) -o libmustach.so$(SOVEREV) $(lib_OBJ) $(LDLIBS)
 
-mustach.o:      mustach.h
-mustach-json.o: mustach.h mustach-json-c.h
-mustach-tool.o: mustach.h mustach-json-c.h
+mustach.o:            mustach.h
+mustach-wrap.o:       mustach.h mustach-wrap.h
+mustach-json-c.o:     mustach.h mustach-wrap.h mustach-json-c.h
+mustach-jansson.o:    mustach.h mustach-wrap.h mustach-jansson.h
+mustach-cjson.o:      mustach.h mustach-wrap.h mustach-cjson.h
+mustach-tool.o:       mustach.h mustach-json-c.h mustach-cjson.h
 
 test: mustach
 	@$(MAKE) -C test1 test

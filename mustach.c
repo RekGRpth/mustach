@@ -1,6 +1,5 @@
 /*
  Author: José Bollo <jobol@nonadev.net>
- Author: José Bollo <jose.bollo@iot.bzh>
 
  https://gitlab.com/jobol/mustach
 
@@ -30,6 +29,18 @@
 # define NO_ALLOW_EMPTY_TAG
 #endif
 
+#if defined(NO_COLON_EXTENSION_FOR_MUSTACH)
+# undef Mustach_With_Colon
+# define Mustach_With_Colon 0
+#endif
+
+#if defined(NO_ALLOW_EMPTY_TAG)
+# undef Mustach_With_EmptyTag
+# define Mustach_With_EmptyTag 0
+#endif
+
+#define default_flags (Mustach_With_Colon | Mustach_With_EmptyTag)
+
 struct iwrap {
 	int (*emit)(void *closure, const char *buffer, size_t size, int escape, FILE *file);
 	void *closure; /* closure for: enter, next, leave, emit, get */
@@ -41,6 +52,7 @@ struct iwrap {
 	int (*get)(void *closure, const char *name, struct mustach_sbuf *sbuf);
 	int (*partial)(void *closure, const char *name, struct mustach_sbuf *sbuf);
 	void *closure_partial; /* closure for partial */
+	int flags;
 };
 
 #if !defined(NO_OPEN_MEMSTREAM)
@@ -274,17 +286,17 @@ static int process(const char *template, struct iwrap *iwrap, FILE *file, const 
 		case '/':
 		case '&':
 		case '>':
-#if !defined(NO_COLON_EXTENSION_FOR_MUSTACH)
 		case ':':
-#endif
-			beg++; len--;
+			if (c != ':' || (iwrap->flags & Mustach_With_Colon)) {
+				beg++;
+				len--;
+			}
+			/*@fallthrough@*/
 		default:
 			while (len && isspace(beg[0])) { beg++; len--; }
 			while (len && isspace(beg[len-1])) len--;
-#if !defined(NO_ALLOW_EMPTY_TAG)
-			if (len == 0)
+			if (len == 0 && !(iwrap->flags & Mustach_With_EmptyTag))
 				return MUSTACH_ERROR_EMPTY_TAG;
-#endif
 			if (len > MUSTACH_MAX_LENGTH)
 				return MUSTACH_ERROR_TAG_TOO_LONG;
 			memcpy(name, beg, len);
@@ -379,7 +391,7 @@ static int process(const char *template, struct iwrap *iwrap, FILE *file, const 
 	}
 }
 
-int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE *file)
+int mustach_file(const char *template, struct mustach_itf *itf, void *closure, int flags, FILE *file)
 {
 	int rc;
 	struct iwrap iwrap;
@@ -412,6 +424,7 @@ int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE 
 	iwrap.next = itf->next;
 	iwrap.leave = itf->leave;
 	iwrap.get = itf->get;
+	iwrap.flags = flags;
 
 	/* process */
 	rc = itf->start ? itf->start(closure) : 0;
@@ -422,7 +435,7 @@ int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE 
 	return rc;
 }
 
-int fdmustach(const char *template, struct mustach_itf *itf, void *closure, int fd)
+int mustach_fd(const char *template, struct mustach_itf *itf, void *closure, int flags, int fd)
 {
 	int rc;
 	FILE *file;
@@ -432,13 +445,13 @@ int fdmustach(const char *template, struct mustach_itf *itf, void *closure, int 
 		rc = MUSTACH_ERROR_SYSTEM;
 		errno = ENOMEM;
 	} else {
-		rc = fmustach(template, itf, closure, file);
+		rc = mustach_file(template, itf, closure, flags, file);
 		fclose(file);
 	}
 	return rc;
 }
 
-int mustach(const char *template, struct mustach_itf *itf, void *closure, char **result, size_t *size)
+int mustach_mem(const char *template, struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size)
 {
 	int rc;
 	FILE *file;
@@ -451,12 +464,27 @@ int mustach(const char *template, struct mustach_itf *itf, void *closure, char *
 	if (file == NULL)
 		rc = MUSTACH_ERROR_SYSTEM;
 	else {
-		rc = fmustach(template, itf, closure, file);
+		rc = mustach_file(template, itf, closure, flags, file);
 		if (rc < 0)
 			memfile_abort(file, result, size);
 		else
 			rc = memfile_close(file, result, size);
 	}
 	return rc;
+}
+
+int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE *file)
+{
+	return mustach_file(template, itf, closure, default_flags, file);
+}
+
+int fdmustach(const char *template, struct mustach_itf *itf, void *closure, int fd)
+{
+	return mustach_fd(template, itf, closure, default_flags, fd);
+}
+
+int mustach(const char *template, struct mustach_itf *itf, void *closure, char **result, size_t *size)
+{
+	return mustach_mem(template, itf, closure, default_flags, result, size);
 }
 

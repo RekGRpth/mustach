@@ -1,6 +1,5 @@
 /*
  Author: José Bollo <jobol@nonadev.net>
- Author: José Bollo <jose.bollo@iot.bzh>
 
  https://gitlab.com/jobol/mustach
 
@@ -132,7 +131,7 @@ int main(int ac, char **av)
 				mode = None;
 			else {
 				t = readfile(*av);
-				s = umustach_json_c(t, o, uwrite, NULL);
+				s = mustach_json_c_write(t, o, -1, uwrite, NULL);
 				if (s != 0)
 					fprintf(stderr, "Template error %d\n", s);
 				free(t);

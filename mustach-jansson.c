@@ -13,19 +13,18 @@
 
 #include "mustach.h"
 #include "mustach-wrap.h"
-#include "mustach-json-c.h"
+#include "mustach-jansson.h"
 
 struct expl {
-	struct json_object *root;
-	struct json_object *selection;
+	json_t *root;
+	json_t *selection;
 	int depth;
 	struct {
-		struct json_object *cont;
-		struct json_object *obj;
-		struct json_object_iterator iter;
-		struct json_object_iterator enditer;
+		json_t *cont;
+		json_t *obj;
+		void *iter;
 		int is_objiter;
-		int index, count;
+		size_t index, count;
 	} stack[MUSTACH_MAX_DEPTH];
 };
 
@@ -33,7 +32,7 @@ static int start(void *closure)
 {
 	struct expl *e = closure;
 	e->depth = 0;
-	e->selection = NULL;
+	e->selection = json_null();
 	e->stack[0].cont = NULL;
 	e->stack[0].obj = e->root;
 	e->stack[0].index = 0;
@@ -44,26 +43,34 @@ static int start(void *closure)
 static int compare(void *closure, const char *value)
 {
 	struct expl *e = closure;
-	struct json_object *o = e->selection;
+	json_t *o = e->selection;
 	double d;
 	int64_t i;
 
-	switch (json_object_get_type(o)) {
-	case json_type_double:
-		d = json_object_get_double(o) - atof(value);
+	switch (json_typeof(o)) {
+	case JSON_REAL:
+		d = json_number_value(o) - atof(value);
 		return d < 0 ? -1 : d > 0 ? 1 : 0;
-	case json_type_int:
-		i = json_object_get_int64(o) - (int64_t)atoll(value);
+	case JSON_INTEGER:
+		i = (int64_t)json_integer_value(o) - (int64_t)atoll(value);
 		return i < 0 ? -1 : i > 0 ? 1 : 0;
+	case JSON_STRING:
+		return strcmp(json_string_value(o), value);
+	case JSON_TRUE:
+		return strcmp("true", value);
+	case JSON_FALSE:
+		return strcmp("false", value);
+	case JSON_NULL:
+		return strcmp("null", value);
 	default:
-		return strcmp(json_object_get_string(o), value);
+		return 1;
 	}
 }
 
 static int sel(void *closure, const char *name)
 {
 	struct expl *e = closure;
-	struct json_object *o;
+	json_t *o;
 	int i, r;
 
 	if (name == NULL) {
@@ -71,12 +78,12 @@ static int sel(void *closure, const char *name)
 		r = 1;
 	} else {
 		i = e->depth;
-		while (i >= 0 && !json_object_object_get_ex(e->stack[i].obj, name, &o))
+		while (i >= 0 && !(o = json_object_get(e->stack[i].obj, name)))
 			i--;
 		if (i >= 0)
 			r = 1;
 		else {
-			o = NULL;
+			o = json_null();
 			r = 0;
 		}
 	}
@@ -87,10 +94,11 @@ static int sel(void *closure, const char *name)
 static int subsel(void *closure, const char *name)
 {
 	struct expl *e = closure;
-	struct json_object *o;
+	json_t *o;
 	int r;
 
-	r = json_object_object_get_ex(e->selection, name, &o);
+	o = json_object_get(e->selection, name);
+	r = o != NULL;
 	if (r)
 		e->selection = o;
 	return r;
@@ -99,7 +107,7 @@ static int subsel(void *closure, const char *name)
 static int enter(void *closure, int objiter)
 {
 	struct expl *e = closure;
-	struct json_object *o;
+	json_t *o;
 
 	if (++e->depth >= MUSTACH_MAX_DEPTH)
 		return MUSTACH_ERROR_TOO_DEEP;
@@ -107,24 +115,22 @@ static int enter(void *closure, int objiter)
 	o = e->selection;
 	e->stack[e->depth].is_objiter = 0;
 	if (objiter) {
-		if (!json_object_is_type(o, json_type_object))
+		if (!json_is_object(o))
 			goto not_entering;
-
-		e->stack[e->depth].iter = json_object_iter_begin(o);
-		e->stack[e->depth].enditer = json_object_iter_end(o);
-		if (json_object_iter_equal(&e->stack[e->depth].iter, &e->stack[e->depth].enditer))
+		e->stack[e->depth].iter = json_object_iter(o);
+		if (e->stack[e->depth].iter == NULL)
 			goto not_entering;
-		e->stack[e->depth].obj = json_object_iter_peek_value(&e->stack[e->depth].iter);
+		e->stack[e->depth].obj = json_object_iter_value(e->stack[e->depth].iter);
 		e->stack[e->depth].cont = o;
 		e->stack[e->depth].is_objiter = 1;
-	} else if (json_object_is_type(o, json_type_array)) {
-		e->stack[e->depth].count = json_object_array_length(o);
+	} else if (json_is_array(o)) {
+		e->stack[e->depth].count = json_array_size(o);
 		if (e->stack[e->depth].count == 0)
 			goto not_entering;
 		e->stack[e->depth].cont = o;
-		e->stack[e->depth].obj = json_object_array_get_idx(o, 0);
+		e->stack[e->depth].obj = json_array_get(o, 0);
 		e->stack[e->depth].index = 0;
-	} else if (json_object_is_type(o, json_type_object) || json_object_get_boolean(o)) {
+	} else if ((json_is_object(o) && json_object_size(0)) || !json_is_false(o)) {
 		e->stack[e->depth].count = 1;
 		e->stack[e->depth].cont = NULL;
 		e->stack[e->depth].obj = o;
@@ -146,10 +152,10 @@ static int next(void *closure)
 		return MUSTACH_ERROR_CLOSING;
 
 	if (e->stack[e->depth].is_objiter) {
-		json_object_iter_next(&e->stack[e->depth].iter);
-		if (json_object_iter_equal(&e->stack[e->depth].iter, &e->stack[e->depth].enditer))
+		e->stack[e->depth].iter = json_object_iter_next(e->stack[e->depth].cont, e->stack[e->depth].iter);
+		if (e->stack[e->depth].iter == NULL)
 			return 0;
-		e->stack[e->depth].obj = json_object_iter_peek_value(&e->stack[e->depth].iter);
+		e->stack[e->depth].obj = json_object_iter_value(e->stack[e->depth].iter);
 		return 1;
 	}
 
@@ -157,7 +163,7 @@ static int next(void *closure)
 	if (e->stack[e->depth].index >= e->stack[e->depth].count)
 		return 0;
 
-	e->stack[e->depth].obj = json_object_array_get_idx(e->stack[e->depth].cont, e->stack[e->depth].index);
+	e->stack[e->depth].obj = json_array_get(e->stack[e->depth].cont, e->stack[e->depth].index);
 	return 1;
 }
 
@@ -177,12 +183,18 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 	struct expl *e = closure;
 	const char *s;
 
-	if (key)
+	if (key) {
 		s = e->stack[e->depth].is_objiter
-			? json_object_iter_peek_name(&e->stack[e->depth].iter)
+			? json_object_iter_key(e->stack[e->depth].iter)
 			: "";
-	else
-		s = json_object_get_string(e->selection);
+	} else if (json_is_string(e->selection))
+		s = json_string_value(e->selection);
+	else {
+		s = json_dumps(e->selection, JSON_ENCODE_ANY);
+		if (s == NULL)
+			return MUSTACH_ERROR_SYSTEM;
+		sbuf->freecb = free;
+	}
 	sbuf->value = s;
 	return 1;
 }
@@ -199,59 +211,38 @@ static struct mustach_wrap_itf witf = {
 	.get = get
 };
 
-int mustach_json_c_file(const char *template, struct json_object *root, int flags, FILE *file)
+int mustach_jansson_file(const char *template, json_t *root, int flags, FILE *file)
 {
 	struct expl e;
 	e.root = root;
 	return mustach_wrap_file(template, &witf, &e, flags, file);
 }
 
-int mustach_json_c_fd(const char *template, struct json_object *root, int flags, int fd)
+int mustach_jansson_fd(const char *template, json_t *root, int flags, int fd)
 {
 	struct expl e;
 	e.root = root;
 	return mustach_wrap_fd(template, &witf, &e, flags, fd);
 }
 
-int mustach_json_c_mem(const char *template, struct json_object *root, int flags, char **result, size_t *size)
+int mustach_jansson_mem(const char *template, json_t *root, int flags, char **result, size_t *size)
 {
 	struct expl e;
 	e.root = root;
 	return mustach_wrap_mem(template, &witf, &e, flags, result, size);
 }
 
-int mustach_json_c_write(const char *template, struct json_object *root, int flags, mustach_write_cb_t *writecb, void *closure)
+int mustach_jansson_write(const char *template, json_t *root, int flags, mustach_write_cb_t *writecb, void *closure)
 {
 	struct expl e;
 	e.root = root;
 	return mustach_wrap_write(template, &witf, &e, flags, writecb, closure);
 }
 
-int mustach_json_c_emit(const char *template, struct json_object *root, int flags, mustach_emit_cb_t *emitcb, void *closure)
+int mustach_jansson_emit(const char *template, json_t *root, int flags, mustach_emit_cb_t *emitcb, void *closure)
 {
 	struct expl e;
 	e.root = root;
 	return mustach_wrap_emit(template, &witf, &e, flags, emitcb, closure);
 }
-
-int fmustach_json_c(const char *template, struct json_object *root, FILE *file)
-{
-	return mustach_json_c_file(template, root, -1, file);
-}
-
-int fdmustach_json_c(const char *template, struct json_object *root, int fd)
-{
-	return mustach_json_c_fd(template, root, -1, fd);
-}
-
-int mustach_json_c(const char *template, struct json_object *root, char **result, size_t *size)
-{
-	return mustach_json_c_mem(template, root, -1, result, size);
-}
-
-int umustach_json_c(const char *template, struct json_object *root, mustach_write_cb_t *writecb, void *closure)
-{
-	return mustach_json_c_write(template, root, -1, writecb, closure);
-}
-
 
