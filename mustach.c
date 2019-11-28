@@ -79,6 +79,13 @@ static int memfile_close(FILE *file, char **buffer, size_t *size)
 #else
 static FILE *memfile_open(char **buffer, size_t *size)
 {
+	/*
+	 * We can't provide *buffer and *size as open_memstream does but
+	 * at least clear them so the caller won't get bad data.
+	 */
+	*buffer = NULL;
+	*size = 0;
+
 	return tmpfile();
 }
 static void memfile_abort(FILE *file, char **buffer, size_t *size)
