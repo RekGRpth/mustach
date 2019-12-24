@@ -24,7 +24,9 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
-#include <alloca.h>
+#ifdef __sun
+# include <alloca.h>
+#endif
 
 #include "mustach.h"
 

@@ -21,7 +21,9 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <alloca.h>
+#ifdef __sun
+# include <alloca.h>
+#endif
 
 #include <json-c/json.h>
 
