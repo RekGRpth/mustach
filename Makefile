@@ -8,6 +8,11 @@ lib_OBJ  = mustach.o mustach-json-c.o
 tool_OBJ = mustach.o mustach-json-c.o mustach-tool.o
 HEADERS  = mustach.h mustach-json-c.h
 
+lib_LDFLAGS  += -shared
+ifeq ($(shell uname),Darwin)
+ lib_LDFLAGS += -install_name $(PREFIX)/lib/libmustach.so
+endif
+
 all: mustach libmustach.so
 
 install: mustach libmustach.so
@@ -27,7 +32,7 @@ mustach: $(tool_OBJ)
 	$(CC) $(LDFLAGS) -o mustach $(tool_OBJ) $(LDLIBS)
 
 libmustach.so: $(lib_OBJ)
-	$(CC) $(LDFLAGS) -shared -o libmustach.so $(lib_OBJ) $(LDLIBS)
+	$(CC) $(LDFLAGS) $(lib_LDFLAGS) -o libmustach.so $(lib_OBJ) $(LDLIBS)
 
 mustach.o:      mustach.h
 mustach-json.o: mustach.h mustach-json-c.h
