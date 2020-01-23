@@ -25,8 +25,6 @@
 # include <alloca.h>
 #endif
 
-#include <json-c/json.h>
-
 #include "mustach.h"
 #include "mustach-json-c.h"
 

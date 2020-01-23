@@ -20,7 +20,7 @@
 #ifndef _mustach_json_c_h_included_
 #define _mustach_json_c_h_included_
 
-struct json_object;
+#include <json-c/json.h>
 
 /**
  * fmustach_json_c - Renders the mustache 'template' in 'file' for 'root'.
