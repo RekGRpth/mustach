@@ -1,5 +1,4 @@
-Introduction to Mustach 0.99
-============================
+# Introduction to Mustach 0.99
 
 `mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache")
 template specification.
@@ -11,6 +10,27 @@ directly into your project and use it.
 
 Alternatively, make and meson files are provided for building `mustach` and 
 `libmustach.so` shared library.
+
+## Distributions offering mustach package
+
+### Alpine Linux
+
+```sh
+apk add mustach
+apk add mustach-lib
+apk add mustach-dev
+```
+
+### NetBSD
+
+```sh
+cd devel/mustach
+make
+```
+
+See http://pkgsrc.se/devel/mustach
+
+## Using Mustach from sources
 
 The file **mustach.h** is the main documentation. Look at it.
 
@@ -34,8 +54,7 @@ The tool **mustach** is build using `make`,  its usage is:
 
 It then outputs the result of applying the templates files to the JSON file.
 
-Portability
-===========
+### Portability
 
 Some system does not provide *open_memstream*. In that case, tell your
 prefered compiler to declare the preprocessor symbol **NO_OPEN_MEMSTREAM**.
@@ -43,8 +62,7 @@ Example:
 
 	gcc -DNO_OPEN_MEMSTREAM
 
-Integration
-===========
+### Integration
 
 The file **mustach.h** is the main documentation. Look at it.
 
@@ -58,13 +76,11 @@ If you intend to use specific escaping and/or specific output, the callbacks
 of the interface **mustach_itf** that you have to implement are:
 `enter`, `next`, `leave`, `get` and `emit`.
 
-Extensions
-==========
+### Extensions
 
 By default, the current implementation provides the following extensions:
 
-Explicit Substitution
----------------------
+#### Explicit Substitution
 
 This is a core extension implemented in file **mustach.c**.
 
@@ -74,8 +90,7 @@ This extension introduces the special character `:` to explicitly
 tell mustach to just substitute the value. So `:` becomes a new special
 character.
 
-Value Testing and Comparing
----------------------------
+#### Value Testing and Comparing
 
 This are a tool extension implemented in file **mustach-json-c.c**.
 
@@ -89,16 +104,14 @@ lesser, etc.. than a value. It allows to write `key>value`.
 It the comparator sign appears in the first column it is ignored
 as if it was escaped.
 
-Access to current value
------------------------
+#### Access to current value
 
 The value of the current field can be accessed using single dot like
 in `{{#key}}{{.}}{{/key}}` that applied to `{"key":3.14}` produces `3.14`
 and `{{#array}} {{.}}{{/array}}` applied to `{"array":[1,2]}` produces
 ` 1 2`.
 
-Iteration on objects
---------------------
+#### Iteration on objects
 
 Using the pattern `{{#X.*}}...{{/X.*}}` it is possible to iterate on
 fields of `X`. Example: `{{s.*}} {{*}}:{{.}}{{/s.*}}` applied on
@@ -106,8 +119,7 @@ fields of `X`. Example: `{{s.*}} {{*}}:{{.}}{{/s.*}}` applied on
 `{{*}}` is replaced by the iterated key and the single dot `{{.}}` is
 replaced by its value.
 
-Removing Extensions
--------------------
+### Removing Extensions
 
 When compiling mustach.c or mustach-json-c.c,
 extensions can be removed by defining macros
@@ -117,14 +129,14 @@ The possible macros are of 3 categories, the global,
 the mustach core specific and the mustach-json-c example
 of implementation specific.
 
-### Global macro
+#### Global macros
 
 - `NO_EXTENSION_FOR_MUSTACH`
 
   This macro disables any current or future
   extensions for the core or the example.
 
-### Macros for the core mustach engine (mustach.c)
+#### Macros for the core mustach engine (mustach.c)
 
 - `NO_COLON_EXTENSION_FOR_MUSTACH`
 
@@ -138,7 +150,7 @@ of implementation specific.
   Generate the error MUSTACH_ERROR_EMPTY_TAG automatically
   when an empty tag is encountered.
 
-### Macros for the implementation example (mustach-json-c.c)
+#### Macros for the implementation example (mustach-json-c.c)
 
 - `NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH`
 
@@ -200,4 +212,3 @@ of implementation specific.
   are searched in that order and the first file found is used
   as partial content. The macro `INCLUDE_PARTIAL_EXTENSION` can
   be use for changing the extension added.
-
