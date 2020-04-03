@@ -1,5 +1,8 @@
 DESTDIR ?=
 PREFIX  ?= /usr/local
+BINDIR  ?= $(PREFIX)/bin
+LIBDIR  ?= $(PREFIX)/lib
+INCLUDEDIR ?= $(PREFIX)/include
 SOVER = .0
 SOVEREV = .0.99
 
@@ -12,26 +15,26 @@ HEADERS  = mustach.h mustach-json-c.h
 
 lib_LDFLAGS  += -shared
 ifeq ($(shell uname),Darwin)
- lib_LDFLAGS += -install_name $(PREFIX)/lib/libmustach.so$(SOVEREV)
+ lib_LDFLAGS += -install_name $(LIBDIR)/libmustach.so$(SOVEREV)
 endif
 
 all: mustach libmustach.so$(SOVEREV)
 
 install: all
-	install -d $(DESTDIR)$(PREFIX)/bin
-	install -d $(DESTDIR)$(PREFIX)/lib
-	install -d $(DESTDIR)$(PREFIX)/include/mustach
-	install -m0755 mustach       $(DESTDIR)$(PREFIX)/bin/
-	install -m0644 $(HEADERS)    $(DESTDIR)$(PREFIX)/include/mustach
-	install -m0755 libmustach.so* $(DESTDIR)$(PREFIX)/lib/
-	ln -sf libmustach.so$(SOVEREV) $(DESTDIR)$(PREFIX)/lib/libmustach.so$(SOVER)
-	ln -sf libmustach.so$(SOVEREV) $(DESTDIR)$(PREFIX)/lib/libmustach.so
+	install -d $(DESTDIR)$(BINDIR)
+	install -d $(DESTDIR)$(LIBDIR)
+	install -d $(DESTDIR)$(INCLUDEDIR)/mustach
+	install -m0755 mustach       $(DESTDIR)$(BINDIR)/
+	install -m0644 $(HEADERS)    $(DESTDIR)$(INCLUDEDIR)/mustach
+	install -m0755 libmustach.so* $(DESTDIR)$(LIBDIR)/
+	ln -sf libmustach.so$(SOVEREV) $(DESTDIR)$(LIBDIR)/libmustach.so$(SOVER)
+	ln -sf libmustach.so$(SOVEREV) $(DESTDIR)$(LIBDIR)/libmustach.so
 
 
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/mustach
-	rm -f $(DESTDIR)$(PREFIX)/lib/libmustach.so*
-	rm -rf $(DESTDIR)$(PREFIX)/include/mustach
+	rm -f $(DESTDIR)$(BINDIR)/mustach
+	rm -f $(DESTDIR)$(LIBDIR)/libmustach.so*
+	rm -rf $(DESTDIR)$(INCLUDEDIR)/mustach
 
 mustach: $(tool_OBJ)
 	$(CC) $(LDFLAGS) -o mustach $(tool_OBJ) $(LDLIBS)
