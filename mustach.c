@@ -24,6 +24,9 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#ifdef _WIN32
+#include <malloc.h>
+#endif
 #ifdef __sun
 # include <alloca.h>
 #endif
@@ -414,7 +417,7 @@ int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE 
 		iwrap.partial = iwrap_partial;
 		iwrap.closure_partial = &iwrap;
 	}
-	iwrap.emit = itf->emit ?: iwrap_emit;
+	iwrap.emit = itf->emit ? itf->emit : iwrap_emit;
 	iwrap.enter = itf->enter;
 	iwrap.next = itf->next;
 	iwrap.leave = itf->leave;
