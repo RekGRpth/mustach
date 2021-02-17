@@ -30,6 +30,10 @@ make
 
 See http://pkgsrc.se/devel/mustach
 
+## Known projects using Mustash
+
+- [Integration with kore](https://github.com/cavalo-mORTO/kore_mustach)
+
 ## Using Mustach from sources
 
 The file **mustach.h** is the main documentation. Look at it.
