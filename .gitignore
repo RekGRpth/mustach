@@ -1,3 +1,10 @@
 mustach
 libmustach.so*
 *.o
+*.d
+*.gcda
+*.gcno
+*.html
+*.info
+*.1
+gcov-latest/

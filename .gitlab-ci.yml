@@ -1,13 +1,46 @@
-image: debian:experimental
+image: gcc:latest
+
+stages:
+  - build
+  - test
+  - coverage
+  - static-analysis
 
 before_script:
-  - apt-get update -qq && apt-get install -y -qq libjson-c-dev libjansson-dev gcc make valgrind
+  - apt-get update -qq
+  - apt-get install -y -qq clang-tools lcov libjansson-dev libjson-c-dev valgrind
 
 build:
   script: make
   artifacts:
     paths:
       - mustach
+
+gcov:
+  stage: coverage
+  script:
+    - CFLAGS='-Wall -Werror -O0 --coverage' LDFLAGS='-Wl,-z,noexecstack --coverage' make
+    - make test
+    - lcov --capture --directory src --output-file coverage.info
+    - genhtml coverage.info --output-directory gcov-latest
+  artifacts:
+    paths:
+      - gcov-latest
+
+scan-build:
+  stage: static-analysis
+  script:
+    - scan-build make
+  after_script:
+    - cp -R /tmp/scan-build-* scan-build-latest
+  artifacts:
+    paths:
+      - scan-build-latest
+
+flawfinder:
+  stage: static-analysis
+  script:
+    - flawfinder --error-level=5 .
 
 test:
   script: make test
