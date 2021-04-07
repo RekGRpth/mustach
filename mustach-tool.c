@@ -108,7 +108,7 @@ static char *readfile(const char *filename)
 int main(int ac, char **av)
 {
 	struct json_object *o;
-	char *t;
+	char *t, *f;
 	char *prog = *av;
 	int s;
 
@@ -117,10 +117,8 @@ int main(int ac, char **av)
 	if (*++av) {
 		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
 			help(prog);
-		if (av[0][0] == '-' && !av[0][1])
-			o = json_object_from_fd(0);
-		else
-			o = json_object_from_file(av[0]);
+		f = (av[0][0] == '-' && !av[0][1]) ? "/dev/stdin" : av[0];
+		o = json_object_from_file(f);
 #if JSON_C_VERSION_NUM >= 0x000D00
 		if (json_util_get_last_err() != NULL) {
 			fprintf(stderr, "Bad json: %s (file %s)\n", json_util_get_last_err(), av[0]);
@@ -156,7 +154,7 @@ int main(int ac, char **av)
 {
 	json_t *o;
 	json_error_t e;
-	char *t;
+	char *t, *f;
 	char *prog = *av;
 	int s;
 
@@ -165,10 +163,8 @@ int main(int ac, char **av)
 	if (*++av) {
 		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
 			help(prog);
-		if (av[0][0] == '-' && !av[0][1])
-			o = json_loadfd(0, JSON_DECODE_ANY, &e);
-		else
-			o = json_load_file(av[0], JSON_DECODE_ANY, &e);
+		f = (av[0][0] == '-' && !av[0][1]) ? "/dev/stdin" : av[0];
+		o = json_load_file(f, JSON_DECODE_ANY, &e);
 		if (o == NULL) {
 			fprintf(stderr, "Bad json: %s (file %s)\n", e.text, av[0]);
 			exit(1);
