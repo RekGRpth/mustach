@@ -3,12 +3,27 @@ PREFIX  ?= /usr/local
 BINDIR  ?= $(PREFIX)/bin
 LIBDIR  ?= $(PREFIX)/lib
 INCLUDEDIR ?= $(PREFIX)/include
-SOVER = .1
-SOVEREV = .1.00
+
+MAJOR = 1
+MINOR = 0
+REVIS = 0
+
+VERSION = $(MAJOR).$(MINOR).$(REVIS)
+SOVER = .$(MAJOR)
+SOVEREV = .$(MAJOR).$(MINOR)
+
+json_c_cflags := $(shell pkg-config --silence-errors --cflags json-c)
+json_c_libs := $(shell pkg-config --silence-errors --libs json-c)
+
+jansson_cflags := $(shell pkg-config --silence-errors --cflags jansson)
+jansson_libs := $(shell pkg-config --silence-errors --libs jansson)
+
+cjson_cflags := $(shell pkg-config --silence-errors --cflags libjson)
+cjson_libs := $(shell pkg-config --silence-errors --libs libjson)
 
 OBJS = mustach.o  mustach-cjson.o  mustach-jansson.o  mustach-json-c.o  mustach-tool.o  mustach-wrap.o
 #CFLAGS += -fPIC -Wall -Wextra
-CFLAGS += -fPIC -Wall -Wextra -g
+CFLAGS += -fPIC -Wall -Wextra -g -DVERSION=${VERSION}
 LDLIBS += -ljson-c
 #LDLIBS += -ljansson
 #LDLIBS += -lcjson

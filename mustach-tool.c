@@ -39,7 +39,11 @@ static const char *errors[] = {
 
 static void help(char *prog)
 {
-	printf("usage: %s json-file mustach-templates...\n", basename(prog));
+	char *name = basename(prog);
+#define STR(x) #x
+	printf("%s version %s\n", name, STR(VERSION));
+#undef STR
+	printf("usage: %s json-file mustach-templates...\n", name);
 	exit(0);
 }
 
