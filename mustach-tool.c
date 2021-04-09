@@ -16,9 +16,7 @@
 #include <string.h>
 #include <libgen.h>
 
-#define MUSTACH_TOOL_JSON_C  1
-#define MUSTACH_TOOL_JANSSON 2
-#define MUSTACH_TOOL_CJSON   3
+#include "mustach-wrap.h"
 
 static const size_t BLOCKSIZE = 8192;
 
@@ -36,6 +34,10 @@ static const char *errors[] = {
 	"item not found",
 	"partial not found"
 };
+
+static const char *errmsg = 0;
+static int flags = 0;
+static FILE *output = 0;
 
 static void help(char *prog)
 {
@@ -105,128 +107,124 @@ static char *readfile(const char *filename)
 	return result;
 }
 
-#if TOOL == MUSTACH_TOOL_JSON_C
-
-#include "mustach-json-c.h"
+static int load_json(const char *filename);
+static int process(const char *content);
+static void close_json();
 
 int main(int ac, char **av)
 {
-	struct json_object *o;
 	char *t, *f;
 	char *prog = *av;
 	int s;
 
 	(void)ac; /* unused */
+	flags = Mustach_With_ALL;
+	output = stdout;
 
 	if (*++av) {
 		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
 			help(prog);
 		f = (av[0][0] == '-' && !av[0][1]) ? "/dev/stdin" : av[0];
-		o = json_object_from_file(f);
-#if JSON_C_VERSION_NUM >= 0x000D00
-		if (json_util_get_last_err() != NULL) {
-			fprintf(stderr, "Bad json: %s (file %s)\n", json_util_get_last_err(), av[0]);
-			exit(1);
-		}
-		else
-#endif
-		if (o == NULL) {
-			fprintf(stderr, "Aborted: null json (file %s)\n", av[0]);
+		s = load_json(f);
+		if (s < 0) {
+			fprintf(stderr, "Can't load json file %s\n", av[0]);
+			if(errmsg)
+				fprintf(stderr, "   reason: %s\n", errmsg);
 			exit(1);
 		}
 		while(*++av) {
 			t = readfile(*av);
-			s = mustach_json_c_file(t, o, Mustach_With_ALL, stdout);
-			if (s != 0) {
+			s = process(t);
+			free(t);
+			if (s != MUSTACH_OK) {
 				s = -s;
 				if (s < 1 || s >= (int)(sizeof errors / sizeof * errors))
 					s = 0;
 				fprintf(stderr, "Template error %s (file %s)\n", errors[s], *av);
 			}
-			free(t);
 		}
-		json_object_put(o);
+		close_json();
 	}
 	return 0;
+}
+
+#define MUSTACH_TOOL_JSON_C  1
+#define MUSTACH_TOOL_JANSSON 2
+#define MUSTACH_TOOL_CJSON   3
+
+#if TOOL == MUSTACH_TOOL_JSON_C
+
+#include "mustach-json-c.h"
+
+static struct json_object *o;
+static int load_json(const char *filename)
+{
+	o = json_object_from_file(filename);
+#if JSON_C_VERSION_NUM >= 0x000D00
+	errmsg = json_util_get_last_err();
+	if (errmsg != NULL)
+		return -1;
+#endif
+	if (o == NULL) {
+		errmsg = "null json";
+		return -1;
+	}
+	return 0;
+}
+static int process(const char *content)
+{
+	return mustach_json_c_file(content, o, flags, output);
+}
+static void close_json()
+{
+	json_object_put(o);
 }
 
 #elif TOOL == MUSTACH_TOOL_JANSSON
 
 #include "mustach-jansson.h"
 
-int main(int ac, char **av)
+static json_t *o;
+static json_error_t e;
+static int load_json(const char *filename)
 {
-	json_t *o;
-	json_error_t e;
-	char *t, *f;
-	char *prog = *av;
-	int s;
-
-	(void)ac; /* unused */
-
-	if (*++av) {
-		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
-			help(prog);
-		f = (av[0][0] == '-' && !av[0][1]) ? "/dev/stdin" : av[0];
-		o = json_load_file(f, JSON_DECODE_ANY, &e);
-		if (o == NULL) {
-			fprintf(stderr, "Bad json: %s (file %s)\n", e.text, av[0]);
-			exit(1);
-		}
-		while(*++av) {
-			t = readfile(*av);
-			s = mustach_jansson_file(t, o, Mustach_With_ALL, stdout);
-			if (s != 0) {
-				s = -s;
-				if (s < 1 || s >= (int)(sizeof errors / sizeof * errors))
-					s = 0;
-				fprintf(stderr, "Template error %s (file %s)\n", errors[s], *av);
-			}
-			free(t);
-		}
-		json_decref(o);
+	o = json_load_file(filename, JSON_DECODE_ANY, &e);
+	if (o == NULL) {
+		errmsg = e.text;
+		return -1;
 	}
 	return 0;
+}
+static int process(const char *content)
+{
+	return mustach_jansson_file(content, o, flags, output);
+}
+static void close_json()
+{
+	json_decref(o);
 }
 
 #elif TOOL == MUSTACH_TOOL_CJSON
 
 #include "mustach-cjson.h"
 
-int main(int ac, char **av)
+static cJSON *o;
+static int load_json(const char *filename)
 {
-	cJSON *o;
-	char *t, *f;
-	char *prog = *av;
-	int s;
+	char *t;
 
-	(void)ac; /* unused */
-
-	if (*++av) {
-		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
-			help(prog);
-		f = (av[0][0] == '-' && !av[0][1]) ? "/dev/stdin" : av[0];
-		t = readfile(f);
-		o = f ? cJSON_Parse(t) : NULL;
-		free(t);
-		if (o == NULL) {
-			fprintf(stderr, "Can't Load JSON file %s\n", f);
-			exit(1);
-		}
-		while(*++av) {
-			t = readfile(*av);
-			s = mustach_cJSON_file(t, o, Mustach_With_ALL, stdout);
-			if (s != 0) {
-				s = -s;
-				if (s < 1 || s >= (int)(sizeof errors / sizeof * errors))
-					s = 0;
-				fprintf(stderr, "Template error %s (file %s)\n", errors[s], *av);
-			}
-			free(t);
-		}
-		cJSON_Delete(o);
-	}
-	return 0;
+	t = readfile(filename);
+	o = t ? cJSON_Parse(t) : NULL;
+	free(t);
+	return -!o;
+}
+static int process(const char *content)
+{
+	return mustach_cJSON_file(content, o, flags, output);
+}
+static void close_json()
+{
+	cJSON_Delete(o);
 }
 
 #else
