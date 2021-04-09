@@ -17,8 +17,8 @@
 #include <libgen.h>
 
 #define MUSTACH_TOOL_JSON_C  1
-#define MUSTACH_TOOL_JANSSON 0
-#define MUSTACH_TOOL_CJSON   0
+#define MUSTACH_TOOL_JANSSON 2
+#define MUSTACH_TOOL_CJSON   3
 
 static const size_t BLOCKSIZE = 8192;
 
@@ -105,7 +105,7 @@ static char *readfile(const char *filename)
 	return result;
 }
 
-#if MUSTACH_TOOL_JSON_C
+#if TOOL == MUSTACH_TOOL_JSON_C
 
 #include "mustach-json-c.h"
 
@@ -150,7 +150,7 @@ int main(int ac, char **av)
 	return 0;
 }
 
-#elif MUSTACH_TOOL_JANSSON
+#elif TOOL == MUSTACH_TOOL_JANSSON
 
 #include "mustach-jansson.h"
 
@@ -189,7 +189,7 @@ int main(int ac, char **av)
 	return 0;
 }
 
-#elif MUSTACH_TOOL_CJSON
+#elif TOOL == MUSTACH_TOOL_CJSON
 
 #include "mustach-cjson.h"
 
