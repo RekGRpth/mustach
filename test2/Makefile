@@ -1,6 +1,6 @@
 .PHONY: test clean
 
-test: ../mustach
+test:
 	@echo starting test
 	@valgrind ../mustach json must > resu.last 2> vg.last
 	@sed -i 's:^==[0-9]*== ::' vg.last

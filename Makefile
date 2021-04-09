@@ -96,28 +96,27 @@ ifndef mode
  mode := single
 endif
 
-# initial settings
-$(info jsonc   = ${jsonc})
-$(info jansson = ${jansson})
-$(info cjson   = ${cjson})
-$(info mode    = ${mode})
-
 # compute targets
-ALL :=
-ifdef TOOLOBJS
- ALL += mustach
-endif
+MUSTACH := $(if $(TOOLOBJS),mustach)
+ALL := $(MUSTACH)
 ifeq (${mode},split)
  ALL += ${SPLITLIB}
 else ifeq (${mode},single)
  ALL += libmustach.so$(SOVEREV)
 else ifeq (${mode},all)
  ALL += libmustach.so$(SOVEREV) ${SPLITLIB}
-else
+else ifneq (${mode},nolib)
  $(error Unknown mode $(mode))
 endif
 
+.PHONY: all
 all: ${ALL}
+
+# display target
+$(info jsonc   = ${jsonc})
+$(info jansson = ${jansson})
+$(info cjson   = ${cjson})
+$(info mode    = ${mode})
 
 # settings
 
@@ -173,6 +172,7 @@ mustach-jansson.o: mustach-jansson.c mustach.h mustach-wrap.h mustach-jansson.h
 
 
 # installing
+.PHONY: install
 install: all
 	install -d $(DESTDIR)$(BINDIR)
 	install -d $(DESTDIR)$(LIBDIR)
@@ -186,13 +186,15 @@ install: all
 	done
 
 # deinstalling
+.PHONY: uninstall
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/mustach
 	rm -f $(DESTDIR)$(LIBDIR)/libmustach*.so*
 	rm -rf $(DESTDIR)$(INCLUDEDIR)/mustach
 
 # testing
-test: mustach
+.PHONY: test
+test: $(MUSTACH)
 	@$(MAKE) -C test1 test
 	@$(MAKE) -C test2 test
 	@$(MAKE) -C test3 test
@@ -201,6 +203,7 @@ test: mustach
 	@$(MAKE) -C test6 test
 
 #cleaning
+.PHONY: clean
 clean:
 	rm -f mustach libmustach*.so* *.o
 	rm -rf *.gcno *.gcda coverage.info gcov-latest
@@ -211,4 +214,3 @@ clean:
 	@$(MAKE) -C test5 clean
 	@$(MAKE) -C test6 clean
 
-.PHONY: test clean install uninstall
