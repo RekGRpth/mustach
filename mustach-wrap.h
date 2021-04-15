@@ -13,7 +13,7 @@
  * mustach-wrap is intended to make integration of JSON
  * libraries easier by wrapping mustach extensions in a
  * single place.
- * 
+ *
  * As before, using mustach and only mustach is possible
  * (by using only mustach.h) but does not implement high
  * level features coming with extensions implemented by
@@ -59,8 +59,7 @@ typedef int mustach_emit_cb_t(void *closure, const char *buffer, size_t size, in
 #define Mustach_With_JsonPointer  32
 #define Mustach_With_ObjectIter   64
 #define Mustach_With_IncPartial   128
-#define Mustach_With_ValEscFirst  256
-#define Mustach_With_ALL          -1
+#define Mustach_With_EscFirstCmp  256
 
 /**
  * mustach_wrap_itf - high level wrap of mustach - interface for callbacks

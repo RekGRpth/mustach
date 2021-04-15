@@ -5,7 +5,7 @@ template specification.
 
 The main site for `mustach` is on [gitlab](https://gitlab.com/jobol/mustach).
 
-The rough way to use mustach is to copy the files **mustach.h** and **mustach.c**
+The simpliest way to use mustach is to copy the files **mustach.h** and **mustach.c**
 directly into your project and use it.
 
 If you are using one of the JSON libraries listed below, you can get extended feature
@@ -16,8 +16,10 @@ by also including **mustach-wrap.h**, **mustach-wrap.c**, **mustach-XXX.h** and
 - [jansson](http://www.digip.org/jansson/): use **XXX** = **jansson**
 - [cJSON](https://github.com/DaveGamble/cJSON): use **XXX** = **cjson**
 
-Alternatively, make and meson files are provided for building `mustach` and 
+Alternatively, make and meson files are provided for building `mustach` and
 `libmustach.so` shared library.
+
+Since version 1.0.0, the makefile allows
 
 ## Distributions offering mustach package
 
@@ -53,15 +55,25 @@ The current source files are:
 
 - **mustach.c** core implementation of mustache in C
 - **mustach.h** header file for core definitions
+- **mustach-wrap.c** generic wrapper of mustach for easier integration
+- **mustach-wrap.h** header file for using mustach-wrap
 - **mustach-json-c.c** tiny json wrapper of mustach using [json-c](https://github.com/json-c/json-c)
-- **mustach-json-c.h** header file for using the tiny JSON wrapper
-- **mustach-tool.c** simple tool for applying template files to a JSON file
+- **mustach-json-c.h** header file for using the tiny json-c wrapper
+- **mustach-cjson.c** tiny json wrapper of mustach using [cJSON](https://github.com/DaveGamble/cJSON)
+- **mustach-cjson.h** header file for using the tiny cJSON wrapper
+- **mustach-jansson.c** tiny json wrapper of mustach using [jansson](https://www.digip.org/jansson/)
+- **mustach-jansson.h** header file for using the tiny jansson wrapper
+- **mustach-tool.c** simple tool for applying template files to one JSON file
 
-The file **mustach-json-c.c** is the main example of use of **mustach** core
-and it is also a practical implementation that can be used. It uses the library
-json-c. (NOTE for Mac OS: available through homebrew).
+The file **mustach-json-c.c** is the historical example of use of **mustach** and
+**mustach-wrap** core and it is also a practical implementation that can be used.
+It uses the library json-c. (NOTE for Mac OS: available through homebrew).
 
-HELP REQUESTED TO GIVE EXAMPLE BASED ON OTHER LIBRARIES (ex: janson, ...).
+Since version 1.0, the project also provide integration of other JSON libraries:
+**cJSON** and **jansson**.
+
+*If you integrate a new library with* **mustach**, *your contribution will be
+welcome here*.
 
 The tool **mustach** is build using `make`,  its usage is:
 
@@ -75,11 +87,11 @@ Some system does not provide *open_memstream*. In that case, tell your
 prefered compiler to declare the preprocessor symbol **NO_OPEN_MEMSTREAM**.
 Example:
 
-	gcc -DNO_OPEN_MEMSTREAM
+	CFLAGS=-DNO_OPEN_MEMSTREAM make
 
 ### Integration
 
-The file **mustach.h** is the main documentation. Look at it.
+The files **mustach.h** and **mustach-wrap.h** are the main documentation. Look at it.
 
 The file **mustach-json-c.c** provides a good example of integration.
 
@@ -91,139 +103,196 @@ If you intend to use specific escaping and/or specific output, the callbacks
 of the interface **mustach_itf** that you have to implement are:
 `enter`, `next`, `leave`, `get` and `emit`.
 
-### Extensions
+### Compilation Using Make
 
-By default, the current implementation provides the following extensions:
+Building and installing can be done using make.
 
-#### Explicit Substitution
+Example:
 
-This is a core extension implemented in file **mustach.c**.
+    $ make tool=jsonc mode=single PREFIX=/usr DESTDIR=$HOME/.local install
+
+The makefile knows following switches (\*: default):
+
+     Switch name  | Values  | Description
+    --------------+---------+-----------------------------------------------
+     jsonc        | (unset) | Auto detection of json-c
+                  | no      | Don't compile for json-c
+                  | yes     | Compile for json-c that must exist
+    --------------+---------+-----------------------------------------------
+     cjson        | (unset) | Auto detection of cJSON
+                  | no      | Don't compile for cJSON
+                  | yes     | Compile for cJSON that must exist
+    --------------+---------+-----------------------------------------------
+     jansson      | (unset) | Auto detection of jansson
+                  | no      | Don't compile for jansson
+                  | yes     | Compile for jansson that must exist
+    --------------+---------+-----------------------------------------------
+     tool         | (unset) | Auto detection
+                  | cjson   | Use cjson library
+                  | jsonc   | Use jsonc library
+                  | jansson | Use jansson library
+                  | none    | Don't compile the tool
+    --------------+---------+----------------------------------------------
+     libs         | (unset) | Like 'all'
+                  | all     | Like 'single' AND 'split'
+                  | single  | Only libmustach.so
+                  | split   | All the possible libmustach-XXX.so ...
+                  | none    | No library is produced
+
+The libraries that can be produced are:
+
+     Library name       | Content
+    --------------------+--------------------------------------------------------
+     libmustach-core    | mustach.c mustach-wrap.c
+     libmustach-cjson   | mustach.c mustach-wrap.c mustach-cjson.c
+     libmustach-jsonc   | mustach.c mustach-wrap.c mustach-json-c.c
+     libmustach-jansson | mustach.c mustach-wrap.c mustach-jansson.c
+     libmustach         | mustach.c mustach-wrap.c mustach-{cjson,json-c,jansson}.c
+
+There is no dependencies of a library to an other. This is intended and doesn't
+hurt today because the code is small.
+
+## Extensions
+
+The current implementation provides extensions to specifications of **mustache**.
+This extensions can be activated or deactivated using flags.
+
+Here is the summary.
+
+     Flag name                | Description
+    --------------------------+------------------------------------------------
+     Mustach_With_Colon       | Explicit tag substition with colon
+     Mustach_With_EmptyTag    | Empty Tag Allow
+    --------------------------+------------------------------------------------
+     Mustach_With_SingleDot   | Access To Current Value
+     Mustach_With_Equal       | Value Testing Equality
+     Mustach_With_Compare     | Value Comparing
+     Mustach_With_JsonPointer | Interpret JSON Pointers
+     Mustach_With_ObjectIter  | Iteration On Objects
+     Mustach_With_IncPartial  | Partials Include Files
+     Mustach_With_EscFirstCmp | Escape First Compare
+    --------------------------+------------------------------------------------
+     Mustach_With_ALL         | Activate all extensions (even future!)
+
+For the details, see below.
+
+### Explicit Tag Substitution With Colon
 
 In somecases the name of the key used for substition begins with a
 character reserved for mustach: one of `#`, `^`, `/`, `&`, `{`, `>` and `=`.
+
 This extension introduces the special character `:` to explicitly
 tell mustach to just substitute the value. So `:` becomes a new special
 character.
 
-#### Value Testing and Comparing
+This is a core extension implemented in file **mustach.c**.
 
-This are a tool extension implemented in file **mustach-json-c.c**.
+### Empty Tag Allowed
 
-These extensions allows you to test the value of the selected key.
-They allow to write `key=value` (matching test) or `key=!value`
+When an empty tag is found, instead of automatically raising the error
+MUSTACH\_ERROR\_EMPTY\_TAG pass it.
+
+This is a core extension implemented in file **mustach.c**.
+
+### Access To Current Value
+
+With this extension, the value of the current field can be accessed
+using single dot.
+
+Examples:
+
+- `{{#key}}{{.}}{{/key}}` applied to `{"key":3.14}` produces `3.14`
+- `{{#array}} {{.}}{{/array}}` applied to `{"array":[1,2]}` produces ` 1 2`.
+
+This is a wrap extension implemented in file **mustach-wrap.c**.
+
+### Value Testing Equality
+
+This extension allows you to test the value of the selected key.
+It allows to write `key=value` (matching test) or `key=!value`
 (not matching test) in any query.
 
-The specific comparison extension also allows to compare if greater,
-lesser, etc.. than a value. It allows to write `key>value`.
+This is a wrap extension implemented in file **mustach-wrap.c**.
+
+### Value Comparing
+
+These extension extends the extension for testing equality to also
+compare values if greater or lesser.
+Its allows to write `key>value` (greater), `key>=value` (greater or equal),
+`key<value` (lesser) and `key<=value` (lesser or equal).
 
 It the comparator sign appears in the first column it is ignored
 as if it was escaped.
 
-#### Access to current value
+This is a wrap extension implemented in file **mustach-wrap.c**.
 
-The value of the current field can be accessed using single dot like
-in `{{#key}}{{.}}{{/key}}` that applied to `{"key":3.14}` produces `3.14`
-and `{{#array}} {{.}}{{/array}}` applied to `{"array":[1,2]}` produces
-` 1 2`.
+### Interpret JSON Pointers
 
-#### Iteration on objects
+This extension allows to use JSON pointers as defined in IETF RFC 6901.
+If active, any key starting with "/" is a JSON pointer.
+This implies to use the colon to introduce JSON keys.
 
-Using the pattern `{{#X.*}}...{{/X.*}}` it is possible to iterate on
-fields of `X`. Example: `{{s.*}} {{*}}:{{.}}{{/s.*}}` applied on
-`{"s":{"a":1,"b":true}}` produces ` a:1 b:true`. Here the single star
-`{{*}}` is replaced by the iterated key and the single dot `{{.}}` is
-replaced by its value.
+A special escaping is used for `=`, `<`, `>` signs when
+values comparisons are enabled: `~=` gives `=` in the key.
 
-### Removing Extensions
+This is a wrap extension implemented in file **mustach-wrap.c**.
 
-When compiling mustach.c or mustach-json-c.c,
-extensions can be removed by defining macros
-using option -D.
+### Iteration On Objects
 
-The possible macros are of 3 categories, the global,
-the mustach core specific and the mustach-json-c example
-of implementation specific.
+With this extension, using the pattern `{{#X.*}}...{{/X.*}}`
+allows to iterate on fields of `X`.
 
-#### Global macros
+Example:
 
-- `NO_EXTENSION_FOR_MUSTACH`
+- `{{s.*}} {{*}}:{{.}}{{/s.*}}` applied on `{"s":{"a":1,"b":true}}` produces ` a:1 b:true`
 
-  This macro disables any current or future
-  extensions for the core or the example.
+Here the single star `{{*}}` is replaced by the iterated key
+and the single dot `{{.}}` is replaced by its value.
 
-#### Macros for the core mustach engine (mustach.c)
+This is a wrap extension implemented in file **mustach-wrap.c**.
 
-- `NO_COLON_EXTENSION_FOR_MUSTACH`
+### Partials Include Files
 
-  This macro remove the ability to use colon (:)
-  as explicit command for variable substituion.
-  This extension allows to have name starting
-  with one of the mustach character `:#^/&{=>`
+This extension allows including file with partial pattern like `{{> name}}`.
 
-- `NO_ALLOW_EMPTY_TAG`
+By default if a such pattern is found, **mustach** search
+for `name` in the current json context.
 
-  Generate the error MUSTACH_ERROR_EMPTY_TAG automatically
-  when an empty tag is encountered.
+When the extension is active, if the value is not found
+in the json context, the files `name` and `name.mustache`
+are searched in that order and the first file found is used
+as partial substitution content.
 
-#### Macros for the implementation example (mustach-json-c.c)
+This is a wrap extension implemented in file **mustach-wrap.c**.
 
-- `NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH`
+### Escape First Compare
 
-  This macro allows the program to check whether
-  the actual value is equal to an expected value.
-  This is useful in `{{#key=val}}` or `{{^key=val}}`
-  with the corresponding `{{/key=val}}`.
-  It can also be used in `{{key=val}}` but this
-  doesn't seem to be useful.
+This extension automatically escapes comparisons appears as
+first characters.
 
-- `NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH`
+This is a wrap extension implemented in file **mustach-wrap.c**.
 
-  This macro allows the program to compare the actual
-  value with an expected value. The comparison operators
-  are `=`, `>`, `<`, `>=`, `<=`. The meaning of the
-  comparison numeric or alphabetic depends on the type
-  of the inspected value. Also the result of the comparison
-  can be inverted if the value starts with `!`.
-  Example of use: `{{key>=val}}`, or `{{#key>=val}}` and
-  `{{^key>=val}}` with their matching `{{/key>=val}}`.
+## Difference with version 0.99 and previous
 
-- `NO_USE_VALUE_ESCAPE_FIRST_EXTENSION_FOR_MUSTACH`
+### Extensions
 
-  This macro fordids automatic escaping of comparison
-  sign appearing at first column.
+The extensions can no more be removed at compile time, use
+flags to select your required extension on need.
 
-- `NO_JSON_POINTER_EXTENSION_FOR_MUSTACH`
+### Name of functions
 
-  This macro removes the possible use of JSON pointers.
-  JSON pointers are defined in IETF RFC 6901.
-  If not set, any key starting with "/" is a JSON pointer.
-  This implies to use the colon to introduce keys.
-  So `NO_COLON_EXTENSION_FOR_MUSTACH` implies
-  `NO_JSON_POINTER_EXTENSION_FOR_MUSTACH`.
-  A special escaping is used for `=`, `<`, `>` signs when
-  values comparisons are enabled: `~=` gives `=` in the key.
+Names of functions were improved. Old names remain but are obsolete
+and legacy. Their removal in far future versions is possible.
 
-- `NO_OBJECT_ITERATION_FOR_MUSTACH`
+The table below summarize the changes.
 
-  Disable the object iteration extension. That extension allows
-  to iterate over the keys of an object. The iteration on object
-  is selected by using the selector `{{#key.*}}`. In the context
-  of iterating over object keys, the single key `{{*}}` returns the
-  key and `{{.}}` returns the value.
+     legacy name      | name since version 1.0.0
+    ------------------+-----------------------
+     fmustach         | mustach_file
+     fdmustach        | mustach_fd
+     mustach          | mustach_mem
+     fmustach_json_c  | mustach_json_c_file
+     fdmustach_json_c | mustach_json_c_fd
+     mustach_json_c   | mustach_json_c_mem
+     mustach_json_c   | mustach_json_c_write
 
-- `NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH`
-
-  Disable access to current object value using single dot
-  like in `{{.}}`.
-
-- `NO_INCLUDE_PARTIAL_FALLBACK`
-
-  Disable include of file by partial pattern like `{{> name}}`.
-  By default if a such pattern is found, **mustach** search
-  for `name` in the current json context. This what is done
-  historically and when `NO_INCLUDE_PARTIAL_FALLBACK` is defined.
-  When `NO_INCLUDE_PARTIAL_FALLBACK` is defined, if the value is
-  found in the json context, the files `name` and `name.mustache`
-  are searched in that order and the first file found is used
-  as partial content. The macro `INCLUDE_PARTIAL_EXTENSION` can
-  be use for changing the extension added.

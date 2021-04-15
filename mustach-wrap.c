@@ -21,59 +21,8 @@
 #include "mustach.h"
 #include "mustach-wrap.h"
 
-#if defined(NO_EXTENSION_FOR_MUSTACH)
-# undef  NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
-# define NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH
-# undef  NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
-# define NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
-# undef  NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH
-# define NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH
-# undef  NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
-# define NO_JSON_POINTER_EXTENSION_FOR_MUSTACH
-# undef  NO_OBJECT_ITERATION_FOR_MUSTACH
-# define NO_OBJECT_ITERATION_FOR_MUSTACH
-# undef  NO_INCLUDE_PARTIAL_FALLBACK
-# define NO_INCLUDE_PARTIAL_FALLBACK
-# undef  NO_USE_VALUE_ESCAPE_FIRST_EXTENSION_FOR_MUSTACH
-# define NO_USE_VALUE_ESCAPE_FIRST_EXTENSION_FOR_MUSTACH
-#endif
-
-#if !defined(NO_INCLUDE_PARTIAL_FALLBACK) \
-  &&  !defined(INCLUDE_PARTIAL_EXTENSION)
+#if !defined(INCLUDE_PARTIAL_EXTENSION)
 # define INCLUDE_PARTIAL_EXTENSION ".mustache"
-#endif
-
-#if !defined(NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH)
-# undef NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH
-#endif
-
-#if defined(NO_SINGLE_DOT_EXTENSION_FOR_MUSTACH)
-# undef  Mustach_With_SingleDot
-# define Mustach_With_SingleDot    0
-#endif
-#if defined(NO_EQUAL_VALUE_EXTENSION_FOR_MUSTACH)
-# undef  Mustach_With_Equal
-# define Mustach_With_Equal        0
-#endif
-#if defined(NO_COMPARE_VALUE_EXTENSION_FOR_MUSTACH)
-# undef  Mustach_With_Compare
-# define Mustach_With_Compare      0
-#endif
-#if defined(NO_JSON_POINTER_EXTENSION_FOR_MUSTACH)
-# undef  Mustach_With_JsonPointer
-# define Mustach_With_JsonPointer  0
-#endif
-#if defined(NO_OBJECT_ITERATION_FOR_MUSTACH)
-# undef  Mustach_With_ObjectIter
-# define Mustach_With_ObjectIter   0
-#endif
-#if defined(NO_INCLUDE_PARTIAL_FALLBACK)
-# undef  Mustach_With_IncPartial
-# define Mustach_With_IncPartial   0
-#endif
-#if defined(NO_USE_VALUE_ESCAPE_FIRST_EXTENSION_FOR_MUSTACH)
-# undef  Mustach_With_ValEscFirst
-# define Mustach_With_ValEscFirst  0
 #endif
 
 /* internal structure for wrapping */
@@ -127,7 +76,7 @@ static char *keyval(char *head, int sflags, enum comp *comp)
 	k = C_no;
 	w = head;
 	car = *head;
-	escaped = (sflags & Mustach_With_ValEscFirst) && (getcomp(head, sflags) != C_no);
+	escaped = (sflags & Mustach_With_EscFirstCmp) && (getcomp(head, sflags) != C_no);
 	while (car && (escaped || (k = getcomp(head, sflags)) == C_no)) {
 		if (escaped)
 			escaped = 0;

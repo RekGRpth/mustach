@@ -15,6 +15,7 @@ build:
   artifacts:
     paths:
       - mustach
+      - libmustach*.so*
 
 gcov:
   stage: coverage
@@ -43,5 +44,7 @@ flawfinder:
     - flawfinder --error-level=5 .
 
 test:
-  script: make test
+  script:
+    - make -B tool=jsonc libs=none
+    - make test
 

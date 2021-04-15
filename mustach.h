@@ -31,8 +31,9 @@ struct mustach_sbuf; /* see below */
 /**
  * Flags specific to mustach core
  */
-#define Mustach_With_Colon           1
-#define Mustach_With_EmptyTag        2
+#define Mustach_With_ALL          -1
+#define Mustach_With_Colon         1
+#define Mustach_With_EmptyTag      2
 
 /*
  * Definition of error codes returned by mustach
@@ -238,6 +239,8 @@ extern int mustach_fd(const char *template, struct mustach_itf *itf, void *closu
 extern int mustach_mem(const char *template, struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size);
 
 /**
+ * OBSOLETE use mustach_file
+ *
  * fmustach - Renders the mustache 'template' in 'file' for 'itf' and 'closure'.
  *
  * @template: the template string to instanciate
@@ -251,6 +254,8 @@ extern int mustach_mem(const char *template, struct mustach_itf *itf, void *clos
 extern int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE *file);
 
 /**
+ * OBSOLETE use mustach_fd
+ *
  * fdmustach - Renders the mustache 'template' in 'fd' for 'itf' and 'closure'.
  *
  * @template: the template string to instanciate
@@ -264,6 +269,8 @@ extern int fmustach(const char *template, struct mustach_itf *itf, void *closure
 extern int fdmustach(const char *template, struct mustach_itf *itf, void *closure, int fd);
 
 /**
+ * OBSOLETE use mustach_mem
+ *
  * mustach - Renders the mustache 'template' in 'result' for 'itf' and 'closure'.
  *
  * @template: the template string to instanciate

@@ -22,25 +22,6 @@
 
 #include "mustach.h"
 
-#if defined(NO_EXTENSION_FOR_MUSTACH)
-# undef  NO_COLON_EXTENSION_FOR_MUSTACH
-# define NO_COLON_EXTENSION_FOR_MUSTACH
-# undef  NO_ALLOW_EMPTY_TAG
-# define NO_ALLOW_EMPTY_TAG
-#endif
-
-#if defined(NO_COLON_EXTENSION_FOR_MUSTACH)
-# undef Mustach_With_Colon
-# define Mustach_With_Colon 0
-#endif
-
-#if defined(NO_ALLOW_EMPTY_TAG)
-# undef Mustach_With_EmptyTag
-# define Mustach_With_EmptyTag 0
-#endif
-
-#define default_flags (Mustach_With_Colon | Mustach_With_EmptyTag)
-
 struct iwrap {
 	int (*emit)(void *closure, const char *buffer, size_t size, int escape, FILE *file);
 	void *closure; /* closure for: enter, next, leave, emit, get */
@@ -265,6 +246,10 @@ static int process(const char *template, struct iwrap *iwrap, FILE *file, const 
 		len = (size_t)(term - beg);
 		c = *beg;
 		switch(c) {
+		case ':':
+			if (iwrap->flags & Mustach_With_Colon)
+				goto exclude_first;
+			goto get_name;
 		case '!':
 		case '=':
 			break;
@@ -286,13 +271,12 @@ static int process(const char *template, struct iwrap *iwrap, FILE *file, const 
 		case '/':
 		case '&':
 		case '>':
-		case ':':
-			if (c != ':' || (iwrap->flags & Mustach_With_Colon)) {
-				beg++;
-				len--;
-			}
+exclude_first:
+			beg++;
+			len--;
 			/*@fallthrough@*/
 		default:
+get_name:
 			while (len && isspace(beg[0])) { beg++; len--; }
 			while (len && isspace(beg[len-1])) len--;
 			if (len == 0 && !(iwrap->flags & Mustach_With_EmptyTag))
@@ -475,16 +459,16 @@ int mustach_mem(const char *template, struct mustach_itf *itf, void *closure, in
 
 int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE *file)
 {
-	return mustach_file(template, itf, closure, default_flags, file);
+	return mustach_file(template, itf, closure, Mustach_With_ALL, file);
 }
 
 int fdmustach(const char *template, struct mustach_itf *itf, void *closure, int fd)
 {
-	return mustach_fd(template, itf, closure, default_flags, fd);
+	return mustach_fd(template, itf, closure, Mustach_With_ALL, fd);
 }
 
 int mustach(const char *template, struct mustach_itf *itf, void *closure, char **result, size_t *size)
 {
-	return mustach_mem(template, itf, closure, default_flags, result, size);
+	return mustach_mem(template, itf, closure, Mustach_With_ALL, result, size);
 }
 

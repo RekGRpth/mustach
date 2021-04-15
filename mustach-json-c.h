@@ -80,16 +80,12 @@ extern int mustach_json_c_write(const char *template, struct json_object *root, 
  */
 extern int mustach_json_c_emit(const char *template, struct json_object *root, int flags, mustach_emit_cb_t *emitcb, void *closure);
 
-#if MUSTACH_COMPATIBLE_0_99
+/* compatibility with versions before 1.0.0 */
+
 typedef mustach_write_cb_t *mustach_json_write_cb;
-#endif
-
 extern int fmustach_json_c(const char *template, struct json_object *root, FILE *file);
-
 extern int fdmustach_json_c(const char *template, struct json_object *root, int fd);
-
 extern int mustach_json_c(const char *template, struct json_object *root, char **result, size_t *size);
-
 extern int umustach_json_c(const char *template, struct json_object *root, mustach_write_cb_t *writecb, void *closure);
 
 #endif

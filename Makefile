@@ -20,32 +20,7 @@ SPLITLIB := libmustach-core.so$(SOVEREV)
 SINGLEOBJS := mustach.o mustach-wrap.o
 SINGLEFLAGS :=
 SINGLELIBS :=
-TOOLOBJS :=
-TOOLFLAGS :=
-TOOLLIBS :=
-TOOLDEP :=
-
-# availability of JANSSON
-ifneq ($(jansson),no)
- jansson_cflags := $(shell pkg-config --silence-errors --cflags jansson)
- jansson_libs := $(shell pkg-config --silence-errors --libs jansson)
- ifdef jansson_libs
-  jansson := yes
-  SPLITLIB += libmustach-jansson.so$(SOVEREV)
-  SINGLEOBJS += mustach-jansson.o
-  SINGLEFLAGS += ${jansson_cflags}
-  SINGLELIBS += ${jansson_libs}
-  TOOLOBJS := mustach-jansson.o
-  TOOLFLAGS := ${jansson_cflags} -DTOOL=MUSTACH_TOOL_JANSSON
-  TOOLLIBS := ${jansson_libs}
-  TOOLDEP := mustach-jansson.h
- else
-  ifeq ($(jansson),yes)
-   $(error Can't find required library jansson)
-  endif
-  jansson := no
- endif
-endif
+ALL :=
 
 # availability of CJSON
 ifneq ($(cjson),no)
@@ -53,14 +28,11 @@ ifneq ($(cjson),no)
  cjson_libs := $(shell pkg-config --silence-errors --libs libcjson)
  ifdef cjson_libs
   cjson := yes
+  tool ?= cjson
   SPLITLIB += libmustach-cjson.so$(SOVEREV)
   SINGLEOBJS += mustach-cjson.o
   SINGLEFLAGS += ${cjson_cflags}
   SINGLELIBS += ${cjson_libs}
-  TOOLOBJS := mustach-cjson.o
-  TOOLFLAGS := ${cjson_cflags} -DTOOL=MUSTACH_TOOL_CJSON
-  TOOLLIBS := ${cjson_libs}
-  TOOLDEP := mustach-cjson.h
  else
   ifeq ($(cjson),yes)
    $(error Can't find required library cjson)
@@ -75,14 +47,11 @@ ifneq ($(jsonc),no)
  jsonc_libs := $(shell pkg-config --silence-errors --libs json-c)
  ifdef jsonc_libs
   jsonc := yes
+  tool ?= jsonc
   SPLITLIB += libmustach-json-c.so$(SOVEREV)
   SINGLEOBJS += mustach-json-c.o
   SINGLEFLAGS += ${jsonc_cflags}
   SINGLELIBS += ${jsonc_libs}
-  TOOLOBJS := mustach-json-c.o
-  TOOLFLAGS := ${jsonc_cflags} -DTOOL=MUSTACH_TOOL_JSON_C
-  TOOLLIBS := ${jsonc_libs}
-  TOOLDEP := mustach-json-c.h
  else
   ifeq ($(jsonc),yes)
    $(error Can't find required library json-c)
@@ -91,32 +60,70 @@ ifneq ($(jsonc),no)
  endif
 endif
 
-# mode of build
-ifndef mode
- mode := single
+# availability of JANSSON
+ifneq ($(jansson),no)
+ jansson_cflags := $(shell pkg-config --silence-errors --cflags jansson)
+ jansson_libs := $(shell pkg-config --silence-errors --libs jansson)
+ ifdef jansson_libs
+  jansson := yes
+  tool ?= jansson
+  SPLITLIB += libmustach-jansson.so$(SOVEREV)
+  SINGLEOBJS += mustach-jansson.o
+  SINGLEFLAGS += ${jansson_cflags}
+  SINGLELIBS += ${jansson_libs}
+ else
+  ifeq ($(jansson),yes)
+   $(error Can't find required library jansson)
+  endif
+  jansson := no
+ endif
+endif
+
+# tool
+tool ?= none
+ifneq ($(tool),none)
+  ifeq ($(tool),cjson)
+    TOOLOBJS := mustach-cjson.o
+    TOOLFLAGS := ${cjson_cflags} -DTOOL=MUSTACH_TOOL_CJSON
+    TOOLLIBS := ${cjson_libs}
+    TOOLDEP := mustach-cjson.h
+  else ifeq ($(tool),jsonc)
+    TOOLOBJS := mustach-json-c.o
+    TOOLFLAGS := ${jsonc_cflags} -DTOOL=MUSTACH_TOOL_JSON_C
+    TOOLLIBS := ${jsonc_libs}
+    TOOLDEP := mustach-json-c.h
+  else ifeq ($(tool),jansson)
+    TOOLOBJS := mustach-jansson.o
+    TOOLFLAGS := ${jansson_cflags} -DTOOL=MUSTACH_TOOL_JANSSON
+    TOOLLIBS := ${jansson_libs}
+    TOOLDEP := mustach-jansson.h
+  else
+   $(error Unknown library $(tool) for tool)
+  endif
+  ifneq ($($(tool)),yes)
+    $(error No library found for tool $(tool))
+  endif
+  ALL += mustach
 endif
 
 # compute targets
-MUSTACH := $(if $(TOOLOBJS),mustach)
-ALL := $(MUSTACH)
-ifeq (${mode},split)
+libs ?= all
+ifeq (${libs},split)
  ALL += ${SPLITLIB}
-else ifeq (${mode},single)
+else ifeq (${libs},single)
  ALL += libmustach.so$(SOVEREV)
-else ifeq (${mode},all)
+else ifeq (${libs},all)
  ALL += libmustach.so$(SOVEREV) ${SPLITLIB}
-else ifneq (${mode},nolib)
- $(error Unknown mode $(mode))
+else ifneq (${libs},none)
+ $(error Unknown libs $(libs))
 endif
 
-.PHONY: all
-all: ${ALL}
-
 # display target
+$(info tool    = ${tool})
+$(info libs    = ${libs})
 $(info jsonc   = ${jsonc})
 $(info jansson = ${jansson})
 $(info cjson   = ${cjson})
-$(info mode    = ${mode})
 
 # settings
 
@@ -131,6 +138,9 @@ ifeq ($(shell uname),Darwin)
 endif
 
 # targets
+
+.PHONY: all
+all: ${ALL}
 
 mustach: mustach-tool.o mustach.o mustach-wrap.o $(TOOLOBJS)
 	$(CC) $(LDFLAGS) $(TOOLFLAGS) -o mustach $^ $(TOOLLIBS)
@@ -194,7 +204,7 @@ uninstall:
 
 # testing
 .PHONY: test
-test: $(MUSTACH)
+test:
 	@$(MAKE) -C test1 test
 	@$(MAKE) -C test2 test
 	@$(MAKE) -C test3 test
