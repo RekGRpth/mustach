@@ -1,5 +1,5 @@
 mustach
-libmustach.so*
+libmustach*.so*
 *.o
 *.d
 *.gcda
@@ -7,4 +7,5 @@ libmustach.so*
 *.html
 *.info
 *.1
+*.pc
 gcov-latest/

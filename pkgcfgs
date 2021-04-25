@@ -1,0 +1,35 @@
+==libmustach.pc==
+Name: libmustach
+Version: VERSION
+Description: C Mustach single library
+Cflags: -Imustach
+Libs: -lmustach
+
+==libmustach-core.pc==
+Name: libmustach-core
+Version: VERSION
+Description: C Mustach core library
+Cflags: -Imustach
+Libs: -lmustach-core
+
+==libmustach-cjson.pc==
+Name: libmustach-cjson
+Version: VERSION
+Description: C Mustach library for cJSON
+Cflags: -Imustach
+Libs: -lmustach-cjson
+
+==libmustach-json-c.pc==
+Name: libmustach-json-c
+Version: VERSION
+Description: C Mustach library for json-c
+Cflags: -Imustach
+Libs: -lmustach-json-c
+
+==libmustach-jansson.pc==
+Name: libmustach-jansson
+Version: VERSION
+Description: C Mustach library for jansson
+Cflags: -Imustach
+Libs: -lmustach-jansson
+

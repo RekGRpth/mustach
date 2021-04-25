@@ -9,6 +9,8 @@ PREFIX  ?= /usr/local
 BINDIR  ?= $(PREFIX)/bin
 LIBDIR  ?= $(PREFIX)/lib
 INCLUDEDIR ?= $(PREFIX)/include
+MANDIR  ?= $(PREFIX)/share/man
+PKGDIR  ?= $(LIBDIR)/pkgconfig
 
 # initial settings
 VERSION := $(MAJOR).$(MINOR).$(REVIS)
@@ -17,10 +19,12 @@ SOVEREV := .$(MAJOR).$(MINOR)
 
 HEADERS := mustach.h mustach-wrap.h
 SPLITLIB := libmustach-core.so$(SOVEREV)
-SINGLEOBJS := mustach.o mustach-wrap.o
+SPLITPC := libmustach-core.pc
+COREOBJS := mustach.o mustach-wrap.o
+SINGLEOBJS := $(COREOBJS)
 SINGLEFLAGS :=
 SINGLELIBS :=
-ALL :=
+ALL := manuals
 
 # availability of CJSON
 ifneq ($(cjson),no)
@@ -29,7 +33,9 @@ ifneq ($(cjson),no)
  ifdef cjson_libs
   cjson := yes
   tool ?= cjson
+  HEADERS += mustach-cjson.h
   SPLITLIB += libmustach-cjson.so$(SOVEREV)
+  SPLITPC += libmustach-cjson.pc
   SINGLEOBJS += mustach-cjson.o
   SINGLEFLAGS += ${cjson_cflags}
   SINGLELIBS += ${cjson_libs}
@@ -48,7 +54,9 @@ ifneq ($(jsonc),no)
  ifdef jsonc_libs
   jsonc := yes
   tool ?= jsonc
+  HEADERS += mustach-json-c.h
   SPLITLIB += libmustach-json-c.so$(SOVEREV)
+  SPLITPC += libmustach-json-c.pc
   SINGLEOBJS += mustach-json-c.o
   SINGLEFLAGS += ${jsonc_cflags}
   SINGLELIBS += ${jsonc_libs}
@@ -67,7 +75,9 @@ ifneq ($(jansson),no)
  ifdef jansson_libs
   jansson := yes
   tool ?= jansson
+  HEADERS += mustach-jansson.h
   SPLITLIB += libmustach-jansson.so$(SOVEREV)
+  SPLITPC += libmustach-jansson.pc
   SINGLEOBJS += mustach-jansson.o
   SINGLEFLAGS += ${jansson_cflags}
   SINGLELIBS += ${jansson_libs}
@@ -80,20 +90,21 @@ ifneq ($(jansson),no)
 endif
 
 # tool
+TOOLOBJS = mustach-tool.o $(COREOBJS)
 tool ?= none
 ifneq ($(tool),none)
   ifeq ($(tool),cjson)
-    TOOLOBJS := mustach-cjson.o
+    TOOLOBJS += mustach-cjson.o
     TOOLFLAGS := ${cjson_cflags} -DTOOL=MUSTACH_TOOL_CJSON
     TOOLLIBS := ${cjson_libs}
     TOOLDEP := mustach-cjson.h
   else ifeq ($(tool),jsonc)
-    TOOLOBJS := mustach-json-c.o
+    TOOLOBJS += mustach-json-c.o
     TOOLFLAGS := ${jsonc_cflags} -DTOOL=MUSTACH_TOOL_JSON_C
     TOOLLIBS := ${jsonc_libs}
     TOOLDEP := mustach-json-c.h
   else ifeq ($(tool),jansson)
-    TOOLOBJS := mustach-jansson.o
+    TOOLOBJS += mustach-jansson.o
     TOOLFLAGS := ${jansson_cflags} -DTOOL=MUSTACH_TOOL_JANSSON
     TOOLLIBS := ${jansson_libs}
     TOOLDEP := mustach-jansson.h
@@ -109,11 +120,11 @@ endif
 # compute targets
 libs ?= all
 ifeq (${libs},split)
- ALL += ${SPLITLIB}
+ ALL += ${SPLITLIB} ${SPLITPC}
 else ifeq (${libs},single)
- ALL += libmustach.so$(SOVEREV)
+ ALL += libmustach.so$(SOVEREV) libmustach.pc
 else ifeq (${libs},all)
- ALL += libmustach.so$(SOVEREV) ${SPLITLIB}
+ ALL += libmustach.so$(SOVEREV) libmustach.pc ${SPLITLIB} ${SPLITPC}
 else ifneq (${libs},none)
  $(error Unknown libs $(libs))
 endif
@@ -142,23 +153,28 @@ endif
 .PHONY: all
 all: ${ALL}
 
-mustach: mustach-tool.o mustach.o mustach-wrap.o $(TOOLOBJS)
-	$(CC) $(LDFLAGS) $(TOOLFLAGS) -o mustach $^ $(TOOLLIBS)
+mustach: $(TOOLOBJS)
+	$(CC) $(LDFLAGS) $(TOOLFLAGS) -o mustach $(TOOLOBJS) $(TOOLLIBS)
 
 libmustach.so$(SOVEREV): $(SINGLEOBJS)
-	$(CC) -shared $(LDFLAGS) $(darwin_single) -o $@ $^  $(SINGLELIBS)
+	$(CC) -shared $(LDFLAGS) $(darwin_single) -o $@ $^ $(SINGLELIBS)
 
-libmustach-core.so$(SOVEREV): mustach.o mustach-wrap.o
-	$(CC) -shared $(LDFLAGS) $(darwin_core) -o $@ $^ $(lib_OBJ)
+libmustach-core.so$(SOVEREV): $(COREOBJS)
+	$(CC) -shared $(LDFLAGS) $(darwin_core) -o $@ $(COREOBJS) $(lib_OBJ)
 
-libmustach-cjson.so$(SOVEREV): mustach.o mustach-wrap.o mustach-cjson.o
+libmustach-cjson.so$(SOVEREV): $(COREOBJS) mustach-cjson.o
 	$(CC) -shared $(LDFLAGS) $(darwin_cjson) -o $@ $^ $(cjson_libs)
 
-libmustach-json-c.so$(SOVEREV): mustach.o mustach-wrap.o mustach-json-c.o
+libmustach-json-c.so$(SOVEREV): $(COREOBJS) mustach-json-c.o
 	$(CC) -shared $(LDFLAGS) $(darwin_jsonc) -o $@ $^ $(jsonc_libs)
 
-libmustach-jansson.so$(SOVEREV): mustach.o mustach-wrap.o mustach-jansson.o
+libmustach-jansson.so$(SOVEREV): $(COREOBJS) mustach-jansson.o
 	$(CC) -shared $(LDFLAGS) $(darwin_jansson) -o $@ $^ $(jansson_libs)
+
+# pkgconfigs
+
+%.pc: pkgcfgs
+	sed -E '/^ *$$/d;/^==.*==$$/{h;d};x;/==$@==/{x;s/VERSION/$(VERSION)/;p;d};x;d' $< > $@
 
 # objects
 
@@ -180,20 +196,23 @@ mustach-json-c.o: mustach-json-c.c mustach.h mustach-wrap.h mustach-json-c.h
 mustach-jansson.o: mustach-jansson.c mustach.h mustach-wrap.h mustach-jansson.h
 	$(CC) -c $(CFLAGS) $(jansson_cflags) -o $@ $<
 
-
 # installing
 .PHONY: install
 install: all
 	install -d $(DESTDIR)$(BINDIR)
-	install -d $(DESTDIR)$(LIBDIR)
-	install -d $(DESTDIR)$(INCLUDEDIR)/mustach
 	install -m0755 mustach       $(DESTDIR)$(BINDIR)/
+	install -d $(DESTDIR)$(INCLUDEDIR)/mustach
 	install -m0644 $(HEADERS)    $(DESTDIR)$(INCLUDEDIR)/mustach
-	for x in libmustach*.so*; do \
+	install -d $(DESTDIR)$(LIBDIR)
+	for x in libmustach*.so$(SOVEREV); do \
 		install -m0755 $$x $(DESTDIR)$(LIBDIR)/ ;\
 		ln -sf $$x $(DESTDIR)$(LIBDIR)/$${x%.so.*}.so$(SOVER) ;\
 		ln -sf $$x $(DESTDIR)$(LIBDIR)/$${x%.so.*}.so ;\
 	done
+	install -d $(DESTDIR)/$(PKGDIR)
+	install -m0644 libmustach*.pc $(DESTDIR)/$(PKGDIR)
+	install -d $(DESTDIR)/$(MANDIR)/man1
+	install -m0644 mustach.1.gz $(DESTDIR)/$(MANDIR)/man1
 
 # deinstalling
 .PHONY: uninstall
@@ -215,7 +234,7 @@ test:
 #cleaning
 .PHONY: clean
 clean:
-	rm -f mustach libmustach*.so* *.o
+	rm -f mustach libmustach*.so* *.o *.pc
 	rm -rf *.gcno *.gcda coverage.info gcov-latest
 	@$(MAKE) -C test1 clean
 	@$(MAKE) -C test2 clean
@@ -223,4 +242,11 @@ clean:
 	@$(MAKE) -C test4 clean
 	@$(MAKE) -C test5 clean
 	@$(MAKE) -C test6 clean
+
+# manpage
+.PHONY: manual
+manuals: mustach.1.gz
+
+mustach.1.gz: mustach.1.scd
+	if which scdoc >/dev/null 2>1; then scdoc < mustach.1.scd | gzip > mustach.1.gz; fi
 
