@@ -459,16 +459,16 @@ int mustach_mem(const char *template, struct mustach_itf *itf, void *closure, in
 
 int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE *file)
 {
-	return mustach_file(template, itf, closure, Mustach_With_ALL, file);
+	return mustach_file(template, itf, closure, Mustach_With_AllExtensions, file);
 }
 
 int fdmustach(const char *template, struct mustach_itf *itf, void *closure, int fd)
 {
-	return mustach_fd(template, itf, closure, Mustach_With_ALL, fd);
+	return mustach_fd(template, itf, closure, Mustach_With_AllExtensions, fd);
 }
 
 int mustach(const char *template, struct mustach_itf *itf, void *closure, char **result, size_t *size)
 {
-	return mustach_mem(template, itf, closure, Mustach_With_ALL, result, size);
+	return mustach_mem(template, itf, closure, Mustach_With_AllExtensions, result, size);
 }
 

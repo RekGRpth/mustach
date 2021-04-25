@@ -31,9 +31,10 @@ struct mustach_sbuf; /* see below */
 /**
  * Flags specific to mustach core
  */
-#define Mustach_With_ALL          -1
-#define Mustach_With_Colon         1
-#define Mustach_With_EmptyTag      2
+#define Mustach_With_NoExtensions   0
+#define Mustach_With_AllExtensions -1
+#define Mustach_With_Colon          1
+#define Mustach_With_EmptyTag       2
 
 /*
  * Definition of error codes returned by mustach

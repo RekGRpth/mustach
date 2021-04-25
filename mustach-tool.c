@@ -118,7 +118,7 @@ int main(int ac, char **av)
 	int s;
 
 	(void)ac; /* unused */
-	flags = Mustach_With_ALL;
+	flags = Mustach_With_AllExtensions;
 	output = stdout;
 
 	if (*++av) {
