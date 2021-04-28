@@ -8,7 +8,7 @@ stages:
 
 before_script:
   - apt-get update -qq
-  - apt-get install -y -qq make gcc clang-tools lcov libjansson-dev libjson-c-dev libcjson-dev valgrind flawfinder pkg-config
+  - apt-get install -y -qq make gcc sed clang-tools lcov libjansson-dev libjson-c-dev libcjson-dev valgrind flawfinder pkg-config
 
 build:
   script: make
