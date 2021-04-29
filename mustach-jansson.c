@@ -45,14 +45,14 @@ static int compare(void *closure, const char *value)
 	struct expl *e = closure;
 	json_t *o = e->selection;
 	double d;
-	int64_t i;
+	json_int_t i;
 
 	switch (json_typeof(o)) {
 	case JSON_REAL:
 		d = json_number_value(o) - atof(value);
 		return d < 0 ? -1 : d > 0 ? 1 : 0;
 	case JSON_INTEGER:
-		i = (int64_t)json_integer_value(o) - (int64_t)atoll(value);
+		i = (json_int_t)json_integer_value(o) - (json_int_t)atoll(value);
 		return i < 0 ? -1 : i > 0 ? 1 : 0;
 	case JSON_STRING:
 		return strcmp(json_string_value(o), value);
