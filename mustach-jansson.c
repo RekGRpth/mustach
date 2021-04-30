@@ -211,38 +211,38 @@ const struct mustach_wrap_itf mustach_jansson_wrap_itf = {
 	.get = get
 };
 
-int mustach_jansson_file(const char *template, json_t *root, int flags, FILE *file)
+int mustach_jansson_file(const char *template, size_t length, json_t *root, int flags, FILE *file)
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_file(template, &mustach_jansson_wrap_itf, &e, flags, file);
+	return mustach_wrap_file(template, length, &mustach_jansson_wrap_itf, &e, flags, file);
 }
 
-int mustach_jansson_fd(const char *template, json_t *root, int flags, int fd)
+int mustach_jansson_fd(const char *template, size_t length, json_t *root, int flags, int fd)
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_fd(template, &mustach_jansson_wrap_itf, &e, flags, fd);
+	return mustach_wrap_fd(template, length, &mustach_jansson_wrap_itf, &e, flags, fd);
 }
 
-int mustach_jansson_mem(const char *template, json_t *root, int flags, char **result, size_t *size)
+int mustach_jansson_mem(const char *template, size_t length, json_t *root, int flags, char **result, size_t *size)
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_mem(template, &mustach_jansson_wrap_itf, &e, flags, result, size);
+	return mustach_wrap_mem(template, length, &mustach_jansson_wrap_itf, &e, flags, result, size);
 }
 
-int mustach_jansson_write(const char *template, json_t *root, int flags, mustach_write_cb_t *writecb, void *closure)
+int mustach_jansson_write(const char *template, size_t length, json_t *root, int flags, mustach_write_cb_t *writecb, void *closure)
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_write(template, &mustach_jansson_wrap_itf, &e, flags, writecb, closure);
+	return mustach_wrap_write(template, length, &mustach_jansson_wrap_itf, &e, flags, writecb, closure);
 }
 
-int mustach_jansson_emit(const char *template, json_t *root, int flags, mustach_emit_cb_t *emitcb, void *closure)
+int mustach_jansson_emit(const char *template, size_t length, json_t *root, int flags, mustach_emit_cb_t *emitcb, void *closure)
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_emit(template, &mustach_jansson_wrap_itf, &e, flags, emitcb, closure);
+	return mustach_wrap_emit(template, length, &mustach_jansson_wrap_itf, &e, flags, emitcb, closure);
 }
 

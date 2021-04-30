@@ -400,38 +400,38 @@ static void wrap_init(struct wrap *wrap, const struct mustach_wrap_itf *itf, voi
 	wrap->writecb = writecb;
 }
 
-int mustach_wrap_file(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, FILE *file)
+int mustach_wrap_file(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, FILE *file)
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, NULL, NULL);
-	return mustach_file(template, &mustach_wrap_itf, &w, flags, file);
+	return mustach_file(template, length, &mustach_wrap_itf, &w, flags, file);
 }
 
-int mustach_wrap_fd(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, int fd)
+int mustach_wrap_fd(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, int fd)
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, NULL, NULL);
-	return mustach_fd(template, &mustach_wrap_itf, &w, flags, fd);
+	return mustach_fd(template, length, &mustach_wrap_itf, &w, flags, fd);
 }
 
-int mustach_wrap_mem(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size)
+int mustach_wrap_mem(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size)
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, NULL, NULL);
-	return mustach_mem(template, &mustach_wrap_itf, &w, flags, result, size);
+	return mustach_mem(template, length, &mustach_wrap_itf, &w, flags, result, size);
 }
 
-int mustach_wrap_write(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure)
+int mustach_wrap_write(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure)
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, NULL, writecb);
-	return mustach_file(template, &mustach_wrap_itf, &w, flags, writeclosure);
+	return mustach_file(template, length, &mustach_wrap_itf, &w, flags, writeclosure);
 }
 
-int mustach_wrap_emit(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure)
+int mustach_wrap_emit(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure)
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, emitcb, NULL);
-	return mustach_file(template, &mustach_wrap_itf, &w, flags, emitclosure);
+	return mustach_file(template, length, &mustach_wrap_itf, &w, flags, emitclosure);
 }
 

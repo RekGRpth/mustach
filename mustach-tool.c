@@ -49,7 +49,7 @@ static void help(char *prog)
 	exit(0);
 }
 
-static char *readfile(const char *filename)
+static char *readfile(const char *filename, size_t *length)
 {
 	int f;
 	struct stat s;
@@ -103,12 +103,14 @@ static char *readfile(const char *filename)
 	} while(rc > 0);
 
 	close(f);
+	if (length != NULL)
+		*length = pos;
 	result[pos] = 0;
 	return result;
 }
 
 static int load_json(const char *filename);
-static int process(const char *content);
+static int process(const char *content, size_t length);
 static void close_json();
 
 int main(int ac, char **av)
@@ -116,6 +118,7 @@ int main(int ac, char **av)
 	char *t, *f;
 	char *prog = *av;
 	int s;
+	size_t length;
 
 	(void)ac; /* unused */
 	flags = Mustach_With_AllExtensions;
@@ -133,8 +136,8 @@ int main(int ac, char **av)
 			exit(1);
 		}
 		while(*++av) {
-			t = readfile(*av);
-			s = process(t);
+			t = readfile(*av, &length);
+			s = process(t, length);
 			free(t);
 			if (s != MUSTACH_OK) {
 				s = -s;
@@ -171,9 +174,9 @@ static int load_json(const char *filename)
 	}
 	return 0;
 }
-static int process(const char *content)
+static int process(const char *content, size_t length)
 {
-	return mustach_json_c_file(content, o, flags, output);
+	return mustach_json_c_file(content, length, o, flags, output);
 }
 static void close_json()
 {
@@ -195,9 +198,9 @@ static int load_json(const char *filename)
 	}
 	return 0;
 }
-static int process(const char *content)
+static int process(const char *content, size_t length)
 {
-	return mustach_jansson_file(content, o, flags, output);
+	return mustach_jansson_file(content, length, o, flags, output);
 }
 static void close_json()
 {
@@ -213,14 +216,14 @@ static int load_json(const char *filename)
 {
 	char *t;
 
-	t = readfile(filename);
+	t = readfile(filename, NULL);
 	o = t ? cJSON_Parse(t) : NULL;
 	free(t);
 	return -!o;
 }
-static int process(const char *content)
+static int process(const char *content, size_t length)
 {
-	return mustach_cJSON_file(content, o, flags, output);
+	return mustach_cJSON_file(content, length, o, flags, output);
 }
 static void close_json()
 {

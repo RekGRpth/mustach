@@ -27,30 +27,33 @@ extern const struct mustach_wrap_itf mustach_json_c_wrap_itf;
  * mustach_json_c_file - Renders the mustache 'template' in 'file' for 'root'.
  *
  * @template: the template string to instanciate
+ * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @file:     the file where to write the result
  *
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_json_c_file(const char *template, struct json_object *root, int flags, FILE *file);
+extern int mustach_json_c_file(const char *template, size_t length, struct json_object *root, int flags, FILE *file);
 
 /**
  * mustach_json_c_fd - Renders the mustache 'template' in 'fd' for 'root'.
  *
  * @template: the template string to instanciate
+ * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @fd:       the file descriptor number where to write the result
  *
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_json_c_fd(const char *template, struct json_object *root, int flags, int fd);
+extern int mustach_json_c_fd(const char *template, size_t length, struct json_object *root, int flags, int fd);
 
 /**
  * mustach_json_c_mem - Renders the mustache 'template' in 'result' for 'root'.
  *
  * @template: the template string to instanciate
+ * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @result:   the pointer receiving the result when 0 is returned
  * @size:     the size of the returned result
@@ -58,12 +61,13 @@ extern int mustach_json_c_fd(const char *template, struct json_object *root, int
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_json_c_mem(const char *template, struct json_object *root, int flags, char **result, size_t *size);
+extern int mustach_json_c_mem(const char *template, size_t length, struct json_object *root, int flags, char **result, size_t *size);
 
 /**
  * mustach_json_c_write - Renders the mustache 'template' for 'root' to custom writer 'writecb' with 'closure'.
  *
  * @template: the template string to instanciate
+ * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @writecb:  the function that write values
  * @closure:  the closure for the write function
@@ -71,12 +75,13 @@ extern int mustach_json_c_mem(const char *template, struct json_object *root, in
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_json_c_write(const char *template, struct json_object *root, int flags, mustach_write_cb_t *writecb, void *closure);
+extern int mustach_json_c_write(const char *template, size_t length, struct json_object *root, int flags, mustach_write_cb_t *writecb, void *closure);
 
 /**
  * mustach_json_c_emit - Renders the mustache 'template' for 'root' to custom emiter 'emitcb' with 'closure'.
  *
  * @template: the template string to instanciate
+ * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @emitcb:   the function that emit values
  * @closure:  the closure for the write function
@@ -84,7 +89,7 @@ extern int mustach_json_c_write(const char *template, struct json_object *root, 
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_json_c_emit(const char *template, struct json_object *root, int flags, mustach_emit_cb_t *emitcb, void *closure);
+extern int mustach_json_c_emit(const char *template, size_t length, struct json_object *root, int flags, mustach_emit_cb_t *emitcb, void *closure);
 
 /* compatibility with versions before 1.0.0 */
 
