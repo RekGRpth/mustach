@@ -1,4 +1,6 @@
-# Introduction to Mustach 1.00
+# Introduction to Mustach 1.1
+
+(CAUTION version 1.0 is OBSOLETE, dont use it! Versions 0.98 and 0.99 are okay.)
 
 `mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache")
 template specification.
@@ -19,7 +21,8 @@ by also including **mustach-wrap.h**, **mustach-wrap.c**, **mustach-XXX.h** and
 Alternatively, make and meson files are provided for building `mustach` and
 `libmustach.so` shared library.
 
-Since version 1.0.0, the makefile allows
+Since version 1.0, the makefile allows to compile and install different
+flavours. See below for details.
 
 ## Distributions offering mustach package
 
@@ -109,7 +112,8 @@ Building and installing can be done using make.
 
 Example:
 
-    $ make tool=jsonc mode=single PREFIX=/usr DESTDIR=$HOME/.local install
+    $ make tool=cjson libs=none PREFIX=/usr/local DESTDIR=/ install
+    $ make tool=jsonc libs=single PREFIX=/ DESTDIR=$HOME/.local install
 
 The makefile knows following switches (\*: default):
 

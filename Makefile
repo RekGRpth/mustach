@@ -1,6 +1,6 @@
 # version
 MAJOR := 1
-MINOR := 0
+MINOR := 1
 REVIS := 0
 
 # installation settings
@@ -174,7 +174,7 @@ libmustach-jansson.so$(SOVEREV): $(COREOBJS) mustach-jansson.o
 # pkgconfigs
 
 %.pc: pkgcfgs
-	sed -E '/^ *$$/d;/^==.*==$$/{h;d};x;/==$@==/{x;s/VERSION/$(VERSION)/;p;d};x;d' $< > $@
+	sed -E '/^==.*==$$/{h;d};x;/==$@==/{x;s/VERSION/$(VERSION)/;p;d};x;d' $< > $@
 
 # objects
 
