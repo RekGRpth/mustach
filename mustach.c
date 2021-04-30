@@ -375,7 +375,7 @@ get_name:
 	}
 }
 
-int mustach_file(const char *template, struct mustach_itf *itf, void *closure, int flags, FILE *file)
+int mustach_file(const char *template, const struct mustach_itf *itf, void *closure, int flags, FILE *file)
 {
 	int rc;
 	struct iwrap iwrap;
@@ -419,7 +419,7 @@ int mustach_file(const char *template, struct mustach_itf *itf, void *closure, i
 	return rc;
 }
 
-int mustach_fd(const char *template, struct mustach_itf *itf, void *closure, int flags, int fd)
+int mustach_fd(const char *template, const struct mustach_itf *itf, void *closure, int flags, int fd)
 {
 	int rc;
 	FILE *file;
@@ -435,7 +435,7 @@ int mustach_fd(const char *template, struct mustach_itf *itf, void *closure, int
 	return rc;
 }
 
-int mustach_mem(const char *template, struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size)
+int mustach_mem(const char *template, const struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size)
 {
 	int rc;
 	FILE *file;
@@ -457,17 +457,17 @@ int mustach_mem(const char *template, struct mustach_itf *itf, void *closure, in
 	return rc;
 }
 
-int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE *file)
+int fmustach(const char *template, const struct mustach_itf *itf, void *closure, FILE *file)
 {
 	return mustach_file(template, itf, closure, Mustach_With_AllExtensions, file);
 }
 
-int fdmustach(const char *template, struct mustach_itf *itf, void *closure, int fd)
+int fdmustach(const char *template, const struct mustach_itf *itf, void *closure, int fd)
 {
 	return mustach_fd(template, itf, closure, Mustach_With_AllExtensions, fd);
 }
 
-int mustach(const char *template, struct mustach_itf *itf, void *closure, char **result, size_t *size)
+int mustach(const char *template, const struct mustach_itf *itf, void *closure, char **result, size_t *size)
 {
 	return mustach_mem(template, itf, closure, Mustach_With_AllExtensions, result, size);
 }

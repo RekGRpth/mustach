@@ -144,7 +144,7 @@ struct mustach_wrap_itf {
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_file(const char *template, struct mustach_wrap_itf *itf, void *closure, int flags, FILE *file);
+extern int mustach_wrap_file(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, FILE *file);
 
 /**
  * mustach_wrap_fd - Renders the mustache 'template' in 'fd' for an abstract
@@ -158,7 +158,7 @@ extern int mustach_wrap_file(const char *template, struct mustach_wrap_itf *itf,
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_fd(const char *template, struct mustach_wrap_itf *itf, void *closure, int flags, int fd);
+extern int mustach_wrap_fd(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, int fd);
 
 /**
  * mustach_wrap_mem - Renders the mustache 'template' in 'result' for an abstract
@@ -173,7 +173,7 @@ extern int mustach_wrap_fd(const char *template, struct mustach_wrap_itf *itf, v
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_mem(const char *template, struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size);
+extern int mustach_wrap_mem(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size);
 
 /**
  * mustach_wrap_write - Renders the mustache 'template' for an abstract
@@ -189,7 +189,7 @@ extern int mustach_wrap_mem(const char *template, struct mustach_wrap_itf *itf, 
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_write(const char *template, struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure);
+extern int mustach_wrap_write(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure);
 
 /**
  * mustach_wrap_emit - Renders the mustache 'template' for an abstract
@@ -205,7 +205,7 @@ extern int mustach_wrap_write(const char *template, struct mustach_wrap_itf *itf
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_emit(const char *template, struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure);
+extern int mustach_wrap_emit(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure);
 
 #endif
 

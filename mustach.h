@@ -210,7 +210,7 @@ struct mustach_sbuf {
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_file(const char *template, struct mustach_itf *itf, void *closure, int flags, FILE *file);
+extern int mustach_file(const char *template, const struct mustach_itf *itf, void *closure, int flags, FILE *file);
 
 /**
  * mustach_fd - Renders the mustache 'template' in 'fd' for 'itf' and 'closure'.
@@ -223,7 +223,7 @@ extern int mustach_file(const char *template, struct mustach_itf *itf, void *clo
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_fd(const char *template, struct mustach_itf *itf, void *closure, int flags, int fd);
+extern int mustach_fd(const char *template, const struct mustach_itf *itf, void *closure, int flags, int fd);
 
 /**
  * mustach_mem - Renders the mustache 'template' in 'result' for 'itf' and 'closure'.
@@ -237,7 +237,7 @@ extern int mustach_fd(const char *template, struct mustach_itf *itf, void *closu
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_mem(const char *template, struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size);
+extern int mustach_mem(const char *template, const struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size);
 
 /**
  * OBSOLETE use mustach_file
@@ -252,7 +252,7 @@ extern int mustach_mem(const char *template, struct mustach_itf *itf, void *clos
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int fmustach(const char *template, struct mustach_itf *itf, void *closure, FILE *file);
+extern int fmustach(const char *template, const struct mustach_itf *itf, void *closure, FILE *file);
 
 /**
  * OBSOLETE use mustach_fd
@@ -267,7 +267,7 @@ extern int fmustach(const char *template, struct mustach_itf *itf, void *closure
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int fdmustach(const char *template, struct mustach_itf *itf, void *closure, int fd);
+extern int fdmustach(const char *template, const struct mustach_itf *itf, void *closure, int fd);
 
 /**
  * OBSOLETE use mustach_mem
@@ -283,7 +283,7 @@ extern int fdmustach(const char *template, struct mustach_itf *itf, void *closur
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach(const char *template, struct mustach_itf *itf, void *closure, char **result, size_t *size);
+extern int mustach(const char *template, const struct mustach_itf *itf, void *closure, char **result, size_t *size);
 
 #endif
 
