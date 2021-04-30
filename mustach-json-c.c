@@ -182,7 +182,9 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 			? json_object_iter_peek_name(&e->stack[e->depth].iter)
 			: "";
 	else
-		s = json_object_get_string(e->selection);
+		s = json_object_get_type(e->selection) == json_type_string
+			? json_object_get_string(e->selection)
+			: json_object_to_json_string_ext(e->selection, 0);
 	sbuf->value = s;
 	return 1;
 }

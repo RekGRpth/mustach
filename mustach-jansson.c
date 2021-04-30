@@ -190,7 +190,7 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 	} else if (json_is_string(e->selection))
 		s = json_string_value(e->selection);
 	else {
-		s = json_dumps(e->selection, JSON_ENCODE_ANY);
+		s = json_dumps(e->selection, JSON_ENCODE_ANY | JSON_COMPACT);
 		if (s == NULL)
 			return MUSTACH_ERROR_SYSTEM;
 		sbuf->freecb = free;

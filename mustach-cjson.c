@@ -179,7 +179,7 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 	} else if (e->selection->type == cJSON_String)
 		s = e->selection->valuestring;
 	else {
-		s = cJSON_Print(e->selection);
+		s = cJSON_PrintUnformatted(e->selection);
 		if (s == NULL)
 			return MUSTACH_ERROR_SYSTEM;
 		sbuf->freecb = free;
