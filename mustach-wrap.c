@@ -377,7 +377,7 @@ static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 	return MUSTACH_OK;
 }
 
-static struct mustach_itf witf = {
+const struct mustach_itf mustach_wrap_itf = {
 	.start = start,
 	.put = NULL,
 	.enter = enter,
@@ -404,34 +404,34 @@ int mustach_wrap_file(const char *template, const struct mustach_wrap_itf *itf, 
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, NULL, NULL);
-	return mustach_file(template, &witf, &w, flags, file);
+	return mustach_file(template, &mustach_wrap_itf, &w, flags, file);
 }
 
 int mustach_wrap_fd(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, int fd)
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, NULL, NULL);
-	return mustach_fd(template, &witf, &w, flags, fd);
+	return mustach_fd(template, &mustach_wrap_itf, &w, flags, fd);
 }
 
 int mustach_wrap_mem(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size)
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, NULL, NULL);
-	return mustach_mem(template, &witf, &w, flags, result, size);
+	return mustach_mem(template, &mustach_wrap_itf, &w, flags, result, size);
 }
 
 int mustach_wrap_write(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure)
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, NULL, writecb);
-	return mustach_file(template, &witf, &w, flags, writeclosure);
+	return mustach_file(template, &mustach_wrap_itf, &w, flags, writeclosure);
 }
 
 int mustach_wrap_emit(const char *template, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure)
 {
 	struct wrap w;
 	wrap_init(&w, itf, closure, flags, emitcb, NULL);
-	return mustach_file(template, &witf, &w, flags, emitclosure);
+	return mustach_file(template, &mustach_wrap_itf, &w, flags, emitclosure);
 }
 

@@ -189,7 +189,7 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 	return 1;
 }
 
-static struct mustach_wrap_itf witf = {
+const struct mustach_wrap_itf mustach_json_c_wrap_itf = {
 	.start = start,
 	.stop = NULL,
 	.compare = compare,
@@ -205,35 +205,35 @@ int mustach_json_c_file(const char *template, struct json_object *root, int flag
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_file(template, &witf, &e, flags, file);
+	return mustach_wrap_file(template, &mustach_json_c_wrap_itf, &e, flags, file);
 }
 
 int mustach_json_c_fd(const char *template, struct json_object *root, int flags, int fd)
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_fd(template, &witf, &e, flags, fd);
+	return mustach_wrap_fd(template, &mustach_json_c_wrap_itf, &e, flags, fd);
 }
 
 int mustach_json_c_mem(const char *template, struct json_object *root, int flags, char **result, size_t *size)
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_mem(template, &witf, &e, flags, result, size);
+	return mustach_wrap_mem(template, &mustach_json_c_wrap_itf, &e, flags, result, size);
 }
 
 int mustach_json_c_write(const char *template, struct json_object *root, int flags, mustach_write_cb_t *writecb, void *closure)
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_write(template, &witf, &e, flags, writecb, closure);
+	return mustach_wrap_write(template, &mustach_json_c_wrap_itf, &e, flags, writecb, closure);
 }
 
 int mustach_json_c_emit(const char *template, struct json_object *root, int flags, mustach_emit_cb_t *emitcb, void *closure)
 {
 	struct expl e;
 	e.root = root;
-	return mustach_wrap_emit(template, &witf, &e, flags, emitcb, closure);
+	return mustach_wrap_emit(template, &mustach_json_c_wrap_itf, &e, flags, emitcb, closure);
 }
 
 int fmustach_json_c(const char *template, struct json_object *root, FILE *file)

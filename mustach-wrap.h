@@ -133,6 +133,12 @@ struct mustach_wrap_itf {
 };
 
 /**
+ * Mustach interface used internally by mustach wrapper functions.
+ * Can be used for overriding behaviour.
+ */
+extern const struct mustach_itf mustach_wrap_itf;
+
+/**
  * mustach_wrap_file - Renders the mustache 'template' in 'file' for an abstract
  * wrapper of interface 'itf' and 'closure'.
  *

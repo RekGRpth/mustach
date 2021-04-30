@@ -18,6 +18,12 @@
 #include "mustach-wrap.h"
 
 /**
+ * Wrap interface used internally by mustach cJSON functions.
+ * Can be used for overriding behaviour.
+ */
+extern const struct mustach_wrap_itf mustach_cJSON_wrap_itf;
+
+/**
  * mustach_cJSON_file - Renders the mustache 'template' in 'file' for 'root'.
  *
  * @template: the template string to instanciate

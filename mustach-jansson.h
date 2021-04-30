@@ -18,6 +18,12 @@
 #include "mustach-wrap.h"
 
 /**
+ * Wrap interface used internally by mustach jansson functions.
+ * Can be used for overriding behaviour.
+ */
+extern const struct mustach_wrap_itf mustach_jansson_wrap_itf;
+
+/**
  * mustach_jansson_file - Renders the mustache 'template' in 'file' for 'root'.
  *
  * @template: the template string to instanciate
