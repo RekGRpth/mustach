@@ -189,6 +189,9 @@ struct mustach_itf {
  *             Can be NULL.
  *
  * @closure: The closure to use for 'releasecb'.
+ *
+ * @length: Length of the value or zero if unknown and value null terminated.
+ *          To return the empty string, let it to zero and let value to NULL.
  */
 struct mustach_sbuf {
 	const char *value;
@@ -197,6 +200,7 @@ struct mustach_sbuf {
 		void (*releasecb)(const char *value, void *closure);
 	};
 	void *closure;
+	size_t length;
 };
 
 /**

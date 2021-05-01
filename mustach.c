@@ -118,12 +118,21 @@ static inline void sbuf_reset(struct mustach_sbuf *sbuf)
 	sbuf->value = NULL;
 	sbuf->freecb = NULL;
 	sbuf->closure = NULL;
+	sbuf->length = 0;
 }
 
 static inline void sbuf_release(struct mustach_sbuf *sbuf)
 {
 	if (sbuf->releasecb)
 		sbuf->releasecb(sbuf->value, sbuf->closure);
+}
+
+static inline size_t sbuf_length(struct mustach_sbuf *sbuf)
+{
+	size_t length = sbuf->length;
+	if (length == 0 && sbuf->value != NULL)
+		length = strlen(sbuf->value);
+	return length;
 }
 
 static int iwrap_emit(void *closure, const char *buffer, size_t size, int escape, FILE *file)
@@ -174,7 +183,7 @@ static int iwrap_put(void *closure, const char *name, int escape, FILE *file)
 	sbuf_reset(&sbuf);
 	rc = iwrap->get(iwrap->closure, name, &sbuf);
 	if (rc >= 0) {
-		length = strlen(sbuf.value);
+		length = sbuf_length(&sbuf);
 		if (length)
 			rc = iwrap->emit(iwrap->closure, sbuf.value, length, escape, file);
 		sbuf_release(&sbuf);
@@ -203,6 +212,7 @@ static int iwrap_partial(void *closure, const char *name, struct mustach_sbuf *s
 			if (rc == 0) {
 				sbuf->value = result;
 				sbuf->freecb = free;
+				sbuf->length = size;
 			}
 		}
 	}
@@ -227,8 +237,8 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 		beg = memmem(template, end - template, opstr, oplen);
 		if (beg == NULL) {
 			/* no more mustach */
-			if (enabled && template[0]) {
-				rc = iwrap->emit(iwrap->closure, template, strlen(template), 0, file);
+			if (enabled && template[0] && template != end) {
+				rc = iwrap->emit(iwrap->closure, template, end - template, 0, file);
 				if (rc < 0)
 					return rc;
 			}
@@ -357,7 +367,7 @@ get_name:
 				sbuf_reset(&sbuf);
 				rc = iwrap->partial(iwrap->closure_partial, name, &sbuf);
 				if (rc >= 0) {
-					rc = process(sbuf.value, strlen(sbuf.value), iwrap, file, opstr, clstr);
+					rc = process(sbuf.value, sbuf_length(&sbuf), iwrap, file, opstr, clstr);
 					sbuf_release(&sbuf);
 				}
 				if (rc < 0)
