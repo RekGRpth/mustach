@@ -215,9 +215,10 @@ static cJSON *o;
 static int load_json(const char *filename)
 {
 	char *t;
+	size_t length;
 
-	t = readfile(filename, NULL);
-	o = t ? cJSON_Parse(t) : NULL;
+	t = readfile(filename, &length);
+	o = t ? cJSON_ParseWithLength(t, length) : NULL;
 	free(t);
 	return -!o;
 }
