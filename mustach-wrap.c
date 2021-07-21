@@ -265,7 +265,7 @@ static int emit(void *closure, const char *buffer, size_t size, int escape, FILE
 		r = MUSTACH_OK;
 		while(i < size && r == MUSTACH_OK) {
 			s = i;
-			while (i < size && (car = buffer[i]) != '<' && car != '>' && car != '&')
+			while (i < size && (car = buffer[i]) != '<' && car != '>' && car != '&' && car != '"')
 				i++;
 			if (i != s)
 				r = write(w, &buffer[s], i - s, file);
@@ -274,6 +274,7 @@ static int emit(void *closure, const char *buffer, size_t size, int escape, FILE
 				case '<': r = write(w, "&lt;", 4, file); break;
 				case '>': r = write(w, "&gt;", 4, file); break;
 				case '&': r = write(w, "&amp;", 5, file); break;
+				case '"': r = write(w, "&quot;", 6, file); break;
 				}
 				i++;
 			}

@@ -147,7 +147,7 @@ static int iwrap_emit(void *closure, const char *buffer, size_t size, int escape
 	i = 0;
 	while (i < size) {
 		j = i;
-		while (j < size && buffer[j] != '<' && buffer[j] != '>' && buffer[j] != '&')
+		while (j < size && buffer[j] != '<' && buffer[j] != '>' && buffer[j] != '&' && buffer[j] != '"')
 			j++;
 		if (j != i && fwrite(&buffer[i], j - i, 1, file) != 1)
 			return MUSTACH_ERROR_SYSTEM;
@@ -163,6 +163,10 @@ static int iwrap_emit(void *closure, const char *buffer, size_t size, int escape
 				break;
 			case '&':
 				if (fwrite("&amp;", 5, 1, file) != 1)
+					return MUSTACH_ERROR_SYSTEM;
+				break;
+			case '"':
+				if (fwrite("&quot;", 5, 1, file) != 1)
 					return MUSTACH_ERROR_SYSTEM;
 				break;
 			default: break;
