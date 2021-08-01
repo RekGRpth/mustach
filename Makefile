@@ -12,6 +12,9 @@ INCLUDEDIR ?= $(PREFIX)/include
 MANDIR  ?= $(PREFIX)/share/man
 PKGDIR  ?= $(LIBDIR)/pkgconfig
 
+# Tools (sed must be GNU sed)
+SED ?= sed
+
 # initial settings
 VERSION := $(MAJOR).$(MINOR).$(REVIS)
 SOVER := .$(MAJOR)
@@ -174,7 +177,7 @@ libmustach-jansson.so$(SOVEREV): $(COREOBJS) mustach-jansson.o
 # pkgconfigs
 
 %.pc: pkgcfgs
-	sed -E '/^==.*==$$/{h;d};x;/==$@==/{x;s/VERSION/$(VERSION)/;p;d};x;d' $< > $@
+	$(SED) -E '/^==.*==$$/{h;d};x;/==$@==/{x;s/VERSION/$(VERSION)/;p;d};x;d' $< > $@
 
 # objects
 
