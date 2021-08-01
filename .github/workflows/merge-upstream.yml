@@ -11,5 +11,5 @@ jobs:
           fetch-depth: 0
       - uses: rekgrpth/merge-upstream@v2
         with:
-          repository: git@gitlab.com:
+          repository: 'git@gitlab.com:'
           upstream: jobol/mustach
