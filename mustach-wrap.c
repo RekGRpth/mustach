@@ -245,7 +245,7 @@ static int write(struct wrap *w, const char *buffer, size_t size, FILE *file)
 	if (w->writecb)
 		r = w->writecb(file, buffer, size);
 	else
-		r = fwrite(buffer, size, 1, file) == 1 ? MUSTACH_OK : MUSTACH_ERROR_SYSTEM;
+		r = fwrite(buffer, 1, size, file) == size ? MUSTACH_OK : MUSTACH_ERROR_SYSTEM;
 	return r;
 }
 
