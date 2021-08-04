@@ -176,8 +176,11 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 		s = e->stack[e->depth].is_objiter
 			? e->stack[e->depth].obj->string
 			: "";
-	} else if (e->selection->type == cJSON_String)
+	}
+	else if (e->selection->type == cJSON_String)
 		s = e->selection->valuestring;
+	else if (e->selection->type == cJSON_NULL)
+		s = "";
 	else {
 		s = cJSON_PrintUnformatted(e->selection);
 		if (s == NULL)

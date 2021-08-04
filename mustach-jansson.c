@@ -187,8 +187,11 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 		s = e->stack[e->depth].is_objiter
 			? json_object_iter_key(e->stack[e->depth].iter)
 			: "";
-	} else if (json_is_string(e->selection))
+	}
+	else if (json_is_string(e->selection))
 		s = json_string_value(e->selection);
+	else if (json_is_null(e->selection))
+		s = "";
 	else {
 		s = json_dumps(e->selection, JSON_ENCODE_ANY | JSON_COMPACT);
 		if (s == NULL)
