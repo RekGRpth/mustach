@@ -220,19 +220,19 @@ static int iwrap_partial(void *closure, const char *name, struct mustach_sbuf *s
 	return rc;
 }
 
-static int process(const char *template, size_t length, struct iwrap *iwrap, FILE *file, const char *opstr, const char *clstr)
+static int process(const char *template, size_t length, struct iwrap *iwrap, FILE *file)
 {
 	struct mustach_sbuf sbuf;
 	char name[MUSTACH_MAX_LENGTH + 1], c, *tmp;
-	const char *beg, *term, *end;
+	const char *beg, *term, *end, *opstr, *clstr;
 	struct { const char *name, *again; size_t length; int enabled, entered; } stack[MUSTACH_MAX_DEPTH];
 	size_t oplen, cllen, len, l;
 	int depth, rc, enabled;
 
 	enabled = 1;
 	end = template + (length ? length : strlen(template));
-	oplen = strlen(opstr);
-	cllen = strlen(clstr);
+	oplen = 2; opstr = "{{";
+	cllen = 2; clstr = "}}";
 	depth = 0;
 	for(;;) {
 		beg = memmem(template, end - template, opstr, oplen);
@@ -368,7 +368,7 @@ get_name:
 				sbuf_reset(&sbuf);
 				rc = iwrap->partial(iwrap->closure_partial, name, &sbuf);
 				if (rc >= 0) {
-					rc = process(sbuf.value, sbuf_length(&sbuf), iwrap, file, opstr, clstr);
+					rc = process(sbuf.value, sbuf_length(&sbuf), iwrap, file);
 					sbuf_release(&sbuf);
 				}
 				if (rc < 0)
@@ -425,7 +425,7 @@ int mustach_file(const char *template, size_t length, const struct mustach_itf *
 	/* process */
 	rc = itf->start ? itf->start(closure) : 0;
 	if (rc == 0)
-		rc = process(template, length, &iwrap, file, "{{", "}}");
+		rc = process(template, length, &iwrap, file);
 	if (itf->stop)
 		itf->stop(closure, rc);
 	return rc;
