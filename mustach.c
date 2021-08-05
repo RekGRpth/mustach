@@ -236,20 +236,15 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 	depth = 0;
 	for(;;) {
 		beg = memmem(template, end - template, opstr, oplen);
-		if (beg == NULL) {
-			/* no more mustach */
-			if (enabled && template[0] && template != end) {
-				rc = iwrap->emit(iwrap->closure, template, end - template, 0, file);
-				if (rc < 0)
-					return rc;
-			}
-			return depth ? MUSTACH_ERROR_UNEXPECTED_END : MUSTACH_OK;
-		}
+		if (beg == NULL)
+			beg = end;
 		if (enabled && beg != template) {
 			rc = iwrap->emit(iwrap->closure, template, (size_t)(beg - template), 0, file);
 			if (rc < 0)
 				return rc;
 		}
+		if (beg == end) /* no more mustach */
+			return depth ? MUSTACH_ERROR_UNEXPECTED_END : MUSTACH_OK;
 		beg += oplen;
 		term = memmem(beg, end - beg, clstr, cllen);
 		if (term == NULL)
