@@ -305,11 +305,15 @@ get_name:
 			/* nothing to do */
 			break;
 		case '=':
-			/* defines separators */
+			/* defines delimiters */
 			if (len < 5 || beg[len - 1] != '=')
 				return MUSTACH_ERROR_BAD_SEPARATORS;
 			beg++;
 			len -= 2;
+			while (len && isspace(*beg))
+				beg++, len--;
+			while (len && isspace(beg[len - 1]))
+				len--;
 			for (l = 0; l < len && !isspace(beg[l]) ; l++);
 			if (l == len)
 				return MUSTACH_ERROR_BAD_SEPARATORS;
