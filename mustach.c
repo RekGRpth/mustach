@@ -137,36 +137,37 @@ static inline size_t sbuf_length(struct mustach_sbuf *sbuf)
 
 static int iwrap_emit(void *closure, const char *buffer, size_t size, int escape, FILE *file)
 {
-	size_t i, j;
+	size_t i, j, r;
 
 	(void)closure; /* unused */
 
 	if (!escape)
 		return fwrite(buffer, 1, size, file) != size ? MUSTACH_ERROR_SYSTEM : MUSTACH_OK;
 
-	i = 0;
+	r = i = 0;
 	while (i < size) {
 		j = i;
-		while (j < size && buffer[j] != '<' && buffer[j] != '>' && buffer[j] != '&')
+		while (j < size && buffer[j] != '<' && buffer[j] != '>' && buffer[j] != '&' && buffer[j] != '"')
 			j++;
 		if (j != i && fwrite(&buffer[i], j - i, 1, file) != 1)
 			return MUSTACH_ERROR_SYSTEM;
 		if (j < size) {
 			switch(buffer[j++]) {
 			case '<':
-				if (fwrite("&lt;", 4, 1, file) != 1)
-					return MUSTACH_ERROR_SYSTEM;
+				r = fwrite("&lt;", 4, 1, file);
 				break;
 			case '>':
-				if (fwrite("&gt;", 4, 1, file) != 1)
-					return MUSTACH_ERROR_SYSTEM;
+				r = fwrite("&gt;", 4, 1, file);
 				break;
 			case '&':
-				if (fwrite("&amp;", 5, 1, file) != 1)
-					return MUSTACH_ERROR_SYSTEM;
+				r = fwrite("&amp;", 5, 1, file);
 				break;
-			default: break;
+			case '"':
+				r = fwrite("&quot;", 6, 1, file);
+				break;
 			}
+			if (r != 1)
+				return MUSTACH_ERROR_SYSTEM;
 		}
 		i = j;
 	}
