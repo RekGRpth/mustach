@@ -16,9 +16,6 @@
 #ifdef _WIN32
 #include <malloc.h>
 #endif
-#ifdef __sun
-# include <alloca.h>
-#endif
 
 #include "mustach.h"
 
@@ -223,16 +220,18 @@ static int iwrap_partial(void *closure, const char *name, struct mustach_sbuf *s
 static int process(const char *template, size_t length, struct iwrap *iwrap, FILE *file)
 {
 	struct mustach_sbuf sbuf;
-	char name[MUSTACH_MAX_LENGTH + 1], c, *tmp;
-	const char *beg, *term, *end, *opstr, *clstr;
+	char opstr[MUSTACH_MAX_DELIM_LENGTH], clstr[MUSTACH_MAX_DELIM_LENGTH];
+	char name[MUSTACH_MAX_LENGTH + 1], c;
+	const char *beg, *term, *end;
 	struct { const char *name, *again; size_t length; int enabled, entered; } stack[MUSTACH_MAX_DEPTH];
 	size_t oplen, cllen, len, l;
 	int depth, rc, enabled;
 
 	enabled = 1;
 	end = template + (length ? length : strlen(template));
-	oplen = 2; opstr = "{{";
-	cllen = 2; clstr = "}}";
+	oplen = cllen = 2;
+	opstr[0] = opstr[1] = '{';
+	clstr[0] = clstr[1] = '}';
 	depth = 0;
 	for(;;) {
 		beg = memmem(template, end - template, opstr, oplen);
@@ -261,8 +260,8 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 		case '=':
 			break;
 		case '{':
-			for (l = 0 ; clstr[l] == '}' ; l++);
-			if (clstr[l]) {
+			for (l = 0 ; l < cllen && clstr[l] == '}' ; l++);
+			if (l < cllen) {
 				if (!len || beg[len-1] != '}')
 					return MUSTACH_ERROR_BAD_UNESCAPE_TAG;
 				len--;
@@ -310,21 +309,15 @@ get_name:
 			while (len && isspace(beg[len - 1]))
 				len--;
 			for (l = 0; l < len && !isspace(beg[l]) ; l++);
-			if (l == len)
+			if (l == len || l > MUSTACH_MAX_DELIM_LENGTH)
 				return MUSTACH_ERROR_BAD_SEPARATORS;
 			oplen = l;
-			tmp = alloca(oplen + 1);
-			memcpy(tmp, beg, oplen);
-			tmp[oplen] = 0;
-			opstr = tmp;
+			memcpy(opstr, beg, l);
 			while (l < len && isspace(beg[l])) l++;
-			if (l == len)
+			if (l == len || len - l > MUSTACH_MAX_DELIM_LENGTH)
 				return MUSTACH_ERROR_BAD_SEPARATORS;
 			cllen = len - l;
-			tmp = alloca(cllen + 1);
-			memcpy(tmp, beg + l, cllen);
-			tmp[cllen] = 0;
-			clstr = tmp;
+			memcpy(clstr, beg + l, cllen);
 			break;
 		case '^':
 		case '#':
