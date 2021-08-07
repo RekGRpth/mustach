@@ -33,6 +33,11 @@ struct iwrap {
 	int flags;
 };
 
+struct prefix {
+	size_t len;
+	const char *start;
+};
+
 #if !defined(NO_OPEN_MEMSTREAM)
 static FILE *memfile_open(char **buffer, size_t *size)
 {
@@ -223,36 +228,64 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 	char opstr[MUSTACH_MAX_DELIM_LENGTH], clstr[MUSTACH_MAX_DELIM_LENGTH];
 	char name[MUSTACH_MAX_LENGTH + 1], c;
 	const char *beg, *term, *end;
-	struct { const char *name, *again; size_t length; int enabled, entered; } stack[MUSTACH_MAX_DEPTH];
+	struct { const char *name, *again; size_t length; unsigned enabled: 1, entered: 1; } stack[MUSTACH_MAX_DEPTH];
 	size_t oplen, cllen, len, l;
-	int depth, rc, enabled;
+	int depth, rc, enabled, onlysp, stdalone;
+	struct prefix pref;
 
-	enabled = 1;
 	end = template + (length ? length : strlen(template));
-	oplen = cllen = 2;
 	opstr[0] = opstr[1] = '{';
 	clstr[0] = clstr[1] = '}';
-	depth = 0;
-	for(;;) {
-		beg = memmem(template, end - template, opstr, oplen);
-		if (beg == NULL)
-			beg = end;
-		if (enabled && beg != template) {
-			rc = iwrap->emit(iwrap->closure, template, (size_t)(beg - template), 0, file);
-			if (rc < 0)
-				return rc;
+	oplen = cllen = 2;
+	onlysp = enabled = 1;
+	stdalone = depth = 0;
+	for (;;) {
+		/* search next openning delimiter */
+		for (beg = template ; ; beg++) {
+			c = beg == end ? '\n' : *beg;
+			if (c == '\n') {
+				l = (beg != end) + (size_t)(beg - template);
+				if (!stdalone && enabled) {
+					rc = iwrap->emit(iwrap->closure, template, l, 0, file);
+					if (rc < 0)
+						return rc;
+				}
+				if (beg == end) /* no more mustach */
+					return depth ? MUSTACH_ERROR_UNEXPECTED_END : MUSTACH_OK;
+				template += l;
+				onlysp = 1;
+				stdalone = 0;
+			}
+			else if (c == *opstr && end - beg >= (ssize_t)oplen) {
+				for (l = 1 ; l < oplen && beg[l] == opstr[l] ; l++);
+				if (l == oplen)
+					break;
+			}
+			else if (!isspace(c))
+				onlysp = 0;
 		}
-		if (beg == end) /* no more mustach */
-			return depth ? MUSTACH_ERROR_UNEXPECTED_END : MUSTACH_OK;
+
+		stdalone = onlysp;
+		pref.start = template;
+		pref.len = (size_t)(beg - template);
 		beg += oplen;
-		term = memmem(beg, end - beg, clstr, cllen);
-		if (term == NULL)
-			return MUSTACH_ERROR_UNEXPECTED_END;
+
+		/* search next closing delimiter */
+		for (term = beg ; ; term++) {
+			if (term == end)
+				return MUSTACH_ERROR_UNEXPECTED_END;
+			if (*term == *clstr && end - term >= (ssize_t)cllen) {
+				for (l = 1 ; l < cllen && term[l] == clstr[l] ; l++);
+				if (l == cllen)
+					break;
+			}
+		}
 		template = term + cllen;
 		len = (size_t)(term - beg);
 		c = *beg;
 		switch(c) {
 		case ':':
+			stdalone = 0;
 			if (iwrap->flags & Mustach_With_Colon)
 				goto exclude_first;
 			goto get_name;
@@ -271,6 +304,7 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 				template++;
 			}
 			c = '&';
+			stdalone = 0;
 			/*@fallthrough@*/
 		case '^':
 		case '#':
@@ -280,8 +314,9 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 exclude_first:
 			beg++;
 			len--;
-			/*@fallthrough@*/
+			goto get_name;
 		default:
+			stdalone = 0;
 get_name:
 			while (len && isspace(beg[0])) { beg++; len--; }
 			while (len && isspace(beg[len-1])) len--;
@@ -292,6 +327,11 @@ get_name:
 			memcpy(name, beg, len);
 			name[len] = 0;
 			break;
+		}
+		if (!stdalone && enabled && pref.len) {
+			rc = iwrap->emit(iwrap->closure, pref.start, pref.len, 0, file);
+			if (rc < 0)
+				return rc;
 		}
 		switch(c) {
 		case '!':
@@ -333,8 +373,8 @@ get_name:
 			stack[depth].name = beg;
 			stack[depth].again = template;
 			stack[depth].length = len;
-			stack[depth].enabled = enabled;
-			stack[depth].entered = rc;
+			stack[depth].enabled = enabled != 0;
+			stack[depth].entered = rc != 0;
 			if ((c == '#') == (rc == 0))
 				enabled = 0;
 			depth++;
