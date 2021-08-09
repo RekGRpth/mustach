@@ -1,3 +1,9 @@
+1.2 (comming soon)
+------------------
+...
+Fixes:
+ - Improved output accordingly to https://github.com/mustache/spec
+
 1.1.1 (2021-08-19)
 ------------------
 Fixes:
@@ -15,8 +21,8 @@ Fixes:
  - Use correct int type for jansson (json_int_t instead of int64_t).
  - JSON output of different backends is now the same.
 
-1.0 (2021-04-28, retacted)
---------------------------
+1.0 (2021-04-28, retracted)
+---------------------------
 Legal:
  - License changed to ISC.
 
@@ -24,7 +30,7 @@ Fixes:
  - Possible data leak in memfile_open() by clearing buffers.
  - Fix build on Solaris-likes by including alloca.h.
  - Fix Windows build by including malloc.h, using size_t instead of
-   ssize_t, and using the standard tenary operator syntax.
+   ssize_t, and using the standard ternary operator syntax.
  - Fix JSON in test3 by using double quote characters.
  - Fix installation in alternative directories such as
    /opt/pkg/lib on macOS by setting install_name.
