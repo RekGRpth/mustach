@@ -126,7 +126,7 @@ static int enter(void *closure, int objiter)
 		e->stack[e->depth].obj = o->child;
 		e->stack[e->depth].next = o->child->next;
 		e->stack[e->depth].cont = o;
-	} else if ((o->type == cJSON_Object && o->child == NULL) || o->type != cJSON_False) {
+	} else if ((o->type == cJSON_Object && o->child == NULL) || (o->type != cJSON_False && o->type != cJSON_NULL)) {
 		e->stack[e->depth].obj = o;
 		e->stack[e->depth].cont = NULL;
 		e->stack[e->depth].next = NULL;
