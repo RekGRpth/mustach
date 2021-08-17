@@ -58,7 +58,7 @@ typedef int mustach_emit_cb_t(void *closure, const char *buffer, size_t size, in
 #define Mustach_With_Compare         16
 #define Mustach_With_JsonPointer     32
 #define Mustach_With_ObjectIter      64
-#define Mustach_With_IncPartial     128
+#define Mustach_With_IncPartial     128       /* obsolete, always set */
 #define Mustach_With_EscFirstCmp    256
 
 #undef  Mustach_With_AllExtensions

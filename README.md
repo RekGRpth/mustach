@@ -172,7 +172,6 @@ Here is the summary.
      Mustach_With_Compare       | Value Comparing
      Mustach_With_JsonPointer   | Interpret JSON Pointers
      Mustach_With_ObjectIter    | Iteration On Objects
-     Mustach_With_IncPartial    | Partials Include Files
      Mustach_With_EscFirstCmp   | Escape First Compare
     ----------------------------+------------------------------------------------
      Mustach_With_AllExtensions | Activate all known extensions
