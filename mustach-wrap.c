@@ -371,10 +371,12 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct wrap *w = closure;
+/*
 	if (!getoptional(w, name, sbuf)
-	 && !(/*(w->flags & Mustach_With_IncPartial) &&*/
-	      get_partial_from_file(name, sbuf) == MUSTACH_OK))
-			sbuf->value = "";
+	 && !(*(w->flags & Mustach_With_IncPartial) &&*/
+	if(get_partial_from_file(name, sbuf) != MUSTACH_OK
+	 && getoptional(w, name, sbuf) <= 0)
+		sbuf->value = "";
 	return MUSTACH_OK;
 }
 
