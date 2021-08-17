@@ -112,13 +112,11 @@ typedef int mustach_emit_cb_t(void *closure, const char *buffer, size_t size, in
  *
  * @leave: Leaves the last entered section
  *
- * @get: If defined (can be NULL), returns in 'sbuf' the value of 'name'.
- *       As an extension (see NO_ALLOW_EMPTY_TAG), the 'name' can be
- *       the empty string. In that later case an implementation can
- *       return MUSTACH_ERROR_EMPTY_TAG to refuse empty names.
- *       If 'get' is NULL and 'put' NULL the error MUSTACH_ERROR_INVALID_ITF
- *       is returned.
- *
+ * @get: Returns in 'sbuf' the value of the current selection if 'key'
+ *       is zero. Otherwise, when 'key' is not zero, return in 'sbuf'
+ *       the name of key of the current selection, or if no such key
+ *       exists, the empty string. Must return 1 if possible or
+ *       0 when not possible or an error code.
  */
 struct mustach_wrap_itf {
 	int (*start)(void *closure);
