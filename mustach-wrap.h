@@ -61,6 +61,9 @@ typedef int mustach_emit_cb_t(void *closure, const char *buffer, size_t size, in
 #define Mustach_With_IncPartial   128
 #define Mustach_With_EscFirstCmp  256
 
+#undef  Mustach_With_AllExtensions
+#define Mustach_With_AllExtensions  511
+
 /**
  * mustach_wrap_itf - high level wrap of mustach - interface for callbacks
  *
