@@ -163,7 +163,7 @@ static enum sel sel(struct wrap *w, const char *name)
 	}
 
 	/* case of . alone if Mustach_With_SingleDot? */
-	if (!copy[1] && copy[0] == '.' && (w->flags & Mustach_With_SingleDot))
+	if (copy[0] == '.' && copy[1] == 0 /*&& (sflags & Mustach_With_SingleDot)*/)
 		/* yes, select current */
 		result = w->itf->sel(w->closure, NULL) ? S_ok : S_none;
 	else

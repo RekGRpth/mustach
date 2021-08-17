@@ -168,7 +168,6 @@ Here is the summary.
      Mustach_With_Colon         | Explicit tag substition with colon
      Mustach_With_EmptyTag      | Empty Tag Allow
     ----------------------------+------------------------------------------------
-     Mustach_With_SingleDot     | Access To Current Value
      Mustach_With_Equal         | Value Testing Equality
      Mustach_With_Compare       | Value Comparing
      Mustach_With_JsonPointer   | Interpret JSON Pointers
