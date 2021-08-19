@@ -1,7 +1,7 @@
 # version
 MAJOR := 1
 MINOR := 1
-REVIS := 0
+REVIS := 1
 
 # installation settings
 DESTDIR ?=
@@ -251,5 +251,5 @@ clean:
 manuals: mustach.1.gz
 
 mustach.1.gz: mustach.1.scd
-	if which scdoc >/dev/null 2>1; then scdoc < mustach.1.scd | gzip > mustach.1.gz; fi
+	if which scdoc >/dev/null 2>&1; then scdoc < mustach.1.scd | gzip > mustach.1.gz; fi
 

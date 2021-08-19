@@ -1,5 +1,12 @@
-1.1 (2021-05-01)
-----------------
+1.1.1 (2021-08-19)
+------------------
+Fixes:
+ - Avoid conflicting with getopt
+ - Remove unexpected build artifact
+ - Handle correctly a size of 0
+
+1.1.0 (2021-05-01)
+------------------
 New:
  - API refactored to take lengths to ease working with partial or 
    non-NULL-terminated strings. (ABI break)
