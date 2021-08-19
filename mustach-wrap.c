@@ -301,7 +301,7 @@ static int leave(void *closure)
 	return w->itf->leave(w->closure);
 }
 
-static int getopt(struct wrap *w, const char *name, struct mustach_sbuf *sbuf)
+static int getoptional(struct wrap *w, const char *name, struct mustach_sbuf *sbuf)
 {
 	enum sel s = sel(w, name);
 	if (!(s & S_ok))
@@ -312,7 +312,7 @@ static int getopt(struct wrap *w, const char *name, struct mustach_sbuf *sbuf)
 static int get(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct wrap *w = closure;
-	if (getopt(w, name, sbuf) <= 0)
+	if (getoptional(w, name, sbuf) <= 0)
 		sbuf->value = "";
 	return MUSTACH_OK;
 }
@@ -370,7 +370,7 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct wrap *w = closure;
-	if (!getopt(w, name, sbuf)
+	if (!getoptional(w, name, sbuf)
 	 && !((w->flags & Mustach_With_IncPartial)
 	   && get_partial_from_file(name, sbuf) == MUSTACH_OK))
 			sbuf->value = "";
