@@ -9,7 +9,8 @@ test: test-custom-write
 	@valgrind ./test-custom-write json -U must -l must -x must > resu.last 2> vg.last
 	@sed -i 's:^==[0-9]*== ::' vg.last
 	@diff -w resu.ref resu.last && echo "result ok" || echo "ERROR! Result differs"
-	@diff -w vg.ref vg.last && echo "memory ok" || echo "ERROR! Memory differs"
+	@diff -wq vg.ref vg.last && echo "memory ok" || echo "memory differs"
+	@echo
 
 clean:
 	rm -f resu.last vg.last test-custom-write
