@@ -164,19 +164,19 @@ mustach: $(TOOLOBJS)
 	$(CC) $(LDFLAGS) $(TOOLFLAGS) -o mustach $(TOOLOBJS) $(TOOLLIBS)
 
 libmustach.so$(SOVEREV): $(SINGLEOBJS)
-	$(CC) -shared $(LDFLAGS) $(darwin_single) -o $@ $^ $(SINGLELIBS)
+	$(CC) -shared -Wl,-soname,libmustach.so$(SOVER) $(LDFLAGS) $(darwin_single) -o $@ $^ $(SINGLELIBS)
 
 libmustach-core.so$(SOVEREV): $(COREOBJS)
-	$(CC) -shared $(LDFLAGS) $(darwin_core) -o $@ $(COREOBJS) $(lib_OBJ)
+	$(CC) -shared -Wl,-soname,libmustach-core.so$(SOVER) $(LDFLAGS) $(darwin_core) -o $@ $(COREOBJS) $(lib_OBJ)
 
 libmustach-cjson.so$(SOVEREV): $(COREOBJS) mustach-cjson.o
-	$(CC) -shared $(LDFLAGS) $(darwin_cjson) -o $@ $^ $(cjson_libs)
+	$(CC) -shared -Wl,-soname,libmustach-cjson.so$(SOVER) $(LDFLAGS) $(darwin_cjson) -o $@ $^ $(cjson_libs)
 
 libmustach-json-c.so$(SOVEREV): $(COREOBJS) mustach-json-c.o
-	$(CC) -shared $(LDFLAGS) $(darwin_jsonc) -o $@ $^ $(jsonc_libs)
+	$(CC) -shared -Wl,-soname,libmustach-json.so$(SOVER) $(LDFLAGS) $(darwin_jsonc) -o $@ $^ $(jsonc_libs)
 
 libmustach-jansson.so$(SOVEREV): $(COREOBJS) mustach-jansson.o
-	$(CC) -shared $(LDFLAGS) $(darwin_jansson) -o $@ $^ $(jansson_libs)
+	$(CC) -shared -Wl,-soname,libmustach-jansson.so$(SOVER) $(LDFLAGS) $(darwin_jansson) -o $@ $^ $(jansson_libs)
 
 # pkgconfigs
 
