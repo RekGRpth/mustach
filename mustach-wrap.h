@@ -140,6 +140,15 @@ struct mustach_wrap_itf {
 extern const struct mustach_itf mustach_wrap_itf;
 
 /**
+ * Global hook for providing partials. When set to a not NULL value, the pointed
+ * function replaces the default behaviour and is called to provide the partial
+ * of the given 'name' in 'sbuf'.
+ * The function must return MUSTACH_OK when it filled 'sbuf' with value of partial
+ * or must return an error code if it failed.
+ */
+extern int (*mustach_wrap_get_partial)(const char *name, struct mustach_sbuf *sbuf);
+
+/**
  * mustach_wrap_file - Renders the mustache 'template' in 'file' for an abstract
  * wrapper of interface 'itf' and 'closure'.
  *
