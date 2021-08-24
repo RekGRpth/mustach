@@ -122,53 +122,6 @@ static char *readfile(const char *filename, size_t *length)
 }
 #endif
 
-const char partialdir[] = "tmp-partials";
-int in_partials = 0;
-
-int enter_partials()
-{
-	if (in_partials)
-		return 0;
-	if (chdir(partialdir) < 0) {
-		fprintf(stderr, "can't enter directory %s: %s", partialdir, strerror(errno));
-		exit(1);
-	}
-	in_partials = 1;
-	return 0;
-}
-
-int leave_partials()
-{
-	if (!in_partials)
-		return 0;
-	if (chdir("..") < 0)
-		return -1;
-	in_partials = 0;
-	return 0;
-}
-
-int add_partial(const char *name, const char *value)
-{
-	FILE *f;
-
-	enter_partials();
-	f = fopen(name, "w");
-	if (f == NULL) {
-		fprintf(stderr, "can't create the partial file %s\n", name);
-		return -1;
-	}
-	fprintf(f, "%s", value);
-	fclose(f);
-	return 0;
-}
-
-int remove_partial(const char *name)
-{
-	enter_partials();
-	unlink(name);
-	return 0;
-}
-
 typedef struct {
 	unsigned nerror;
 	unsigned ndiffers;
@@ -179,6 +132,7 @@ typedef struct {
 static int load_json(const char *filename);
 static int process(counters *c);
 static void close_json();
+static int get_partial(const char *name, struct mustach_sbuf *sbuf);
 
 int main(int ac, char **av)
 {
@@ -190,6 +144,7 @@ int main(int ac, char **av)
 	(void)ac; /* unused */
 	flags = Mustach_With_SingleDot | Mustach_With_IncPartial;
 	output = stdout;
+	mustach_wrap_get_partial = get_partial;
 
 	memset(&c, 0, sizeof c);
 	while (*++av) {
@@ -244,6 +199,17 @@ void emit(FILE *f, const char *s)
 #include "mustach-json-c.h"
 
 static struct json_object *o;
+
+static struct json_object *partials;
+static int get_partial(const char *name, struct mustach_sbuf *sbuf)
+{
+	struct json_object *x;
+	if (partials == NULL || !json_object_object_get_ex(partials, name, &x))
+		return MUSTACH_ERROR_PARTIAL_NOT_FOUND;
+	sbuf->value = json_object_get_string(x);
+	return MUSTACH_OK;
+}
+
 static int load_json(const char *filename)
 {
 	o = json_object_from_file(filename);
@@ -260,13 +226,12 @@ static int load_json(const char *filename)
 }
 static int process(counters *c)
 {
-	const char *t, *e, *partname, *partval;
+	const char *t, *e;
 	char *got;
 	unsigned i, n;
 	size_t length;
 	int s;
-	json_object *tests, *unit, *name, *desc, *data, *template, *expected, *partials;
-	struct json_object_iterator itobj, endobj;
+	json_object *tests, *unit, *name, *desc, *data, *template, *expected;
 
 	if (!json_object_object_get_ex(o, "tests", &tests) || json_object_get_type(tests) != json_type_array)
 		return -1;
@@ -293,17 +258,6 @@ static int process(counters *c)
 			fprintf(output, "\t%s\n", json_object_get_string(desc));
 			if (!json_object_object_get_ex(unit, "partials", &partials))
 				partials = NULL;
-			if (partials && json_object_get_type(partials) == json_type_object) {
-				enter_partials();
-				itobj = json_object_iter_begin(partials);
-				endobj = json_object_iter_end(partials);
-				while (!json_object_iter_equal(&itobj, &endobj)) {
-					partname = json_object_iter_peek_name(&itobj);
-					partval = json_object_get_string(json_object_iter_peek_value(&itobj));
-					add_partial(partname, partval);
-					json_object_iter_next(&itobj);
-				}
-			}
 			t = json_object_get_string(template);
 			e = json_object_get_string(expected);
 			s = mustach_json_c_mem(t, 0, data, flags, &got, &length);
@@ -335,16 +289,6 @@ static int process(counters *c)
 					fprintf(output, "]\n");
 				}
 			}
-			if (partials && json_object_get_type(partials) == json_type_object) {
-				itobj = json_object_iter_begin(partials);
-				endobj = json_object_iter_end(partials);
-				while (!json_object_iter_equal(&itobj, &endobj)) {
-					partname = json_object_iter_peek_name(&itobj);
-					remove_partial(partname);
-					json_object_iter_next(&itobj);
-				}
-			}
-			leave_partials();
 			free(got);
 		}
 		i++;
@@ -362,6 +306,17 @@ static void close_json()
 
 static json_t *o;
 static json_error_t e;
+
+static json_t *partials;
+static int get_partial(const char *name, struct mustach_sbuf *sbuf)
+{
+	json_t *x;
+	if (partials == NULL || !(x = json_object_get(partials, name)))
+		return MUSTACH_ERROR_PARTIAL_NOT_FOUND;
+	sbuf->value = json_string_value(x);
+	return MUSTACH_OK;
+}
+
 static int load_json(const char *filename)
 {
 	o = json_load_file(filename, JSON_DECODE_ANY, &e);
@@ -373,13 +328,12 @@ static int load_json(const char *filename)
 }
 static int process(counters *c)
 {
-	const char *t, *e, *partname, *partval;
+	const char *t, *e;
 	char *got, *tmp;
 	int i, n;
 	size_t length;
 	int s;
-	json_t *tests, *unit, *name, *desc, *data, *template, *expected, *partials;
-	void *itobj;
+	json_t *tests, *unit, *name, *desc, *data, *template, *expected;
 
 	tests = json_object_get(o, "tests");
 	if (!tests || json_typeof(tests) != JSON_ARRAY)
@@ -406,16 +360,6 @@ static int process(counters *c)
 			fprintf(output, "[%u] %s\n", i, json_string_value(name));
 			fprintf(output, "\t%s\n", json_string_value(desc));
 			partials = json_object_get(unit, "partials");
-			if (partials && json_typeof(partials) == JSON_OBJECT) {
-				enter_partials();
-				itobj = json_object_iter(partials);
-				while (itobj) {
-					partname = json_object_iter_key(itobj);
-					partval = json_string_value(json_object_iter_value(itobj));
-					add_partial(partname, partval);
-					itobj = json_object_iter_next(partials, itobj);
-				}
-			}
 			t = json_string_value(template);
 			e = json_string_value(expected);
 			s = mustach_jansson_mem(t, 0, data, flags, &got, &length);
@@ -452,15 +396,6 @@ static int process(counters *c)
 					fprintf(output, "]\n");
 				}
 			}
-			if (partials && json_typeof(partials) == JSON_OBJECT) {
-				itobj = json_object_iter(partials);
-				while (itobj) {
-					partname = json_object_iter_key(itobj);
-					remove_partial(partname);
-					itobj = json_object_iter_next(partials, itobj);
-				}
-			}
-			leave_partials();
 			free(got);
 		}
 		i++;
@@ -477,6 +412,16 @@ static void close_json()
 #include "mustach-cjson.h"
 
 static cJSON *o;
+static cJSON *partials;
+static int get_partial(const char *name, struct mustach_sbuf *sbuf)
+{
+	cJSON *x;
+	if (partials == NULL || !(x = cJSON_GetObjectItemCaseSensitive(partials, name)))
+		return MUSTACH_ERROR_PARTIAL_NOT_FOUND;
+	sbuf->value = x->valuestring;
+	return MUSTACH_OK;
+}
+
 static int load_json(const char *filename)
 {
 	char *t;
@@ -489,12 +434,12 @@ static int load_json(const char *filename)
 }
 static int process(counters *c)
 {
-	const char *t, *e, *partname, *partval;
+	const char *t, *e;
 	char *got, *tmp;
 	int i, n;
 	size_t length;
 	int s;
-	cJSON *tests, *unit, *name, *desc, *data, *template, *expected, *partials, *itobj;
+	cJSON *tests, *unit, *name, *desc, *data, *template, *expected;
 
 	tests = cJSON_GetObjectItemCaseSensitive(o, "tests");
 	if (!tests || tests->type != cJSON_Array)
@@ -521,16 +466,6 @@ static int process(counters *c)
 			fprintf(output, "[%u] %s\n", i, name->valuestring);
 			fprintf(output, "\t%s\n", desc->valuestring);
 			partials = cJSON_GetObjectItemCaseSensitive(unit, "partials");
-			if (partials && partials->type == cJSON_Object) {
-				enter_partials();
-				itobj = partials->child;
-				while (itobj) {
-					partname = itobj->string;
-					partval = itobj->valuestring;
-					add_partial(partname, partval);
-					itobj = itobj->next;
-				}
-			}
 			t = template->valuestring;
 			e = expected->valuestring;
 			s = mustach_cJSON_mem(t, 0, data, flags, &got, &length);
@@ -567,15 +502,6 @@ static int process(counters *c)
 					fprintf(output, "]\n");
 				}
 			}
-			if (partials && partials->type == cJSON_Object) {
-				itobj = partials->child;
-				while (itobj) {
-					partname = itobj->string;
-					remove_partial(partname);
-					itobj = itobj->next;
-				}
-			}
-			leave_partials();
 			free(got);
 		}
 		i++;

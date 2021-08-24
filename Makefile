@@ -243,7 +243,6 @@ basic-tests: mustach
 spec-tests: $(TESTSPECS)
 
 test-specs-%: %-test-specs specs
-	mkdir -p tmp-partials
 	./$< spec/specs/[a-z]*.json > $@.last || true
 	diff $@.ref $@.last
 
