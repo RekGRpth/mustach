@@ -1,15 +1,34 @@
-1.2 (comming soon)
-------------------
-...
+1.2 (2021-08-24)
+----------------
+
+New:
+ - Add hook 'mustach_wrap_get_partial' for handling partials.
+ - Add test of mustache specifications https://github.com/mustache/spec.
+
+Changes:
+ - Mustach_With_SingleDot is always set.
+ - Mustach_With_IncPartial is always set.
+ - Mustach_With_AllExtensions is changed to use currently known extensions.
+ - Output of tests changed.
+ - Makefile improved.
+ - Partials are first searched as file then in current selection.
+ - Improved management of delimiters.
+
 Fixes:
- - Improved output accordingly to https://github.com/mustache/spec
+ - Improved output accordingly to https://github.com/mustache/spec:
+   - escaping of quote "
+   - interpolating null with empty string
+   - removal of empty lines with standalone tag
+   - don't enter section if null
+   - indentation of partials
+ - comment improved for get of mustach_wrap_itf.
 
 1.1.1 (2021-08-19)
 ------------------
 Fixes:
- - Avoid conflicting with getopt
- - Remove unexpected build artifact
- - Handle correctly a size of 0
+ - Avoid conflicting with getopt.
+ - Remove unexpected build artifact.
+ - Handle correctly a size of 0.
 
 1.1.0 (2021-05-01)
 ------------------
