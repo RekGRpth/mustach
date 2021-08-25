@@ -8,7 +8,7 @@ stages:
 
 before_script:
   - apt-get update -qq
-  - apt-get install -y -qq make gcc sed clang-tools lcov libjansson-dev libjson-c-dev libcjson-dev valgrind flawfinder pkg-config
+  - apt-get install -y -qq make gcc sed clang-tools lcov libjansson-dev libjson-c-dev libcjson-dev valgrind flawfinder pkg-config git
 
 build:
   script: make
@@ -20,8 +20,8 @@ build:
 gcov:
   stage: coverage
   script:
-    - CFLAGS='-Wall -Werror -O0 --coverage' LDFLAGS='-Wl,-z,noexecstack --coverage' make -B
-    - make test
+    - CFLAGS='-Wall -O0 --coverage' LDFLAGS='-Wl,-z,noexecstack --coverage' make -B
+    - CFLAGS='-Wall -O0 --coverage' LDFLAGS='-Wl,-z,noexecstack --coverage' make test
     - lcov --capture --directory . --output-file coverage.info
     - genhtml coverage.info --output-directory gcov-latest
   artifacts:
@@ -45,6 +45,5 @@ flawfinder:
 
 test:
   script:
-    - make -B tool=jsonc libs=none
-    - make test
+    - make -B tool=jsonc libs=none test
 

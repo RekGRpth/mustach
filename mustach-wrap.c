@@ -25,6 +25,9 @@
 # define INCLUDE_PARTIAL_EXTENSION ".mustache"
 #endif
 
+/* global hook for partials */
+int (*mustach_wrap_get_partial)(const char *name, struct mustach_sbuf *sbuf) = NULL;
+
 /* internal structure for wrapping */
 struct wrap {
 	/* original interface */
@@ -163,7 +166,7 @@ static enum sel sel(struct wrap *w, const char *name)
 	}
 
 	/* case of . alone if Mustach_With_SingleDot? */
-	if (!copy[1] && copy[0] == '.' && (w->flags & Mustach_With_SingleDot))
+	if (copy[0] == '.' && copy[1] == 0 /*&& (sflags & Mustach_With_SingleDot)*/)
 		/* yes, select current */
 		result = w->itf->sel(w->closure, NULL) ? S_ok : S_none;
 	else
@@ -342,39 +345,46 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 	free(path);
 
 	/* if file opened */
-	if (file != NULL) {
-		/* compute file size */
-		if (fseek(file, 0, SEEK_END) >= 0
-		 && (pos = ftell(file)) >= 0
-		 && fseek(file, 0, SEEK_SET) >= 0) {
-			/* allocate value */
-			s = (size_t)pos;
-			buffer = malloc(s + 1);
-			if (buffer != NULL) {
-				/* read value */
-				if (1 == fread(buffer, s, 1, file)) {
-					/* force zero at end */
-					sbuf->value = buffer;
-					buffer[s] = 0;
-					sbuf->freecb = free;
-					fclose(file);
-					return MUSTACH_OK;
-				}
-				free(buffer);
+	if (file == NULL)
+		return MUSTACH_ERROR_PARTIAL_NOT_FOUND;
+
+	/* compute file size */
+	if (fseek(file, 0, SEEK_END) >= 0
+	 && (pos = ftell(file)) >= 0
+	 && fseek(file, 0, SEEK_SET) >= 0) {
+		/* allocate value */
+		s = (size_t)pos;
+		buffer = malloc(s + 1);
+		if (buffer != NULL) {
+			/* read value */
+			if (1 == fread(buffer, s, 1, file)) {
+				/* force zero at end */
+				sbuf->value = buffer;
+				buffer[s] = 0;
+				sbuf->freecb = free;
+				fclose(file);
+				return MUSTACH_OK;
 			}
+			free(buffer);
 		}
-		fclose(file);
 	}
+	fclose(file);
 	return MUSTACH_ERROR_SYSTEM;
 }
 
 static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct wrap *w = closure;
-	if (!getoptional(w, name, sbuf)
-	 && !((w->flags & Mustach_With_IncPartial)
-	   && get_partial_from_file(name, sbuf) == MUSTACH_OK))
-			sbuf->value = "";
+	int rc;
+	if (mustach_wrap_get_partial != NULL)
+		rc = mustach_wrap_get_partial(name, sbuf);
+	else {
+		rc = get_partial_from_file(name, sbuf);
+		if (rc != MUSTACH_OK &&  getoptional(w, name, sbuf) > 0)
+			rc = MUSTACH_OK;
+	}
+	if (rc != MUSTACH_OK)
+		sbuf->value = "";
 	return MUSTACH_OK;
 }
 

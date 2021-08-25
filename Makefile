@@ -1,7 +1,7 @@
 # version
 MAJOR := 1
-MINOR := 1
-REVIS := 1
+MINOR := 2
+REVIS := 0
 
 # installation settings
 DESTDIR ?=
@@ -27,6 +27,7 @@ COREOBJS := mustach.o mustach-wrap.o
 SINGLEOBJS := $(COREOBJS)
 SINGLEFLAGS :=
 SINGLELIBS :=
+TESTSPECS :=
 ALL := manuals
 
 # availability of CJSON
@@ -42,6 +43,7 @@ ifneq ($(cjson),no)
   SINGLEOBJS += mustach-cjson.o
   SINGLEFLAGS += ${cjson_cflags}
   SINGLELIBS += ${cjson_libs}
+  TESTSPECS += test-specs-cjson
  else
   ifeq ($(cjson),yes)
    $(error Can't find required library cjson)
@@ -63,6 +65,7 @@ ifneq ($(jsonc),no)
   SINGLEOBJS += mustach-json-c.o
   SINGLEFLAGS += ${jsonc_cflags}
   SINGLELIBS += ${jsonc_libs}
+  TESTSPECS += test-specs-json-c
  else
   ifeq ($(jsonc),yes)
    $(error Can't find required library json-c)
@@ -84,6 +87,7 @@ ifneq ($(jansson),no)
   SINGLEOBJS += mustach-jansson.o
   SINGLEFLAGS += ${jansson_cflags}
   SINGLELIBS += ${jansson_libs}
+  TESTSPECS += test-specs-jansson
  else
   ifeq ($(jansson),yes)
    $(error Can't find required library jansson)
@@ -160,19 +164,19 @@ mustach: $(TOOLOBJS)
 	$(CC) $(LDFLAGS) $(TOOLFLAGS) -o mustach $(TOOLOBJS) $(TOOLLIBS)
 
 libmustach.so$(SOVEREV): $(SINGLEOBJS)
-	$(CC) -shared $(LDFLAGS) $(darwin_single) -o $@ $^ $(SINGLELIBS)
+	$(CC) -shared -Wl,-soname,libmustach.so$(SOVER) $(LDFLAGS) $(darwin_single) -o $@ $^ $(SINGLELIBS)
 
 libmustach-core.so$(SOVEREV): $(COREOBJS)
-	$(CC) -shared $(LDFLAGS) $(darwin_core) -o $@ $(COREOBJS) $(lib_OBJ)
+	$(CC) -shared -Wl,-soname,libmustach-core.so$(SOVER) $(LDFLAGS) $(darwin_core) -o $@ $(COREOBJS) $(lib_OBJ)
 
 libmustach-cjson.so$(SOVEREV): $(COREOBJS) mustach-cjson.o
-	$(CC) -shared $(LDFLAGS) $(darwin_cjson) -o $@ $^ $(cjson_libs)
+	$(CC) -shared -Wl,-soname,libmustach-cjson.so$(SOVER) $(LDFLAGS) $(darwin_cjson) -o $@ $^ $(cjson_libs)
 
 libmustach-json-c.so$(SOVEREV): $(COREOBJS) mustach-json-c.o
-	$(CC) -shared $(LDFLAGS) $(darwin_jsonc) -o $@ $^ $(jsonc_libs)
+	$(CC) -shared -Wl,-soname,libmustach-json.so$(SOVER) $(LDFLAGS) $(darwin_jsonc) -o $@ $^ $(jsonc_libs)
 
 libmustach-jansson.so$(SOVEREV): $(COREOBJS) mustach-jansson.o
-	$(CC) -shared $(LDFLAGS) $(darwin_jansson) -o $@ $^ $(jansson_libs)
+	$(CC) -shared -Wl,-soname,libmustach-jansson.so$(SOVER) $(LDFLAGS) $(darwin_jansson) -o $@ $^ $(jansson_libs)
 
 # pkgconfigs
 
@@ -225,8 +229,10 @@ uninstall:
 	rm -rf $(DESTDIR)$(INCLUDEDIR)/mustach
 
 # testing
-.PHONY: test
-test:
+.PHONY: test test-basic test-specs
+test: basic-tests spec-tests
+
+basic-tests: mustach
 	@$(MAKE) -C test1 test
 	@$(MAKE) -C test2 test
 	@$(MAKE) -C test3 test
@@ -234,10 +240,39 @@ test:
 	@$(MAKE) -C test5 test
 	@$(MAKE) -C test6 test
 
+spec-tests: $(TESTSPECS)
+
+test-specs-%: %-test-specs specs
+	./$< spec/specs/[a-z]*.json > $@.last || true
+	diff $@.ref $@.last
+
+cjson-test-specs.o: test-specs.c mustach.h mustach-wrap.h mustach-cjson.h
+	$(CC) -c $(CFLAGS) $(cjson_cflags) -DTEST=TEST_CJSON -o $@ $<
+
+cjson-test-specs: cjson-test-specs.o mustach-cjson.o $(COREOBJS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(cjson_libs)
+
+json-c-test-specs.o: test-specs.c mustach.h mustach-wrap.h mustach-json-c.h
+	$(CC) -c $(CFLAGS) $(jsonc_cflags) -DTEST=TEST_JSON_C -o $@ $<
+
+json-c-test-specs: json-c-test-specs.o mustach-json-c.o $(COREOBJS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(jsonc_libs)
+
+jansson-test-specs.o: test-specs.c mustach.h mustach-wrap.h mustach-jansson.h
+	$(CC) -c $(CFLAGS) $(jansson_cflags) -DTEST=TEST_JANSSON -o $@ $<
+
+jansson-test-specs: jansson-test-specs.o mustach-jansson.o $(COREOBJS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(jansson_libs)
+
+.PHONY: specs
+specs:
+	if test -d spec; then git -C spec pull; else git clone https://github.com/mustache/spec.git; fi
+
 #cleaning
 .PHONY: clean
 clean:
 	rm -f mustach libmustach*.so* *.o *.pc
+	rm -f *-test-specs test-specs-*.last
 	rm -rf *.gcno *.gcda coverage.info gcov-latest
 	@$(MAKE) -C test1 clean
 	@$(MAKE) -C test2 clean
@@ -247,7 +282,7 @@ clean:
 	@$(MAKE) -C test6 clean
 
 # manpage
-.PHONY: manual
+.PHONY: manuals
 manuals: mustach.1.gz
 
 mustach.1.gz: mustach.1.scd

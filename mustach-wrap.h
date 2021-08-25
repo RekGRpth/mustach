@@ -53,13 +53,16 @@ typedef int mustach_emit_cb_t(void *closure, const char *buffer, size_t size, in
 /**
  * Flags specific to mustach wrap
  */
-#define Mustach_With_SingleDot    4
-#define Mustach_With_Equal        8
-#define Mustach_With_Compare      16
-#define Mustach_With_JsonPointer  32
-#define Mustach_With_ObjectIter   64
-#define Mustach_With_IncPartial   128
-#define Mustach_With_EscFirstCmp  256
+#define Mustach_With_SingleDot        4       /* obsolete, always set */
+#define Mustach_With_Equal            8
+#define Mustach_With_Compare         16
+#define Mustach_With_JsonPointer     32
+#define Mustach_With_ObjectIter      64
+#define Mustach_With_IncPartial     128       /* obsolete, always set */
+#define Mustach_With_EscFirstCmp    256
+
+#undef  Mustach_With_AllExtensions
+#define Mustach_With_AllExtensions  511
 
 /**
  * mustach_wrap_itf - high level wrap of mustach - interface for callbacks
@@ -112,13 +115,11 @@ typedef int mustach_emit_cb_t(void *closure, const char *buffer, size_t size, in
  *
  * @leave: Leaves the last entered section
  *
- * @get: If defined (can be NULL), returns in 'sbuf' the value of 'name'.
- *       As an extension (see NO_ALLOW_EMPTY_TAG), the 'name' can be
- *       the empty string. In that later case an implementation can
- *       return MUSTACH_ERROR_EMPTY_TAG to refuse empty names.
- *       If 'get' is NULL and 'put' NULL the error MUSTACH_ERROR_INVALID_ITF
- *       is returned.
- *
+ * @get: Returns in 'sbuf' the value of the current selection if 'key'
+ *       is zero. Otherwise, when 'key' is not zero, return in 'sbuf'
+ *       the name of key of the current selection, or if no such key
+ *       exists, the empty string. Must return 1 if possible or
+ *       0 when not possible or an error code.
  */
 struct mustach_wrap_itf {
 	int (*start)(void *closure);
@@ -137,6 +138,15 @@ struct mustach_wrap_itf {
  * Can be used for overriding behaviour.
  */
 extern const struct mustach_itf mustach_wrap_itf;
+
+/**
+ * Global hook for providing partials. When set to a not NULL value, the pointed
+ * function replaces the default behaviour and is called to provide the partial
+ * of the given 'name' in 'sbuf'.
+ * The function must return MUSTACH_OK when it filled 'sbuf' with value of partial
+ * or must return an error code if it failed.
+ */
+extern int (*mustach_wrap_get_partial)(const char *name, struct mustach_sbuf *sbuf);
 
 /**
  * mustach_wrap_file - Renders the mustache 'template' in 'file' for an abstract

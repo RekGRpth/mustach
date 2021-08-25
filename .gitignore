@@ -6,6 +6,9 @@ libmustach*.so*
 *.gcno
 *.html
 *.info
+*.last
 *.1
 *.pc
 gcov-latest/
+spec/
+*-test-specs

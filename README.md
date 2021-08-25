@@ -168,15 +168,13 @@ Here is the summary.
      Mustach_With_Colon         | Explicit tag substition with colon
      Mustach_With_EmptyTag      | Empty Tag Allow
     ----------------------------+------------------------------------------------
-     Mustach_With_SingleDot     | Access To Current Value
      Mustach_With_Equal         | Value Testing Equality
      Mustach_With_Compare       | Value Comparing
      Mustach_With_JsonPointer   | Interpret JSON Pointers
      Mustach_With_ObjectIter    | Iteration On Objects
-     Mustach_With_IncPartial    | Partials Include Files
      Mustach_With_EscFirstCmp   | Escape First Compare
     ----------------------------+------------------------------------------------
-     Mustach_With_AllExtensions | Activate all extensions (even future!)
+     Mustach_With_AllExtensions | Activate all known extensions
      Mustach_With_NoExtensions  | Disable any extension
 
 For the details, see below.

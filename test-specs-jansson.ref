@@ -1,0 +1,411 @@
+
+loading spec/specs/comments.json
+processing file spec/specs/comments.json
+[0] Inline
+	Comment blocks should be removed from the template.
+	=> SUCCESS
+[1] Multiline
+	Multiline comments should be permitted.
+	=> SUCCESS
+[2] Standalone
+	All standalone comment lines should be removed.
+	=> SUCCESS
+[3] Indented Standalone
+	All standalone comment lines should be removed.
+	=> SUCCESS
+[4] Standalone Line Endings
+	"\r\n" should be considered a newline for standalone tags.
+	=> SUCCESS
+[5] Standalone Without Previous Line
+	Standalone tags should not require a newline to precede them.
+	=> SUCCESS
+[6] Standalone Without Newline
+	Standalone tags should not require a newline to follow them.
+	=> SUCCESS
+[7] Multiline Standalone
+	All standalone comment lines should be removed.
+	=> SUCCESS
+[8] Indented Multiline Standalone
+	All standalone comment lines should be removed.
+	=> SUCCESS
+[9] Indented Inline
+	Inline comments should not strip whitespace
+	=> SUCCESS
+[10] Surrounding Whitespace
+	Comment removal should preserve surrounding whitespace.
+	=> SUCCESS
+
+loading spec/specs/delimiters.json
+processing file spec/specs/delimiters.json
+[0] Pair Behavior
+	The equals sign (used on both sides) should permit delimiter changes.
+	=> SUCCESS
+[1] Special Characters
+	Characters with special meaning regexen should be valid delimiters.
+	=> SUCCESS
+[2] Sections
+	Delimiters set outside sections should persist.
+	=> SUCCESS
+[3] Inverted Sections
+	Delimiters set outside inverted sections should persist.
+	=> SUCCESS
+[4] Partial Inheritence
+	Delimiters set in a parent template should not affect a partial.
+	=> SUCCESS
+[5] Post-Partial Behavior
+	Delimiters set in a partial should not affect the parent template.
+	=> SUCCESS
+[6] Surrounding Whitespace
+	Surrounding whitespace should be left untouched.
+	=> SUCCESS
+[7] Outlying Whitespace (Inline)
+	Whitespace should be left untouched.
+	=> SUCCESS
+[8] Standalone Tag
+	Standalone lines should be removed from the template.
+	=> SUCCESS
+[9] Indented Standalone Tag
+	Indented standalone lines should be removed from the template.
+	=> SUCCESS
+[10] Standalone Line Endings
+	"\r\n" should be considered a newline for standalone tags.
+	=> SUCCESS
+[11] Standalone Without Previous Line
+	Standalone tags should not require a newline to precede them.
+	=> SUCCESS
+[12] Standalone Without Newline
+	Standalone tags should not require a newline to follow them.
+	=> SUCCESS
+[13] Pair with Padding
+	Superfluous in-tag whitespace should be ignored.
+	=> SUCCESS
+
+loading spec/specs/interpolation.json
+processing file spec/specs/interpolation.json
+[0] No Interpolation
+	Mustache-free templates should render as-is.
+	=> SUCCESS
+[1] Basic Interpolation
+	Unadorned tags should interpolate content into the template.
+	=> SUCCESS
+[2] HTML Escaping
+	Basic interpolation should be HTML escaped.
+	=> SUCCESS
+[3] Triple Mustache
+	Triple mustaches should interpolate without HTML escaping.
+	=> SUCCESS
+[4] Ampersand
+	Ampersand should interpolate without HTML escaping.
+	=> SUCCESS
+[5] Basic Integer Interpolation
+	Integers should interpolate seamlessly.
+	=> SUCCESS
+[6] Triple Mustache Integer Interpolation
+	Integers should interpolate seamlessly.
+	=> SUCCESS
+[7] Ampersand Integer Interpolation
+	Integers should interpolate seamlessly.
+	=> SUCCESS
+[8] Basic Decimal Interpolation
+	Decimals should interpolate seamlessly with proper significance.
+	=> SUCCESS
+[9] Triple Mustache Decimal Interpolation
+	Decimals should interpolate seamlessly with proper significance.
+	=> SUCCESS
+[10] Ampersand Decimal Interpolation
+	Decimals should interpolate seamlessly with proper significance.
+	=> SUCCESS
+[11] Basic Null Interpolation
+	Nulls should interpolate as the empty string.
+	=> SUCCESS
+[12] Triple Mustache Null Interpolation
+	Nulls should interpolate as the empty string.
+	=> SUCCESS
+[13] Ampersand Null Interpolation
+	Nulls should interpolate as the empty string.
+	=> SUCCESS
+[14] Basic Context Miss Interpolation
+	Failed context lookups should default to empty strings.
+	=> SUCCESS
+[15] Triple Mustache Context Miss Interpolation
+	Failed context lookups should default to empty strings.
+	=> SUCCESS
+[16] Ampersand Context Miss Interpolation
+	Failed context lookups should default to empty strings.
+	=> SUCCESS
+[17] Dotted Names - Basic Interpolation
+	Dotted names should be considered a form of shorthand for sections.
+	=> SUCCESS
+[18] Dotted Names - Triple Mustache Interpolation
+	Dotted names should be considered a form of shorthand for sections.
+	=> SUCCESS
+[19] Dotted Names - Ampersand Interpolation
+	Dotted names should be considered a form of shorthand for sections.
+	=> SUCCESS
+[20] Dotted Names - Arbitrary Depth
+	Dotted names should be functional to any level of nesting.
+	=> SUCCESS
+[21] Dotted Names - Broken Chains
+	Any falsey value prior to the last part of the name should yield ''.
+	=> SUCCESS
+[22] Dotted Names - Broken Chain Resolution
+	Each part of a dotted name should resolve only against its parent.
+	=> SUCCESS
+[23] Dotted Names - Initial Resolution
+	The first part of a dotted name should resolve as any other name.
+	=> SUCCESS
+[24] Dotted Names - Context Precedence
+	Dotted names should be resolved against former resolutions.
+	=> SUCCESS
+[25] Implicit Iterators - Basic Interpolation
+	Unadorned tags should interpolate content into the template.
+	=> SUCCESS
+[26] Implicit Iterators - HTML Escaping
+	Basic interpolation should be HTML escaped.
+	=> SUCCESS
+[27] Implicit Iterators - Triple Mustache
+	Triple mustaches should interpolate without HTML escaping.
+	=> SUCCESS
+[28] Implicit Iterators - Ampersand
+	Ampersand should interpolate without HTML escaping.
+	=> SUCCESS
+[29] Implicit Iterators - Basic Integer Interpolation
+	Integers should interpolate seamlessly.
+	=> SUCCESS
+[30] Interpolation - Surrounding Whitespace
+	Interpolation should not alter surrounding whitespace.
+	=> SUCCESS
+[31] Triple Mustache - Surrounding Whitespace
+	Interpolation should not alter surrounding whitespace.
+	=> SUCCESS
+[32] Ampersand - Surrounding Whitespace
+	Interpolation should not alter surrounding whitespace.
+	=> SUCCESS
+[33] Interpolation - Standalone
+	Standalone interpolation should not alter surrounding whitespace.
+	=> SUCCESS
+[34] Triple Mustache - Standalone
+	Standalone interpolation should not alter surrounding whitespace.
+	=> SUCCESS
+[35] Ampersand - Standalone
+	Standalone interpolation should not alter surrounding whitespace.
+	=> SUCCESS
+[36] Interpolation With Padding
+	Superfluous in-tag whitespace should be ignored.
+	=> SUCCESS
+[37] Triple Mustache With Padding
+	Superfluous in-tag whitespace should be ignored.
+	=> SUCCESS
+[38] Ampersand With Padding
+	Superfluous in-tag whitespace should be ignored.
+	=> SUCCESS
+
+loading spec/specs/inverted.json
+processing file spec/specs/inverted.json
+[0] Falsey
+	Falsey sections should have their contents rendered.
+	=> SUCCESS
+[1] Truthy
+	Truthy sections should have their contents omitted.
+	=> SUCCESS
+[2] Null is falsey
+	Null is falsey.
+	=> SUCCESS
+[3] Context
+	Objects and hashes should behave like truthy values.
+	=> SUCCESS
+[4] List
+	Lists should behave like truthy values.
+	=> SUCCESS
+[5] Empty List
+	Empty lists should behave like falsey values.
+	=> SUCCESS
+[6] Doubled
+	Multiple inverted sections per template should be permitted.
+	=> SUCCESS
+[7] Nested (Falsey)
+	Nested falsey sections should have their contents rendered.
+	=> SUCCESS
+[8] Nested (Truthy)
+	Nested truthy sections should be omitted.
+	=> SUCCESS
+[9] Context Misses
+	Failed context lookups should be considered falsey.
+	=> SUCCESS
+[10] Dotted Names - Truthy
+	Dotted names should be valid for Inverted Section tags.
+	=> SUCCESS
+[11] Dotted Names - Falsey
+	Dotted names should be valid for Inverted Section tags.
+	=> SUCCESS
+[12] Dotted Names - Broken Chains
+	Dotted names that cannot be resolved should be considered falsey.
+	=> SUCCESS
+[13] Surrounding Whitespace
+	Inverted sections should not alter surrounding whitespace.
+	=> SUCCESS
+[14] Internal Whitespace
+	Inverted should not alter internal whitespace.
+	=> SUCCESS
+[15] Indented Inline Sections
+	Single-line sections should not alter surrounding whitespace.
+	=> SUCCESS
+[16] Standalone Lines
+	Standalone lines should be removed from the template.
+	=> SUCCESS
+[17] Standalone Indented Lines
+	Standalone indented lines should be removed from the template.
+	=> SUCCESS
+[18] Standalone Line Endings
+	"\r\n" should be considered a newline for standalone tags.
+	=> SUCCESS
+[19] Standalone Without Previous Line
+	Standalone tags should not require a newline to precede them.
+	=> SUCCESS
+[20] Standalone Without Newline
+	Standalone tags should not require a newline to follow them.
+	=> SUCCESS
+[21] Padding
+	Superfluous in-tag whitespace should be ignored.
+	=> SUCCESS
+
+loading spec/specs/partials.json
+processing file spec/specs/partials.json
+[0] Basic Behavior
+	The greater-than operator should expand to the named partial.
+	=> SUCCESS
+[1] Failed Lookup
+	The empty string should be used when the named partial is not found.
+	=> SUCCESS
+[2] Context
+	The greater-than operator should operate within the current context.
+	=> SUCCESS
+[3] Recursion
+	The greater-than operator should properly recurse.
+	=> SUCCESS
+[4] Surrounding Whitespace
+	The greater-than operator should not alter surrounding whitespace.
+	=> SUCCESS
+[5] Inline Indentation
+	Whitespace should be left untouched.
+	=> SUCCESS
+[6] Standalone Line Endings
+	"\r\n" should be considered a newline for standalone tags.
+	=> SUCCESS
+[7] Standalone Without Previous Line
+	Standalone tags should not require a newline to precede them.
+	=> SUCCESS
+[8] Standalone Without Newline
+	Standalone tags should not require a newline to follow them.
+	=> SUCCESS
+[9] Standalone Indentation
+	Each line of the partial should be indented before rendering.
+	=> SUCCESS
+[10] Padding Whitespace
+	Superfluous in-tag whitespace should be ignored.
+	=> SUCCESS
+
+loading spec/specs/sections.json
+processing file spec/specs/sections.json
+[0] Truthy
+	Truthy sections should have their contents rendered.
+	=> SUCCESS
+[1] Falsey
+	Falsey sections should have their contents omitted.
+	=> SUCCESS
+[2] Null is falsey
+	Null is falsey.
+	=> SUCCESS
+[3] Context
+	Objects and hashes should be pushed onto the context stack.
+	=> SUCCESS
+[4] Parent contexts
+	Names missing in the current context are looked up in the stack.
+	=> SUCCESS
+[5] Variable test
+	Non-false sections have their value at the top of context,
+accessible as {{.}} or through the parent context. This gives
+a simple way to display content conditionally if a variable exists.
+
+	=> SUCCESS
+[6] List Contexts
+	All elements on the context stack should be accessible within lists.
+	=> SUCCESS
+[7] Deeply Nested Contexts
+	All elements on the context stack should be accessible.
+	=> SUCCESS
+[8] List
+	Lists should be iterated; list items should visit the context stack.
+	=> SUCCESS
+[9] Empty List
+	Empty lists should behave like falsey values.
+	=> SUCCESS
+[10] Doubled
+	Multiple sections per template should be permitted.
+	=> SUCCESS
+[11] Nested (Truthy)
+	Nested truthy sections should have their contents rendered.
+	=> SUCCESS
+[12] Nested (Falsey)
+	Nested falsey sections should be omitted.
+	=> SUCCESS
+[13] Context Misses
+	Failed context lookups should be considered falsey.
+	=> SUCCESS
+[14] Implicit Iterator - String
+	Implicit iterators should directly interpolate strings.
+	=> SUCCESS
+[15] Implicit Iterator - Integer
+	Implicit iterators should cast integers to strings and interpolate.
+	=> SUCCESS
+[16] Implicit Iterator - Decimal
+	Implicit iterators should cast decimals to strings and interpolate.
+	=> DIFFERS
+	..     DATA[{"list":[1.1000000000000001,2.2000000000000002,3.2999999999999998,4.4000000000000004,5.5]}]
+	.. TEMPLATE["{{#list}}({{.}}){{/list}}"]
+	.. EXPECTED["(1.1)(2.2)(3.3)(4.4)(5.5)"]
+	..      GOT["(1.1000000000000001)(2.2000000000000002)(3.2999999999999998)(4.4000000000000004)(5.5)"]
+[17] Implicit Iterator - Array
+	Implicit iterators should allow iterating over nested arrays.
+	=> SUCCESS
+[18] Dotted Names - Truthy
+	Dotted names should be valid for Section tags.
+	=> SUCCESS
+[19] Dotted Names - Falsey
+	Dotted names should be valid for Section tags.
+	=> SUCCESS
+[20] Dotted Names - Broken Chains
+	Dotted names that cannot be resolved should be considered falsey.
+	=> SUCCESS
+[21] Surrounding Whitespace
+	Sections should not alter surrounding whitespace.
+	=> SUCCESS
+[22] Internal Whitespace
+	Sections should not alter internal whitespace.
+	=> SUCCESS
+[23] Indented Inline Sections
+	Single-line sections should not alter surrounding whitespace.
+	=> SUCCESS
+[24] Standalone Lines
+	Standalone lines should be removed from the template.
+	=> SUCCESS
+[25] Indented Standalone Lines
+	Indented standalone lines should be removed from the template.
+	=> SUCCESS
+[26] Standalone Line Endings
+	"\r\n" should be considered a newline for standalone tags.
+	=> SUCCESS
+[27] Standalone Without Previous Line
+	Standalone tags should not require a newline to precede them.
+	=> SUCCESS
+[28] Standalone Without Newline
+	Standalone tags should not require a newline to follow them.
+	=> SUCCESS
+[29] Padding
+	Superfluous in-tag whitespace should be ignored.
+	=> SUCCESS
+
+summary:
+  error   0
+  differ  1
+  success 126

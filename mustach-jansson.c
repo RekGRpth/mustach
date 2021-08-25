@@ -130,7 +130,7 @@ static int enter(void *closure, int objiter)
 		e->stack[e->depth].cont = o;
 		e->stack[e->depth].obj = json_array_get(o, 0);
 		e->stack[e->depth].index = 0;
-	} else if ((json_is_object(o) && json_object_size(0)) || !json_is_false(o)) {
+	} else if ((json_is_object(o) && json_object_size(0)) || (!json_is_false(o) && !json_is_null(o))) {
 		e->stack[e->depth].count = 1;
 		e->stack[e->depth].cont = NULL;
 		e->stack[e->depth].obj = o;
@@ -187,8 +187,11 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 		s = e->stack[e->depth].is_objiter
 			? json_object_iter_key(e->stack[e->depth].iter)
 			: "";
-	} else if (json_is_string(e->selection))
+	}
+	else if (json_is_string(e->selection))
 		s = json_string_value(e->selection);
+	else if (json_is_null(e->selection))
+		s = "";
 	else {
 		s = json_dumps(e->selection, JSON_ENCODE_ANY | JSON_COMPACT);
 		if (s == NULL)

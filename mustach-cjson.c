@@ -126,7 +126,7 @@ static int enter(void *closure, int objiter)
 		e->stack[e->depth].obj = o->child;
 		e->stack[e->depth].next = o->child->next;
 		e->stack[e->depth].cont = o;
-	} else if ((o->type == cJSON_Object && o->child == NULL) || o->type != cJSON_False) {
+	} else if ((o->type == cJSON_Object && o->child == NULL) || (o->type != cJSON_False && o->type != cJSON_NULL)) {
 		e->stack[e->depth].obj = o;
 		e->stack[e->depth].cont = NULL;
 		e->stack[e->depth].next = NULL;
@@ -176,8 +176,11 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 		s = e->stack[e->depth].is_objiter
 			? e->stack[e->depth].obj->string
 			: "";
-	} else if (e->selection->type == cJSON_String)
+	}
+	else if (e->selection->type == cJSON_String)
 		s = e->selection->valuestring;
+	else if (e->selection->type == cJSON_NULL)
+		s = "";
 	else {
 		s = cJSON_PrintUnformatted(e->selection);
 		if (s == NULL)
