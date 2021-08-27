@@ -199,8 +199,9 @@ This is a core extension implemented in file **mustach.c**.
 
 ### Access To Current Value
 
-With this extension, the value of the current field can be accessed
-using single dot.
+*this was an extension but is now always enforced*
+
+The value of the current field can be accessed using single dot.
 
 Examples:
 
@@ -251,20 +252,6 @@ Example:
 
 Here the single star `{{*}}` is replaced by the iterated key
 and the single dot `{{.}}` is replaced by its value.
-
-This is a wrap extension implemented in file **mustach-wrap.c**.
-
-### Partials Include Files
-
-This extension allows including file with partial pattern like `{{> name}}`.
-
-By default if a such pattern is found, **mustach** search
-for `name` in the current json context.
-
-When the extension is active, if the value is not found
-in the json context, the files `name` and `name.mustache`
-are searched in that order and the first file found is used
-as partial substitution content.
 
 This is a wrap extension implemented in file **mustach-wrap.c**.
 

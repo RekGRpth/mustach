@@ -2,7 +2,7 @@
 ---------
 
 New:
- - Add SONAME in libraries
+ - Add SONAME in libraries.
 
 1.2.0 (2021-08-24)
 ------------------
