@@ -3,6 +3,8 @@
 
 New:
  - Add SONAME in libraries.
+ - Flag Mustach_With_PartialDataFirst to switch the
+   policy of resolving partials.
 
 1.2.0 (2021-08-24)
 ------------------

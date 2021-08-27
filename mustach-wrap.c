@@ -378,6 +378,12 @@ static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 	int rc;
 	if (mustach_wrap_get_partial != NULL)
 		rc = mustach_wrap_get_partial(name, sbuf);
+	else if (w->flags & Mustach_With_PartialDataFirst) {
+		if (getoptional(w, name, sbuf) > 0)
+			rc = MUSTACH_OK;
+		else
+			rc = get_partial_from_file(name, sbuf);
+	}
 	else {
 		rc = get_partial_from_file(name, sbuf);
 		if (rc != MUSTACH_OK &&  getoptional(w, name, sbuf) > 0)

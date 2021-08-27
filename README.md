@@ -163,19 +163,20 @@ This extensions can be activated or deactivated using flags.
 
 Here is the summary.
 
-     Flag name                  | Description
-    ----------------------------+------------------------------------------------
-     Mustach_With_Colon         | Explicit tag substition with colon
-     Mustach_With_EmptyTag      | Empty Tag Allow
-    ----------------------------+------------------------------------------------
-     Mustach_With_Equal         | Value Testing Equality
-     Mustach_With_Compare       | Value Comparing
-     Mustach_With_JsonPointer   | Interpret JSON Pointers
-     Mustach_With_ObjectIter    | Iteration On Objects
-     Mustach_With_EscFirstCmp   | Escape First Compare
-    ----------------------------+------------------------------------------------
-     Mustach_With_AllExtensions | Activate all known extensions
-     Mustach_With_NoExtensions  | Disable any extension
+     Flag name                     | Description
+    -------------------------------+------------------------------------------------
+     Mustach_With_Colon            | Explicit tag substition with colon
+     Mustach_With_EmptyTag         | Empty Tag Allowed
+    -------------------------------+------------------------------------------------
+     Mustach_With_Equal            | Value Testing Equality
+     Mustach_With_Compare          | Value Comparing
+     Mustach_With_JsonPointer      | Interpret JSON Pointers
+     Mustach_With_ObjectIter       | Iteration On Objects
+     Mustach_With_EscFirstCmp      | Escape First Compare
+     Mustach_With_PartialDataFirst | Partial Data First
+    -------------------------------+------------------------------------------------
+     Mustach_With_AllExtensions    | Activate all known extensions
+     Mustach_With_NoExtensions     | Disable any extension
 
 For the details, see below.
 
@@ -252,6 +253,24 @@ Example:
 
 Here the single star `{{*}}` is replaced by the iterated key
 and the single dot `{{.}}` is replaced by its value.
+
+This is a wrap extension implemented in file **mustach-wrap.c**.
+
+### Partial Data First
+
+The default resolution for partial pattern like `{{> name}}`
+is to search for `name` in the current json context and
+as a file named `name` or if not found `name.mustache`.
+
+By default, the order of the search is (1) as a file,
+and if not found, (2) in the current json context.
+
+When this option is set, the order is reverted and content
+of partial is search (1) in the current json context,
+and if not found, (2) as a file.
+
+That option is useful to keep the compatibility with
+versions of *mustach* anteriors to 1.2.0.
 
 This is a wrap extension implemented in file **mustach-wrap.c**.
 
