@@ -1,6 +1,4 @@
-# Introduction to Mustach 1.1
-
-(CAUTION version 1.0 is OBSOLETE, dont use it! Versions 0.98 and 0.99 are okay.)
+# Introduction to Mustach 1.2
 
 `mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache")
 template specification.
