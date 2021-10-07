@@ -145,7 +145,7 @@ $(info cjson   = ${cjson})
 
 # settings
 
-CFLAGS += -fPIC -Wall -Wextra -DVERSION=${VERSION}
+override CFLAGS += -fPIC -Wall -Wextra -DVERSION=${VERSION}
 
 ifeq ($(shell uname),Darwin)
  darwin_single = -install_name $(LIBDIR)/libmustach.so$(SOVEREV)
