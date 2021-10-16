@@ -35,7 +35,7 @@ static char *readfile(const char *filename)
 {
 	int f;
 	struct stat s;
-	char *result;
+	char *result, *ptr;
 	size_t size, pos;
 	ssize_t rc;
 
@@ -79,7 +79,10 @@ static char *readfile(const char *filename)
 			pos += (size_t)rc;
 			if (pos > size) {
 				size = pos + BLOCKSIZE;
-				result = realloc(result, size + 1);
+				ptr = realloc(result, size + 1);
+				if (!ptr)
+					free(result);
+				result = ptr;
 			}
 		}
 	} while(rc > 0);
