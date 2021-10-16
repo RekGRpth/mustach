@@ -53,16 +53,17 @@ typedef int mustach_emit_cb_t(void *closure, const char *buffer, size_t size, in
 /**
  * Flags specific to mustach wrap
  */
-#define Mustach_With_SingleDot        4       /* obsolete, always set */
-#define Mustach_With_Equal            8
-#define Mustach_With_Compare         16
-#define Mustach_With_JsonPointer     32
-#define Mustach_With_ObjectIter      64
-#define Mustach_With_IncPartial     128       /* obsolete, always set */
-#define Mustach_With_EscFirstCmp    256
+#define Mustach_With_SingleDot          4       /* obsolete, always set */
+#define Mustach_With_Equal              8
+#define Mustach_With_Compare           16
+#define Mustach_With_JsonPointer       32
+#define Mustach_With_ObjectIter        64
+#define Mustach_With_IncPartial       128       /* obsolete, always set */
+#define Mustach_With_EscFirstCmp      256
+#define Mustach_With_PartialDataFirst 512
 
 #undef  Mustach_With_AllExtensions
-#define Mustach_With_AllExtensions  511
+#define Mustach_With_AllExtensions   1023
 
 /**
  * mustach_wrap_itf - high level wrap of mustach - interface for callbacks

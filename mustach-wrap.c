@@ -14,9 +14,6 @@
 #ifdef _WIN32
 #include <malloc.h>
 #endif
-#ifdef __sun
-# include <alloca.h>
-#endif
 
 #include "mustach.h"
 #include "mustach-wrap.h"
@@ -141,12 +138,14 @@ static enum sel sel(struct wrap *w, const char *name)
 {
 	enum sel result;
 	int i, j, sflags, scmp;
-	char *copy, *key, *value;
+	char *key, *value;
 	enum comp k;
 
 	/* make a local writeable copy */
-	copy = alloca(1 + strlen(name));
-	strcpy(copy, name);
+	size_t lenname = 1 + strlen(name);
+	char buffer[lenname];
+	char *copy = buffer;
+	memcpy(copy, name, lenname);
 
 	/* check if matches json pointer selection */
 	sflags = w->flags;
@@ -378,6 +377,12 @@ static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 	int rc;
 	if (mustach_wrap_get_partial != NULL)
 		rc = mustach_wrap_get_partial(name, sbuf);
+	else if (w->flags & Mustach_With_PartialDataFirst) {
+		if (getoptional(w, name, sbuf) > 0)
+			rc = MUSTACH_OK;
+		else
+			rc = get_partial_from_file(name, sbuf);
+	}
 	else {
 		rc = get_partial_from_file(name, sbuf);
 		if (rc != MUSTACH_OK &&  getoptional(w, name, sbuf) > 0)

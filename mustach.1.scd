@@ -32,7 +32,7 @@ Given a JSON file: *inst.json*
 {
   "name": "Chris",
   "value": 10000,
-  "taxed_value": 10000 - (10000 * 0.4),
+  "taxed_value": 6000,
   "in_ca": true
 }
 ```

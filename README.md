@@ -1,6 +1,4 @@
-# Introduction to Mustach 1.1
-
-(CAUTION version 1.0 is OBSOLETE, dont use it! Versions 0.98 and 0.99 are okay.)
+# Introduction to Mustach 1.2
 
 `mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache")
 template specification.
@@ -163,19 +161,20 @@ This extensions can be activated or deactivated using flags.
 
 Here is the summary.
 
-     Flag name                  | Description
-    ----------------------------+------------------------------------------------
-     Mustach_With_Colon         | Explicit tag substition with colon
-     Mustach_With_EmptyTag      | Empty Tag Allow
-    ----------------------------+------------------------------------------------
-     Mustach_With_Equal         | Value Testing Equality
-     Mustach_With_Compare       | Value Comparing
-     Mustach_With_JsonPointer   | Interpret JSON Pointers
-     Mustach_With_ObjectIter    | Iteration On Objects
-     Mustach_With_EscFirstCmp   | Escape First Compare
-    ----------------------------+------------------------------------------------
-     Mustach_With_AllExtensions | Activate all known extensions
-     Mustach_With_NoExtensions  | Disable any extension
+     Flag name                     | Description
+    -------------------------------+------------------------------------------------
+     Mustach_With_Colon            | Explicit tag substition with colon
+     Mustach_With_EmptyTag         | Empty Tag Allowed
+    -------------------------------+------------------------------------------------
+     Mustach_With_Equal            | Value Testing Equality
+     Mustach_With_Compare          | Value Comparing
+     Mustach_With_JsonPointer      | Interpret JSON Pointers
+     Mustach_With_ObjectIter       | Iteration On Objects
+     Mustach_With_EscFirstCmp      | Escape First Compare
+     Mustach_With_PartialDataFirst | Partial Data First
+    -------------------------------+------------------------------------------------
+     Mustach_With_AllExtensions    | Activate all known extensions
+     Mustach_With_NoExtensions     | Disable any extension
 
 For the details, see below.
 
@@ -199,8 +198,9 @@ This is a core extension implemented in file **mustach.c**.
 
 ### Access To Current Value
 
-With this extension, the value of the current field can be accessed
-using single dot.
+*this was an extension but is now always enforced*
+
+The value of the current field can be accessed using single dot.
 
 Examples:
 
@@ -254,17 +254,21 @@ and the single dot `{{.}}` is replaced by its value.
 
 This is a wrap extension implemented in file **mustach-wrap.c**.
 
-### Partials Include Files
+### Partial Data First
 
-This extension allows including file with partial pattern like `{{> name}}`.
+The default resolution for partial pattern like `{{> name}}`
+is to search for `name` in the current json context and
+as a file named `name` or if not found `name.mustache`.
 
-By default if a such pattern is found, **mustach** search
-for `name` in the current json context.
+By default, the order of the search is (1) as a file,
+and if not found, (2) in the current json context.
 
-When the extension is active, if the value is not found
-in the json context, the files `name` and `name.mustache`
-are searched in that order and the first file found is used
-as partial substitution content.
+When this option is set, the order is reverted and content
+of partial is search (1) in the current json context,
+and if not found, (2) as a file.
+
+That option is useful to keep the compatibility with
+versions of *mustach* anteriors to 1.2.0.
 
 This is a wrap extension implemented in file **mustach-wrap.c**.
 

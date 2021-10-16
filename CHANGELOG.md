@@ -1,5 +1,13 @@
-1.2 (2021-08-24)
-----------------
+1.2.1 (?)
+---------
+
+New:
+ - Add SONAME in libraries.
+ - Flag Mustach_With_PartialDataFirst to switch the
+   policy of resolving partials.
+
+1.2.0 (2021-08-24)
+------------------
 
 New:
  - Add hook 'mustach_wrap_get_partial' for handling partials.
