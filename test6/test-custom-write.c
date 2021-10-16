@@ -134,7 +134,7 @@ int main(int ac, char **av)
 				mode = None;
 			else {
 				t = readfile(*av);
-				s = mustach_json_c_write(t, 0, o, -1, uwrite, NULL);
+				s = mustach_json_c_write(t, 0, o, Mustach_With_AllExtensions, uwrite, NULL);
 				if (s != 0)
 					fprintf(stderr, "Template error %d\n", s);
 				free(t);
