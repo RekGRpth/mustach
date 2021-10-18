@@ -6,6 +6,9 @@ New:
  - Flag Mustach_With_PartialDataFirst to switch the
    policy of resolving partials.
 
+Fix:
+ - Identification of types in cJSON
+
 1.2.0 (2021-08-24)
 ------------------
 

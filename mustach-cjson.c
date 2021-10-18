@@ -47,19 +47,18 @@ static int compare(void *closure, const char *value)
 	cJSON *o = e->selection;
 	double d;
 
-	switch (o->type) {
-	case cJSON_Number:
+	if (cJSON_IsNumber(o)) {
 		d = o->valuedouble - atof(value);
 		return d < 0 ? -1 : d > 0 ? 1 : 0;
-	case cJSON_String:
+	} else if (cJSON_IsString(o)) {
 		return strcmp(o->valuestring, value);
-	case cJSON_True:
+	} else if (cJSON_IsTrue(o)) {
 		return strcmp("true", value);
-	case cJSON_False:
+	} else if (cJSON_IsFalse(o)) {
 		return strcmp("false", value);
-	case cJSON_NULL:
+	} else if (cJSON_IsNull(o)) {
 		return strcmp("null", value);
-	default:
+	} else {
 		return 1;
 	}
 }
@@ -112,7 +111,7 @@ static int enter(void *closure, int objiter)
 	o = e->selection;
 	e->stack[e->depth].is_objiter = 0;
 	if (objiter) {
-		if (o->type != cJSON_Object)
+		if (! cJSON_IsObject(o))
 			goto not_entering;
 		if (o->child == NULL)
 			goto not_entering;
@@ -120,13 +119,13 @@ static int enter(void *closure, int objiter)
 		e->stack[e->depth].next = o->child->next;
 		e->stack[e->depth].cont = o;
 		e->stack[e->depth].is_objiter = 1;
-	} else if (o->type == cJSON_Array) {
+	} else if (cJSON_IsArray(o)) {
 		if (o->child == NULL)
 			goto not_entering;
 		e->stack[e->depth].obj = o->child;
 		e->stack[e->depth].next = o->child->next;
 		e->stack[e->depth].cont = o;
-	} else if ((o->type == cJSON_Object && o->child == NULL) || (o->type != cJSON_False && o->type != cJSON_NULL)) {
+	} else if ((cJSON_IsObject(o) && o->child == NULL) || (! cJSON_IsFalse(o) && ! cJSON_IsNull(o))) {
 		e->stack[e->depth].obj = o;
 		e->stack[e->depth].cont = NULL;
 		e->stack[e->depth].next = NULL;
@@ -177,9 +176,9 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 			? e->stack[e->depth].obj->string
 			: "";
 	}
-	else if (e->selection->type == cJSON_String)
+	else if (cJSON_IsString(e->selection))
 		s = e->selection->valuestring;
-	else if (e->selection->type == cJSON_NULL)
+	else if (cJSON_IsNull(e->selection))
 		s = "";
 	else {
 		s = cJSON_PrintUnformatted(e->selection);
