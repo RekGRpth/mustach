@@ -1,10 +1,13 @@
-1.2.1 (?)
----------
+1.2.1 (2021-10-19)
+------------------
 
 New:
  - Add SONAME in libraries.
  - Flag Mustach_With_PartialDataFirst to switch the
    policy of resolving partials.
+
+Fix:
+ - Identification of types in cJSON
 
 1.2.0 (2021-08-24)
 ------------------
