@@ -1,7 +1,7 @@
 # version
 MAJOR := 1
 MINOR := 2
-REVIS := 1
+REVIS := 2
 
 # installation settings
 DESTDIR ?=
@@ -173,7 +173,7 @@ libmustach-cjson.so$(SOVEREV): $(COREOBJS) mustach-cjson.o
 	$(CC) -shared -Wl,-soname,libmustach-cjson.so$(SOVER) $(LDFLAGS) $(darwin_cjson) -o $@ $^ $(cjson_libs)
 
 libmustach-json-c.so$(SOVEREV): $(COREOBJS) mustach-json-c.o
-	$(CC) -shared -Wl,-soname,libmustach-json.so$(SOVER) $(LDFLAGS) $(darwin_jsonc) -o $@ $^ $(jsonc_libs)
+	$(CC) -shared -Wl,-soname,libmustach-json-c.so$(SOVER) $(LDFLAGS) $(darwin_jsonc) -o $@ $^ $(jsonc_libs)
 
 libmustach-jansson.so$(SOVEREV): $(COREOBJS) mustach-jansson.o
 	$(CC) -shared -Wl,-soname,libmustach-jansson.so$(SOVER) $(LDFLAGS) $(darwin_jansson) -o $@ $^ $(jansson_libs)
