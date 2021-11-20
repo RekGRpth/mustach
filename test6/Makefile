@@ -2,7 +2,7 @@
 
 test-custom-write: test-custom-write.c ../mustach-json-c.h ../mustach-json-c.c ../mustach-wrap.c ../mustach.h ../mustach.c
 	@echo building test-custom-write
-	$(CC) $(CFLAGS) -g -o test-custom-write test-custom-write.c  ../mustach.c  ../mustach-json-c.c ../mustach-wrap.c -ljson-c
+	$(CC) $(CFLAGS) $(LDFLAGS) -g -o test-custom-write test-custom-write.c  ../mustach.c  ../mustach-json-c.c ../mustach-wrap.c -ljson-c
 
 test: test-custom-write
 	@echo starting test
