@@ -315,8 +315,11 @@ static int getoptional(struct wrap *w, const char *name, struct mustach_sbuf *sb
 static int get(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct wrap *w = closure;
-	if (getoptional(w, name, sbuf) <= 0)
+	if (getoptional(w, name, sbuf) <= 0) {
+		if (w->flags & Mustach_With_ErrorUndefined)
+			return MUSTACH_ERROR_UNDEFINED_TAG;
 		sbuf->value = "";
+	}
 	return MUSTACH_OK;
 }
 

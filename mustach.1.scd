@@ -6,13 +6,15 @@ mustach - Mustache templating command line engine
 
 # SYNOPSIS
 
-*mustach* JSON TEMPLATE...
+*mustach* [-s|--strict] JSON TEMPLATE...
 
 # DESCRIPTION
 
 Instanciate the TEMPLATE files accordingly to the JSON file.
 
 If one of the given files is *-*, the standard input is used.
+
+Option *--strict* make mustach fail if a tag is not found.
 
 # EXAMPLE
 
