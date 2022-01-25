@@ -56,6 +56,7 @@ struct mustach_sbuf; /* see below */
 #define MUSTACH_ERROR_INVALID_ITF       -9
 #define MUSTACH_ERROR_ITEM_NOT_FOUND    -10
 #define MUSTACH_ERROR_PARTIAL_NOT_FOUND -11
+#define MUSTACH_ERROR_UNDEFINED_TAG     -12
 
 /*
  * You can use definition below for user specific error

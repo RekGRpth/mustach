@@ -32,7 +32,8 @@ static const char *errors[] = {
 	"bad unescape tag",
 	"invalid interface",
 	"item not found",
-	"partial not found"
+	"partial not found",
+	"undefined tag"
 };
 
 static const char *errmsg = 0;
@@ -124,9 +125,13 @@ int main(int ac, char **av)
 	flags = Mustach_With_AllExtensions;
 	output = stdout;
 
-	if (*++av) {
+	for( ++av ; av[0] && av[0][0] == '-' && av[0][1] != 0 ; av++) {
 		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
 			help(prog);
+		if (!strcmp(*av, "-s") || !strcmp(*av, "--strict"))
+			flags |= Mustach_With_ErrorUndefined;
+	}
+	if (*av) {
 		f = (av[0][0] == '-' && !av[0][1]) ? "/dev/stdin" : av[0];
 		s = load_json(f);
 		if (s < 0) {
