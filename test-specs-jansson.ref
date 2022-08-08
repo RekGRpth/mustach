@@ -34,6 +34,9 @@ processing file spec/specs/comments.json
 [10] Surrounding Whitespace
 	Comment removal should preserve surrounding whitespace.
 	=> SUCCESS
+[11] Variable Name Collision
+	Comments must never render, even if variable with same name exists.
+	=> SUCCESS
 
 loading spec/specs/delimiters.json
 processing file spec/specs/delimiters.json
@@ -408,4 +411,4 @@ a simple way to display content conditionally if a variable exists.
 summary:
   error   0
   differ  1
-  success 126
+  success 127
