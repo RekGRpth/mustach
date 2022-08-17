@@ -43,9 +43,11 @@ static FILE *output = 0;
 static void help(char *prog)
 {
 	char *name = basename(prog);
-#define STR(x) #x
+#define STR_INDIR(x) #x
+#define STR(x) STR_INDIR(x)
 	printf("%s version %s\n", name, STR(VERSION));
 #undef STR
+#undef STR_INDIR
 	printf("usage: %s json-file mustach-templates...\n", name);
 	exit(0);
 }
