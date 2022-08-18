@@ -1,3 +1,16 @@
+1.2.3 (2022-08-18)
+------------------
+
+New:
+ - Flag Mustach_With_ErrorUndefined (and option --strict for the tool)
+   for returning a requested tag is not defined
+ - Test of specifications in separate directory
+
+Fix:
+ - Version printing is now okay
+ - Compiling libraries on Darwin (no soname but install_name)
+ - Compiling test6 with correct flags
+ - Update test from specifications
 
 1.2.2 (2021-10-28)
 ------------------

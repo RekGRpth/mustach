@@ -1,7 +1,7 @@
 # version
 MAJOR := 1
 MINOR := 2
-REVIS := 2
+REVIS := 3
 
 # installation settings
 DESTDIR ?=
@@ -43,7 +43,7 @@ ifneq ($(cjson),no)
   SINGLEOBJS += mustach-cjson.o
   SINGLEFLAGS += ${cjson_cflags}
   SINGLELIBS += ${cjson_libs}
-  TESTSPECS += test-specs-cjson
+  TESTSPECS += test-specs/test-specs-cjson
  else
   ifeq ($(cjson),yes)
    $(error Can't find required library cjson)
@@ -65,7 +65,7 @@ ifneq ($(jsonc),no)
   SINGLEOBJS += mustach-json-c.o
   SINGLEFLAGS += ${jsonc_cflags}
   SINGLELIBS += ${jsonc_libs}
-  TESTSPECS += test-specs-json-c
+  TESTSPECS += test-specs/test-specs-json-c
  else
   ifeq ($(jsonc),yes)
    $(error Can't find required library json-c)
@@ -87,7 +87,7 @@ ifneq ($(jansson),no)
   SINGLEOBJS += mustach-jansson.o
   SINGLEFLAGS += ${jansson_cflags}
   SINGLELIBS += ${jansson_libs}
-  TESTSPECS += test-specs-jansson
+  TESTSPECS += test-specs/test-specs-jansson
  else
   ifeq ($(jansson),yes)
    $(error Can't find required library jansson)
@@ -248,37 +248,41 @@ basic-tests: mustach
 
 spec-tests: $(TESTSPECS)
 
-test-specs-%: %-test-specs specs
-	./$< spec/specs/[a-z]*.json > $@.last || true
+test-specs/test-specs-%: test-specs/%-test-specs test-specs/specs
+	./$< test-specs/spec/specs/[a-z]*.json > $@.last || true
 	diff $@.ref $@.last
 
-cjson-test-specs.o: test-specs.c mustach.h mustach-wrap.h mustach-cjson.h
-	$(CC) -c $(CFLAGS) $(cjson_cflags) -DTEST=TEST_CJSON -o $@ $<
+test-specs/cjson-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-cjson.h
+	$(CC) -I. -c $(CFLAGS) $(cjson_cflags) -DTEST=TEST_CJSON -o $@ $<
 
-cjson-test-specs: cjson-test-specs.o mustach-cjson.o $(COREOBJS)
+test-specs/cjson-test-specs: test-specs/cjson-test-specs.o mustach-cjson.o $(COREOBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(cjson_libs)
 
-json-c-test-specs.o: test-specs.c mustach.h mustach-wrap.h mustach-json-c.h
-	$(CC) -c $(CFLAGS) $(jsonc_cflags) -DTEST=TEST_JSON_C -o $@ $<
+test-specs/json-c-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-json-c.h
+	$(CC) -I. -c $(CFLAGS) $(jsonc_cflags) -DTEST=TEST_JSON_C -o $@ $<
 
-json-c-test-specs: json-c-test-specs.o mustach-json-c.o $(COREOBJS)
+test-specs/json-c-test-specs: test-specs/json-c-test-specs.o mustach-json-c.o $(COREOBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(jsonc_libs)
 
-jansson-test-specs.o: test-specs.c mustach.h mustach-wrap.h mustach-jansson.h
-	$(CC) -c $(CFLAGS) $(jansson_cflags) -DTEST=TEST_JANSSON -o $@ $<
+test-specs/jansson-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-jansson.h
+	$(CC) -I. -c $(CFLAGS) $(jansson_cflags) -DTEST=TEST_JANSSON -o $@ $<
 
-jansson-test-specs: jansson-test-specs.o mustach-jansson.o $(COREOBJS)
+test-specs/jansson-test-specs: test-specs/jansson-test-specs.o mustach-jansson.o $(COREOBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(jansson_libs)
 
-.PHONY: specs
-specs:
-	if test -d spec; then git -C spec pull; else git clone https://github.com/mustache/spec.git; fi
+.PHONY: test-specs/specs
+test-specs/specs:
+	if test -d test-specs/spec; then \
+		git -C test-specs/spec pull; \
+	else \
+		git -C test-specs clone https://github.com/mustache/spec.git; \
+	fi
 
 #cleaning
 .PHONY: clean
 clean:
 	rm -f mustach libmustach*.so* *.o *.pc
-	rm -f *-test-specs test-specs-*.last
+	rm -f test-specs/*-test-specs test-specs/test-specs-*.last
 	rm -rf *.gcno *.gcda coverage.info gcov-latest
 	@$(MAKE) -C test1 clean
 	@$(MAKE) -C test2 clean

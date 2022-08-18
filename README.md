@@ -171,14 +171,14 @@ Here is the summary.
      Mustach_With_JsonPointer      | Interpret JSON Pointers
      Mustach_With_ObjectIter       | Iteration On Objects
      Mustach_With_EscFirstCmp      | Escape First Compare
-     Mustach_With_PartialDataFirst | Partial Data First
+     Mustach_With_ErrorUndefined   | Error when a requested tag is undefined
     -------------------------------+------------------------------------------------
      Mustach_With_AllExtensions    | Activate all known extensions
      Mustach_With_NoExtensions     | Disable any extension
 
 For the details, see below.
 
-### Explicit Tag Substitution With Colon
+### Explicit Tag Substitution With Colon (Mustach_With_Colon)
 
 In somecases the name of the key used for substition begins with a
 character reserved for mustach: one of `#`, `^`, `/`, `&`, `{`, `>` and `=`.
@@ -189,12 +189,64 @@ character.
 
 This is a core extension implemented in file **mustach.c**.
 
-### Empty Tag Allowed
+### Empty Tag Allowed (Mustach_With_EmptyTag)
 
 When an empty tag is found, instead of automatically raising the error
 MUSTACH\_ERROR\_EMPTY\_TAG pass it.
 
 This is a core extension implemented in file **mustach.c**.
+
+### Value Testing Equality (Mustach_With_Equal)
+
+This extension allows you to test the value of the selected key.
+It allows to write `key=value` (matching test) or `key=!value`
+(not matching test) in any query.
+
+This is a wrap extension implemented in file **mustach-wrap.c**.
+
+### Value Comparing (Mustach_With_Compare)
+
+These extension extends the extension for testing equality to also
+compare values if greater or lesser.
+Its allows to write `key>value` (greater), `key>=value` (greater or equal),
+`key<value` (lesser) and `key<=value` (lesser or equal).
+
+It the comparator sign appears in the first column it is ignored
+as if it was escaped.
+
+This is a wrap extension implemented in file **mustach-wrap.c**.
+
+### Interpret JSON Pointers (Mustach_With_JsonPointer)
+
+This extension allows to use JSON pointers as defined in IETF RFC 6901.
+If active, any key starting with "/" is a JSON pointer.
+This implies to use the colon to introduce JSON keys.
+
+A special escaping is used for `=`, `<`, `>` signs when
+values comparisons are enabled: `~=` gives `=` in the key.
+
+This is a wrap extension implemented in file **mustach-wrap.c**.
+
+### Iteration On Objects (Mustach_With_ObjectIter)
+
+With this extension, using the pattern `{{#X.*}}...{{/X.*}}`
+allows to iterate on fields of `X`.
+
+Example:
+
+- `{{s.*}} {{*}}:{{.}}{{/s.*}}` applied on `{"s":{"a":1,"b":true}}` produces ` a:1 b:true`
+
+Here the single star `{{*}}` is replaced by the iterated key
+and the single dot `{{.}}` is replaced by its value.
+
+This is a wrap extension implemented in file **mustach-wrap.c**.
+
+### Error when a requested tag is undefined (Mustach_With_ErrorUndefined)
+
+Report the error MUSTACH_ERROR_UNDEFINED_TAG when a requested tag
+is not defined.
+
+This is a wrap extension implemented in file **mustach-wrap.c**.
 
 ### Access To Current Value
 
@@ -209,52 +261,9 @@ Examples:
 
 This is a wrap extension implemented in file **mustach-wrap.c**.
 
-### Value Testing Equality
-
-This extension allows you to test the value of the selected key.
-It allows to write `key=value` (matching test) or `key=!value`
-(not matching test) in any query.
-
-This is a wrap extension implemented in file **mustach-wrap.c**.
-
-### Value Comparing
-
-These extension extends the extension for testing equality to also
-compare values if greater or lesser.
-Its allows to write `key>value` (greater), `key>=value` (greater or equal),
-`key<value` (lesser) and `key<=value` (lesser or equal).
-
-It the comparator sign appears in the first column it is ignored
-as if it was escaped.
-
-This is a wrap extension implemented in file **mustach-wrap.c**.
-
-### Interpret JSON Pointers
-
-This extension allows to use JSON pointers as defined in IETF RFC 6901.
-If active, any key starting with "/" is a JSON pointer.
-This implies to use the colon to introduce JSON keys.
-
-A special escaping is used for `=`, `<`, `>` signs when
-values comparisons are enabled: `~=` gives `=` in the key.
-
-This is a wrap extension implemented in file **mustach-wrap.c**.
-
-### Iteration On Objects
-
-With this extension, using the pattern `{{#X.*}}...{{/X.*}}`
-allows to iterate on fields of `X`.
-
-Example:
-
-- `{{s.*}} {{*}}:{{.}}{{/s.*}}` applied on `{"s":{"a":1,"b":true}}` produces ` a:1 b:true`
-
-Here the single star `{{*}}` is replaced by the iterated key
-and the single dot `{{.}}` is replaced by its value.
-
-This is a wrap extension implemented in file **mustach-wrap.c**.
-
 ### Partial Data First
+
+*this was an extension but is now always enforced*
 
 The default resolution for partial pattern like `{{> name}}`
 is to search for `name` in the current json context and
