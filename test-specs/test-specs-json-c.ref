@@ -1,6 +1,6 @@
 
-loading spec/specs/comments.json
-processing file spec/specs/comments.json
+loading test-specs/spec/specs/comments.json
+processing file test-specs/spec/specs/comments.json
 [0] Inline
 	Comment blocks should be removed from the template.
 	=> SUCCESS
@@ -38,8 +38,8 @@ processing file spec/specs/comments.json
 	Comments must never render, even if variable with same name exists.
 	=> SUCCESS
 
-loading spec/specs/delimiters.json
-processing file spec/specs/delimiters.json
+loading test-specs/spec/specs/delimiters.json
+processing file test-specs/spec/specs/delimiters.json
 [0] Pair Behavior
 	The equals sign (used on both sides) should permit delimiter changes.
 	=> SUCCESS
@@ -83,8 +83,8 @@ processing file spec/specs/delimiters.json
 	Superfluous in-tag whitespace should be ignored.
 	=> SUCCESS
 
-loading spec/specs/interpolation.json
-processing file spec/specs/interpolation.json
+loading test-specs/spec/specs/interpolation.json
+processing file test-specs/spec/specs/interpolation.json
 [0] No Interpolation
 	Mustache-free templates should render as-is.
 	=> SUCCESS
@@ -203,8 +203,8 @@ processing file spec/specs/interpolation.json
 	Superfluous in-tag whitespace should be ignored.
 	=> SUCCESS
 
-loading spec/specs/inverted.json
-processing file spec/specs/inverted.json
+loading test-specs/spec/specs/inverted.json
+processing file test-specs/spec/specs/inverted.json
 [0] Falsey
 	Falsey sections should have their contents rendered.
 	=> SUCCESS
@@ -272,8 +272,8 @@ processing file spec/specs/inverted.json
 	Superfluous in-tag whitespace should be ignored.
 	=> SUCCESS
 
-loading spec/specs/partials.json
-processing file spec/specs/partials.json
+loading test-specs/spec/specs/partials.json
+processing file test-specs/spec/specs/partials.json
 [0] Basic Behavior
 	The greater-than operator should expand to the named partial.
 	=> SUCCESS
@@ -308,8 +308,8 @@ processing file spec/specs/partials.json
 	Superfluous in-tag whitespace should be ignored.
 	=> SUCCESS
 
-loading spec/specs/sections.json
-processing file spec/specs/sections.json
+loading test-specs/spec/specs/sections.json
+processing file test-specs/spec/specs/sections.json
 [0] Truthy
 	Truthy sections should have their contents rendered.
 	=> SUCCESS
@@ -363,11 +363,7 @@ a simple way to display content conditionally if a variable exists.
 	=> SUCCESS
 [16] Implicit Iterator - Decimal
 	Implicit iterators should cast decimals to strings and interpolate.
-	=> DIFFERS
-	..     DATA[{"list":[1.1000000000000001,2.2000000000000002,3.2999999999999998,4.4000000000000004,5.5]}]
-	.. TEMPLATE["{{#list}}({{.}}){{/list}}"]
-	.. EXPECTED["(1.1)(2.2)(3.3)(4.4)(5.5)"]
-	..      GOT["(1.1000000000000001)(2.2000000000000002)(3.2999999999999998)(4.4000000000000004)(5.5)"]
+	=> SUCCESS
 [17] Implicit Iterator - Array
 	Implicit iterators should allow iterating over nested arrays.
 	=> SUCCESS
@@ -410,5 +406,5 @@ a simple way to display content conditionally if a variable exists.
 
 summary:
   error   0
-  differ  1
-  success 127
+  differ  0
+  success 128
