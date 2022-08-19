@@ -48,7 +48,19 @@ static void help(char *prog)
 	printf("%s version %s\n", name, STR(VERSION));
 #undef STR
 #undef STR_INDIR
-	printf("usage: %s json-file mustach-templates...\n", name);
+	printf(
+		"\n"
+		"USAGE:\n"
+		"    %s [FLAGS] <json-file> <mustach-templates...>\n"
+		"\n"
+		"FLAGS:\n"
+		"    -h, --help     Prints help information\n"
+		"    -s, --strict   Error when a tag is undefined\n"
+		"\n"
+		"ARGS: (if a file is -, read standard input)\n"
+		"    <json-file>              JSON file with input data\n"
+		"    <mustach-templates...>   Template files to instanciate\n",
+		name);
 	exit(0);
 }
 
