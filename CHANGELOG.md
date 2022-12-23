@@ -1,4 +1,4 @@
-1.2.3 (2022-08-18)
+1.2.3 (2022-12-21)
 ------------------
 
 New:
@@ -11,6 +11,7 @@ Fix:
  - Compiling libraries on Darwin (no soname but install_name)
  - Compiling test6 with correct flags
  - Update test from specifications
+ - Better use of valgrind reports
 
 1.2.2 (2021-10-28)
 ------------------
