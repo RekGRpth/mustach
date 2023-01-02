@@ -4,6 +4,7 @@ Main author:
 Contributors:
  Abhishek Mishra
  Atlas
+ Gabriel Zachmann
  Harold L Marzan
  Kurt Jung
  Lailton Fernando Mariano
@@ -18,6 +19,7 @@ Contributors:
 Packagers:
  pkgsrc: Sijmen J. Mulder
  alpine linux: Lucas Ramage
+ RPM & DEB: Marcus Hardt
 
 Thanks to issue submitters:
  Dante Torres
