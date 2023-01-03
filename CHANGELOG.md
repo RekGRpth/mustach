@@ -1,5 +1,8 @@
 ???
 ------------------
+Fix:
+ - Don't override CFLAGS in Makefile
+
 Minor:
  - Orthograf of 'instantiate'
 
