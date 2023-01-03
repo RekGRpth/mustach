@@ -1,7 +1,7 @@
 # version
 MAJOR := 1
 MINOR := 2
-REVIS := 3
+REVIS := 4
 
 # installation settings
 DESTDIR ?=
