@@ -26,7 +26,7 @@ extern const struct mustach_wrap_itf mustach_json_c_wrap_itf;
 /**
  * mustach_json_c_file - Renders the mustache 'template' in 'file' for 'root'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @file:     the file where to write the result
@@ -39,7 +39,7 @@ extern int mustach_json_c_file(const char *template, size_t length, struct json_
 /**
  * mustach_json_c_fd - Renders the mustache 'template' in 'fd' for 'root'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @fd:       the file descriptor number where to write the result
@@ -52,7 +52,7 @@ extern int mustach_json_c_fd(const char *template, size_t length, struct json_ob
 /**
  * mustach_json_c_mem - Renders the mustache 'template' in 'result' for 'root'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @result:   the pointer receiving the result when 0 is returned
@@ -66,7 +66,7 @@ extern int mustach_json_c_mem(const char *template, size_t length, struct json_o
 /**
  * mustach_json_c_write - Renders the mustache 'template' for 'root' to custom writer 'writecb' with 'closure'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @writecb:  the function that write values
@@ -80,7 +80,7 @@ extern int mustach_json_c_write(const char *template, size_t length, struct json
 /**
  * mustach_json_c_emit - Renders the mustache 'template' for 'root' to custom emiter 'emitcb' with 'closure'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @emitcb:   the function that emit values
@@ -100,7 +100,7 @@ extern int mustach_json_c_emit(const char *template, size_t length, struct json_
  *
  * fmustach_json_c - Renders the mustache 'template' in 'file' for 'root'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @root:     the root json object to render
  * @file:     the file where to write the result
  *
@@ -115,7 +115,7 @@ DEPRECATED_MUSTACH(extern int fmustach_json_c(const char *template, struct json_
  *
  * fdmustach_json_c - Renders the mustache 'template' in 'fd' for 'root'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @root:     the root json object to render
  * @fd:       the file descriptor number where to write the result
  *
@@ -130,7 +130,7 @@ DEPRECATED_MUSTACH(extern int fdmustach_json_c(const char *template, struct json
  *
  * mustach_json_c - Renders the mustache 'template' in 'result' for 'root'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @root:     the root json object to render
  * @result:   the pointer receiving the result when 0 is returned
  * @size:     the size of the returned result
@@ -146,7 +146,7 @@ DEPRECATED_MUSTACH(extern int mustach_json_c(const char *template, struct json_o
  *
  * umustach_json_c - Renders the mustache 'template' for 'root' to custom writer 'writecb' with 'closure'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @root:     the root json object to render
  * @writecb:  the function that write values
  * @closure:  the closure for the write function
