@@ -212,7 +212,7 @@ struct mustach_sbuf {
 /**
  * mustach_file - Renders the mustache 'template' in 'file' for 'itf' and 'closure'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
@@ -226,7 +226,7 @@ extern int mustach_file(const char *template, size_t length, const struct mustac
 /**
  * mustach_fd - Renders the mustache 'template' in 'fd' for 'itf' and 'closure'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
@@ -240,7 +240,7 @@ extern int mustach_fd(const char *template, size_t length, const struct mustach_
 /**
  * mustach_mem - Renders the mustache 'template' in 'result' for 'itf' and 'closure'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
@@ -268,7 +268,7 @@ extern int mustach_mem(const char *template, size_t length, const struct mustach
  *
  * fmustach - Renders the mustache 'template' in 'file' for 'itf' and 'closure'.
  *
- * @template: the template string to instanciate, null terminated
+ * @template: the template string to instantiate, null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
  * @file:     the file where to write the result
@@ -283,7 +283,7 @@ DEPRECATED_MUSTACH(extern int fmustach(const char *template, const struct mustac
  *
  * fdmustach - Renders the mustache 'template' in 'fd' for 'itf' and 'closure'.
  *
- * @template: the template string to instanciate, null terminated
+ * @template: the template string to instantiate, null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
  * @fd:       the file descriptor number where to write the result
@@ -298,7 +298,7 @@ DEPRECATED_MUSTACH(extern int fdmustach(const char *template, const struct musta
  *
  * mustach - Renders the mustache 'template' in 'result' for 'itf' and 'closure'.
  *
- * @template: the template string to instanciate, null terminated
+ * @template: the template string to instantiate, null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
  * @result:   the pointer receiving the result when 0 is returned

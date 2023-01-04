@@ -145,7 +145,7 @@ $(info cjson   = ${cjson})
 
 # settings
 
-override CFLAGS += -fPIC -Wall -Wextra -DVERSION=${VERSION}
+EFLAGS = -fPIC -Wall -Wextra -DVERSION=${VERSION}
 
 ifeq ($(shell uname),Darwin)
  LDFLAGS_single  += -install_name $(LIBDIR)/libmustach.so$(SOVEREV)
@@ -192,22 +192,22 @@ libmustach-jansson.so$(SOVEREV): $(COREOBJS) mustach-jansson.o
 # objects
 
 mustach.o: mustach.c mustach.h
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(EFLAGS) $(CFLAGS) -o $@ $<
 
 mustach-wrap.o: mustach-wrap.c mustach.h mustach-wrap.h
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(EFLAGS) $(CFLAGS) -o $@ $<
 
 mustach-tool.o: mustach-tool.c mustach.h mustach-json-c.h $(TOOLDEP)
-	$(CC) -c $(CFLAGS) $(TOOLFLAGS) -o $@ $<
+	$(CC) -c $(EFLAGS) $(CFLAGS) $(TOOLFLAGS) -o $@ $<
 
 mustach-cjson.o: mustach-cjson.c mustach.h mustach-wrap.h mustach-cjson.h
-	$(CC) -c $(CFLAGS) $(cjson_cflags) -o $@ $<
+	$(CC) -c $(EFLAGS) $(CFLAGS) $(cjson_cflags) -o $@ $<
 
 mustach-json-c.o: mustach-json-c.c mustach.h mustach-wrap.h mustach-json-c.h
-	$(CC) -c $(CFLAGS) $(jsonc_cflags) -o $@ $<
+	$(CC) -c $(EFLAGS) $(CFLAGS) $(jsonc_cflags) -o $@ $<
 
 mustach-jansson.o: mustach-jansson.c mustach.h mustach-wrap.h mustach-jansson.h
-	$(CC) -c $(CFLAGS) $(jansson_cflags) -o $@ $<
+	$(CC) -c $(EFLAGS) $(CFLAGS) $(jansson_cflags) -o $@ $<
 
 # installing
 .PHONY: install
@@ -253,19 +253,19 @@ test-specs/test-specs-%: test-specs/%-test-specs test-specs/specs
 	diff $@.ref $@.last
 
 test-specs/cjson-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-cjson.h
-	$(CC) -I. -c $(CFLAGS) $(cjson_cflags) -DTEST=TEST_CJSON -o $@ $<
+	$(CC) -I. -c $(EFLAGS) $(CFLAGS) $(cjson_cflags) -DTEST=TEST_CJSON -o $@ $<
 
 test-specs/cjson-test-specs: test-specs/cjson-test-specs.o mustach-cjson.o $(COREOBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(cjson_libs)
 
 test-specs/json-c-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-json-c.h
-	$(CC) -I. -c $(CFLAGS) $(jsonc_cflags) -DTEST=TEST_JSON_C -o $@ $<
+	$(CC) -I. -c $(EFLAGS) $(CFLAGS) $(jsonc_cflags) -DTEST=TEST_JSON_C -o $@ $<
 
 test-specs/json-c-test-specs: test-specs/json-c-test-specs.o mustach-json-c.o $(COREOBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(jsonc_libs)
 
 test-specs/jansson-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-jansson.h
-	$(CC) -I. -c $(CFLAGS) $(jansson_cflags) -DTEST=TEST_JANSSON -o $@ $<
+	$(CC) -I. -c $(EFLAGS) $(CFLAGS) $(jansson_cflags) -DTEST=TEST_JANSSON -o $@ $<
 
 test-specs/jansson-test-specs: test-specs/jansson-test-specs.o mustach-jansson.o $(COREOBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(jansson_libs)

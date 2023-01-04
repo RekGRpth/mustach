@@ -26,7 +26,7 @@ extern const struct mustach_wrap_itf mustach_jansson_wrap_itf;
 /**
  * mustach_jansson_file - Renders the mustache 'template' in 'file' for 'root'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @file:     the file where to write the result
@@ -39,7 +39,7 @@ extern int mustach_jansson_file(const char *template, size_t length, json_t *roo
 /**
  * mustach_jansson_fd - Renders the mustache 'template' in 'fd' for 'root'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @fd:       the file descriptor number where to write the result
@@ -53,7 +53,7 @@ extern int mustach_jansson_fd(const char *template, size_t length, json_t *root,
 /**
  * mustach_jansson_mem - Renders the mustache 'template' in 'result' for 'root'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @result:   the pointer receiving the result when 0 is returned
@@ -67,7 +67,7 @@ extern int mustach_jansson_mem(const char *template, size_t length, json_t *root
 /**
  * mustach_jansson_write - Renders the mustache 'template' for 'root' to custom writer 'writecb' with 'closure'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @writecb:  the function that write values
@@ -81,7 +81,7 @@ extern int mustach_jansson_write(const char *template, size_t length, json_t *ro
 /**
  * mustach_jansson_emit - Renders the mustache 'template' for 'root' to custom emiter 'emitcb' with 'closure'.
  *
- * @template: the template string to instanciate
+ * @template: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @root:     the root json object to render
  * @emitcb:   the function that emit values

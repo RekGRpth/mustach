@@ -59,7 +59,7 @@ static void help(char *prog)
 		"\n"
 		"ARGS: (if a file is -, read standard input)\n"
 		"    <json-file>              JSON file with input data\n"
-		"    <mustach-templates...>   Template files to instanciate\n",
+		"    <mustach-templates...>   Template files to instantiate\n",
 		name);
 	exit(0);
 }
