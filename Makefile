@@ -14,6 +14,7 @@ PKGDIR  ?= $(LIBDIR)/pkgconfig
 
 # Tools (sed must be GNU sed)
 SED ?= sed
+INSTALL ?= install
 
 # initial settings
 VERSION := $(MAJOR).$(MINOR).$(REVIS)
@@ -212,20 +213,20 @@ mustach-jansson.o: mustach-jansson.c mustach.h mustach-wrap.h mustach-jansson.h
 # installing
 .PHONY: install
 install: all
-	install -d $(DESTDIR)$(BINDIR)
-	install -m0755 mustach       $(DESTDIR)$(BINDIR)/
-	install -d $(DESTDIR)$(INCLUDEDIR)/mustach
-	install -m0644 $(HEADERS)    $(DESTDIR)$(INCLUDEDIR)/mustach
-	install -d $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m0755 mustach       $(DESTDIR)$(BINDIR)/
+	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR)/mustach
+	$(INSTALL) -m0644 $(HEADERS)    $(DESTDIR)$(INCLUDEDIR)/mustach
+	$(INSTALL) -d $(DESTDIR)$(LIBDIR)
 	for x in libmustach*.so$(SOVEREV); do \
-		install -m0755 $$x $(DESTDIR)$(LIBDIR)/ ;\
+		$(INSTALL) -m0755 $$x $(DESTDIR)$(LIBDIR)/ ;\
 		ln -sf $$x $(DESTDIR)$(LIBDIR)/$${x%.so.*}.so$(SOVER) ;\
 		ln -sf $$x $(DESTDIR)$(LIBDIR)/$${x%.so.*}.so ;\
 	done
-	install -d $(DESTDIR)/$(PKGDIR)
-	install -m0644 libmustach*.pc $(DESTDIR)/$(PKGDIR)
-	install -d $(DESTDIR)/$(MANDIR)/man1
-	install -m0644 mustach.1.gz $(DESTDIR)/$(MANDIR)/man1
+	$(INSTALL) -d $(DESTDIR)/$(PKGDIR)
+	$(INSTALL) -m0644 libmustach*.pc $(DESTDIR)/$(PKGDIR)
+	$(INSTALL) -d $(DESTDIR)/$(MANDIR)/man1
+	$(INSTALL) -m0644 mustach.1.gz $(DESTDIR)/$(MANDIR)/man1
 
 # deinstalling
 .PHONY: uninstall
