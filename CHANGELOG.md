@@ -1,7 +1,8 @@
-???
+1.2.5 (2023-02-18)
 ------------------
 Fix:
  - Don't override CFLAGS in Makefile
+ - Use of $(INSTALL) in Makefile for setting options
 
 Minor:
  - Orthograf of 'instantiate'
