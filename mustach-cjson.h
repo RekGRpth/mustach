@@ -10,7 +10,7 @@
 #define _mustach_cJSON_h_included_
 
 /*
- * mustach-json-c is intended to make integration of cJSON
+ * mustach-cjson is intended to make integration of cJSON
  * library by providing integrated functions.
  */
 
