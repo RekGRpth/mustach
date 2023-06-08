@@ -6,7 +6,9 @@
  SPDX-License-Identifier: ISC
 */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -227,20 +229,20 @@ static enum sel sel(struct wrap *w, const char *name)
 	return result;
 }
 
-static int start(void *closure)
+static int start_callback(void *closure)
 {
 	struct wrap *w = closure;
 	return w->itf->start ? w->itf->start(w->closure) : MUSTACH_OK;
 }
 
-static void stop(void *closure, int status)
+static void stop_callback(void *closure, int status)
 {
 	struct wrap *w = closure;
 	if (w->itf->stop)
 		w->itf->stop(w->closure, status);
 }
 
-static int write(struct wrap *w, const char *buffer, size_t size, FILE *file)
+static int emit(struct wrap *w, const char *buffer, size_t size, FILE *file)
 {
 	int r;
 
@@ -251,7 +253,7 @@ static int write(struct wrap *w, const char *buffer, size_t size, FILE *file)
 	return r;
 }
 
-static int emit(void *closure, const char *buffer, size_t size, int escape, FILE *file)
+static int emit_callback(void *closure, const char *buffer, size_t size, int escape, FILE *file)
 {
 	struct wrap *w = closure;
 	int r;
@@ -261,7 +263,7 @@ static int emit(void *closure, const char *buffer, size_t size, int escape, FILE
 	if (w->emitcb)
 		r = w->emitcb(file, buffer, size, escape);
 	else if (!escape)
-		r = write(w, buffer, size, file);
+		r = emit(w, buffer, size, file);
 	else {
 		i = 0;
 		r = MUSTACH_OK;
@@ -270,13 +272,13 @@ static int emit(void *closure, const char *buffer, size_t size, int escape, FILE
 			while (i < size && (car = buffer[i]) != '<' && car != '>' && car != '&' && car != '"')
 				i++;
 			if (i != s)
-				r = write(w, &buffer[s], i - s, file);
+				r = emit(w, &buffer[s], i - s, file);
 			if (i < size && r == MUSTACH_OK) {
 				switch(car) {
-				case '<': r = write(w, "&lt;", 4, file); break;
-				case '>': r = write(w, "&gt;", 4, file); break;
-				case '&': r = write(w, "&amp;", 5, file); break;
-				case '"': r = write(w, "&quot;", 6, file); break;
+				case '<': r = emit(w, "&lt;", 4, file); break;
+				case '>': r = emit(w, "&gt;", 4, file); break;
+				case '&': r = emit(w, "&amp;", 5, file); break;
+				case '"': r = emit(w, "&quot;", 6, file); break;
 				}
 				i++;
 			}
@@ -285,20 +287,20 @@ static int emit(void *closure, const char *buffer, size_t size, int escape, FILE
 	return r;
 }
 
-static int enter(void *closure, const char *name)
+static int enter_callback(void *closure, const char *name)
 {
 	struct wrap *w = closure;
 	enum sel s = sel(w, name);
 	return s == S_none ? 0 : w->itf->enter(w->closure, s & S_objiter);
 }
 
-static int next(void *closure)
+static int next_callback(void *closure)
 {
 	struct wrap *w = closure;
 	return w->itf->next(w->closure);
 }
 
-static int leave(void *closure)
+static int leave_callback(void *closure)
 {
 	struct wrap *w = closure;
 	return w->itf->leave(w->closure);
@@ -312,7 +314,7 @@ static int getoptional(struct wrap *w, const char *name, struct mustach_sbuf *sb
 	return w->itf->get(w->closure, sbuf, s & S_objiter);
 }
 
-static int get(void *closure, const char *name, struct mustach_sbuf *sbuf)
+static int get_callback(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct wrap *w = closure;
 	if (getoptional(w, name, sbuf) <= 0) {
@@ -374,7 +376,7 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 	return MUSTACH_ERROR_SYSTEM;
 }
 
-static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
+static int partial_callback(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct wrap *w = closure;
 	int rc;
@@ -397,15 +399,15 @@ static int partial(void *closure, const char *name, struct mustach_sbuf *sbuf)
 }
 
 const struct mustach_itf mustach_wrap_itf = {
-	.start = start,
+	.start = start_callback,
 	.put = NULL,
-	.enter = enter,
-	.next = next,
-	.leave = leave,
-	.partial = partial,
-	.get = get,
-	.emit = emit,
-	.stop = stop
+	.enter = enter_callback,
+	.next = next_callback,
+	.leave = leave_callback,
+	.partial = partial_callback,
+	.get = get_callback,
+	.emit = emit_callback,
+	.stop = stop_callback
 };
 
 static void wrap_init(struct wrap *wrap, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, mustach_write_cb_t *writecb)
