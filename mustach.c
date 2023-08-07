@@ -274,6 +274,7 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 				template += l;
 				stdalone = 1;
 				pref.len = 0;
+				pref.prefix = prefix;
 			}
 			else if (!isspace(c)) {
 				if (stdalone == 2 && enabled) {
@@ -282,6 +283,7 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 						return rc;
 					pref.len = 0;
 					stdalone = 0;
+					pref.prefix = NULL;
 				}
 				if (c == *opstr && end - beg >= (ssize_t)oplen) {
 					for (l = 1 ; l < oplen && beg[l] == opstr[l] ; l++);
@@ -362,6 +364,7 @@ get_name:
 			if (rc < 0)
 				return rc;
 			pref.len = 0;
+			pref.prefix = NULL;
 		}
 		switch(c) {
 		case '!':
@@ -487,7 +490,7 @@ int mustach_file(const char *template, size_t length, const struct mustach_itf *
 	/* process */
 	rc = itf->start ? itf->start(closure) : 0;
 	if (rc == 0)
-		rc = process(template, length, &iwrap, file, 0);
+		rc = process(template, length, &iwrap, file, NULL);
 	if (itf->stop)
 		itf->stop(closure, rc);
 	return rc;

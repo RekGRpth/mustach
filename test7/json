@@ -1,0 +1,8 @@
+{ "data": "grandparent", "children": [
+  { "data": "parent", "children": [
+    { "data": "child", "children": [] }
+  ]},
+  { "data": "parent2", "children": [
+    { "data": "child2", "children": [ { "data": "pet", "children": false } ]}
+  ]}
+]}
