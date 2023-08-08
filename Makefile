@@ -246,6 +246,7 @@ basic-tests: mustach
 	@$(MAKE) -C test4 test
 	@$(MAKE) -C test5 test
 	@$(MAKE) -C test6 test
+	@$(MAKE) -C test7 test
 
 spec-tests: $(TESTSPECS)
 
