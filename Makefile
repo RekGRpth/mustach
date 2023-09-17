@@ -214,7 +214,9 @@ mustach-jansson.o: mustach-jansson.c mustach.h mustach-wrap.h mustach-jansson.h
 .PHONY: install
 install: all
 	$(INSTALL) -d $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m0755 mustach       $(DESTDIR)$(BINDIR)/
+	if test "${tool}" != "none"; then \
+		$(INSTALL) -m0755 mustach $(DESTDIR)$(BINDIR)/; \
+	fi
 	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR)/mustach
 	$(INSTALL) -m0644 $(HEADERS)    $(DESTDIR)$(INCLUDEDIR)/mustach
 	$(INSTALL) -d $(DESTDIR)$(LIBDIR)

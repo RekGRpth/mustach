@@ -4,6 +4,7 @@
 Fix:
  - improve naming
  - magical spaces in recursive partials (#43)
+ - installation when tool isn't built
 
 1.2.5 (2023-02-18)
 ------------------
