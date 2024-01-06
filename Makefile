@@ -249,6 +249,7 @@ basic-tests: mustach
 	@$(MAKE) -C test5 test
 	@$(MAKE) -C test6 test
 	@$(MAKE) -C test7 test
+	@$(MAKE) -C test8 test
 
 spec-tests: $(TESTSPECS)
 
@@ -294,6 +295,8 @@ clean:
 	@$(MAKE) -C test4 clean
 	@$(MAKE) -C test5 clean
 	@$(MAKE) -C test6 clean
+	@$(MAKE) -C test7 clean
+	@$(MAKE) -C test8 clean
 
 # manpage
 .PHONY: manuals

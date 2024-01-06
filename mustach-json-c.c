@@ -126,7 +126,8 @@ static int enter(void *closure, int objiter)
 		e->stack[e->depth].cont = o;
 		e->stack[e->depth].obj = json_object_array_get_idx(o, 0);
 		e->stack[e->depth].index = 0;
-	} else if (json_object_is_type(o, json_type_object) || json_object_get_boolean(o)) {
+	} else if ((json_object_is_type(o, json_type_object) && json_object_object_length(o) > 0)
+		|| json_object_get_boolean(o)) {
 		e->stack[e->depth].count = 1;
 		e->stack[e->depth].cont = NULL;
 		e->stack[e->depth].obj = o;

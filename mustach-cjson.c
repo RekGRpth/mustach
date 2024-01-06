@@ -127,7 +127,10 @@ static int enter(void *closure, int objiter)
 		e->stack[e->depth].obj = o->child;
 		e->stack[e->depth].next = o->child->next;
 		e->stack[e->depth].cont = o;
-	} else if ((cJSON_IsObject(o) && o->child == NULL) || (! cJSON_IsFalse(o) && ! cJSON_IsNull(o))) {
+	} else if ((cJSON_IsObject(o) && o->child != NULL)
+	        || cJSON_IsTrue(o)
+	        || (cJSON_IsString(o) && cJSON_GetStringValue(o)[0] != '\0')
+	        || (cJSON_IsNumber(o) && cJSON_GetNumberValue(o) != 0)) {
 		e->stack[e->depth].obj = o;
 		e->stack[e->depth].cont = NULL;
 		e->stack[e->depth].next = NULL;
