@@ -132,7 +132,11 @@ static int enter(void *closure, int objiter)
 		e->stack[e->depth].cont = o;
 		e->stack[e->depth].obj = json_array_get(o, 0);
 		e->stack[e->depth].index = 0;
-	} else if ((json_is_object(o) && json_object_size(0)) || (!json_is_false(o) && !json_is_null(o))) {
+	} else if ((json_is_object(o) && json_object_size(o))
+                || json_is_true(o)
+	        || (json_is_string(o) && json_string_length(o) > 0)
+	        || (json_is_integer(o) && json_integer_value(o) != 0)
+	        || (json_is_real(o) && json_real_value(o) != 0)) {
 		e->stack[e->depth].count = 1;
 		e->stack[e->depth].cont = NULL;
 		e->stack[e->depth].obj = o;

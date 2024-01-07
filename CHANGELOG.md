@@ -2,9 +2,13 @@
 ------------------
 
 Fix:
- - improve naming
+ - improve naming (#42)
  - magical spaces in recursive partials (#43)
  - installation when tool isn't built
+ - correct detection of falsey values (#45)
+
+Minor:
+ - update to newer reference tests
 
 1.2.5 (2023-02-18)
 ------------------

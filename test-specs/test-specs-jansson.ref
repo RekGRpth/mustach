@@ -371,44 +371,56 @@ a simple way to display content conditionally if a variable exists.
 [17] Implicit Iterator - Array
 	Implicit iterators should allow iterating over nested arrays.
 	=> SUCCESS
-[18] Dotted Names - Truthy
+[18] Implicit Iterator - HTML Escaping
+	Implicit iterators with basic interpolation should be HTML escaped.
+	=> SUCCESS
+[19] Implicit Iterator - Triple mustache
+	Implicit iterators in triple mustache should interpolate without HTML escaping.
+	=> SUCCESS
+[20] Implicit Iterator - Ampersand
+	Implicit iterators in an Ampersand tag should interpolate without HTML escaping.
+	=> SUCCESS
+[21] Implicit Iterator - Root-level
+	Implicit iterators should work on root-level lists.
+	=> SUCCESS
+[22] Dotted Names - Truthy
 	Dotted names should be valid for Section tags.
 	=> SUCCESS
-[19] Dotted Names - Falsey
+[23] Dotted Names - Falsey
 	Dotted names should be valid for Section tags.
 	=> SUCCESS
-[20] Dotted Names - Broken Chains
+[24] Dotted Names - Broken Chains
 	Dotted names that cannot be resolved should be considered falsey.
 	=> SUCCESS
-[21] Surrounding Whitespace
+[25] Surrounding Whitespace
 	Sections should not alter surrounding whitespace.
 	=> SUCCESS
-[22] Internal Whitespace
+[26] Internal Whitespace
 	Sections should not alter internal whitespace.
 	=> SUCCESS
-[23] Indented Inline Sections
+[27] Indented Inline Sections
 	Single-line sections should not alter surrounding whitespace.
 	=> SUCCESS
-[24] Standalone Lines
+[28] Standalone Lines
 	Standalone lines should be removed from the template.
 	=> SUCCESS
-[25] Indented Standalone Lines
+[29] Indented Standalone Lines
 	Indented standalone lines should be removed from the template.
 	=> SUCCESS
-[26] Standalone Line Endings
+[30] Standalone Line Endings
 	"\r\n" should be considered a newline for standalone tags.
 	=> SUCCESS
-[27] Standalone Without Previous Line
+[31] Standalone Without Previous Line
 	Standalone tags should not require a newline to precede them.
 	=> SUCCESS
-[28] Standalone Without Newline
+[32] Standalone Without Newline
 	Standalone tags should not require a newline to follow them.
 	=> SUCCESS
-[29] Padding
+[33] Padding
 	Superfluous in-tag whitespace should be ignored.
 	=> SUCCESS
 
 summary:
   error   0
   differ  1
-  success 127
+  success 131
