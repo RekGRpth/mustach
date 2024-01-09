@@ -96,11 +96,21 @@ static int sel(void *closure, const char *name)
 static int subsel(void *closure, const char *name)
 {
 	struct expl *e = closure;
-	json_t *o;
-	int r;
+	json_t *o = NULL;
+	int r = 0;
 
-	o = json_object_get(e->selection, name);
-	r = o != NULL;
+	if (json_is_object(e->selection)) {
+		o = json_object_get(e->selection, name);
+		r = o != NULL;
+	}
+	else if (json_is_array(e->selection)) {
+		char *end;
+		size_t idx = (size_t)strtol(name, &end, 10);
+		if (!*end && idx < json_array_size(e->selection)) {
+			o = json_array_get(e->selection, idx);
+			r = 1;
+		}		
+	}
 	if (r)
 		e->selection = o;
 	return r;

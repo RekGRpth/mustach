@@ -92,11 +92,21 @@ static int sel(void *closure, const char *name)
 static int subsel(void *closure, const char *name)
 {
 	struct expl *e = closure;
-	cJSON *o;
-	int r;
+	cJSON *o = NULL;
+	int r = 0;
 
-	o = cJSON_GetObjectItemCaseSensitive(e->selection, name);
-	r = o != NULL;
+	if (cJSON_IsObject(e->selection)) {
+		o = cJSON_GetObjectItemCaseSensitive(e->selection, name);
+		r = o != NULL;
+	}
+	else if (cJSON_IsArray(e->selection) && *name) {
+		char *end;
+		int idx = (int)strtol(name, &end, 10);
+		if (!*end && idx >= 0 && idx < cJSON_GetArraySize(e->selection)) {
+			o = cJSON_GetArrayItem(e->selection, idx);
+			r = 1;
+		}
+	}
 	if (r)
 		e->selection = o;
 	return r;
