@@ -1,4 +1,10 @@
-1.2.6
+next
+----
+
+Fix:
+ - selection of subitem by index (#47)
+
+1.2.6 (2024-01-08)
 ------------------
 
 Fix:
