@@ -185,11 +185,15 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 {
 	struct expl *e = closure;
 	const char *s;
+	int d;
 
 	if (key) {
-		s = e->stack[e->depth].is_objiter
-			? e->stack[e->depth].obj->string
-			: "";
+		s = "";
+		for (d = e->depth ; d >= 0 ; d--)
+			if (e->stack[d].is_objiter) {
+				s = e->stack[d].obj->string;
+				break;
+			}
 	}
 	else if (cJSON_IsString(e->selection))
 		s = e->selection->valuestring;
