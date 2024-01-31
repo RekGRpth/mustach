@@ -3,6 +3,7 @@ next
 
 Fix:
  - selection of subitem by index (#47)
+ - get latest iterated key when getting key name (#52)
 
 1.2.6 (2024-01-08)
 ------------------

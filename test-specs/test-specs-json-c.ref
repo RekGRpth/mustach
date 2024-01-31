@@ -286,25 +286,28 @@ processing file test-specs/spec/specs/partials.json
 [3] Recursion
 	The greater-than operator should properly recurse.
 	=> SUCCESS
-[4] Surrounding Whitespace
+[4] Nested
+	The greater-than operator should work from within partials.
+	=> SUCCESS
+[5] Surrounding Whitespace
 	The greater-than operator should not alter surrounding whitespace.
 	=> SUCCESS
-[5] Inline Indentation
+[6] Inline Indentation
 	Whitespace should be left untouched.
 	=> SUCCESS
-[6] Standalone Line Endings
+[7] Standalone Line Endings
 	"\r\n" should be considered a newline for standalone tags.
 	=> SUCCESS
-[7] Standalone Without Previous Line
+[8] Standalone Without Previous Line
 	Standalone tags should not require a newline to precede them.
 	=> SUCCESS
-[8] Standalone Without Newline
+[9] Standalone Without Newline
 	Standalone tags should not require a newline to follow them.
 	=> SUCCESS
-[9] Standalone Indentation
+[10] Standalone Indentation
 	Each line of the partial should be indented before rendering.
 	=> SUCCESS
-[10] Padding Whitespace
+[11] Padding Whitespace
 	Superfluous in-tag whitespace should be ignored.
 	=> SUCCESS
 
@@ -419,4 +422,4 @@ a simple way to display content conditionally if a variable exists.
 summary:
   error   0
   differ  0
-  success 132
+  success 133

@@ -188,11 +188,16 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key)
 {
 	struct expl *e = closure;
 	const char *s;
+	int d;
 
-	if (key)
-		s = e->stack[e->depth].is_objiter
-			? json_object_iter_peek_name(&e->stack[e->depth].iter)
-			: "";
+	if (key) {
+		s = "";
+		for (d = e->depth ; d >= 0 ; d--)
+			if (e->stack[d].is_objiter) {
+				s = json_object_iter_peek_name(&e->stack[d].iter);
+				break;
+			}
+	}
 	else
 		switch (json_object_get_type(e->selection)) {
 		case json_type_string:
