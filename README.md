@@ -154,6 +154,13 @@ The libraries that can be produced are:
 There is no dependencies of a library to an other. This is intended and doesn't
 hurt today because the code is small.
 
+### Testing
+
+The makefile offers the way to execute basic tests. Just type `make test`.
+
+By default, if valgrind is available, tests are using it. It can be disabled
+by typing `make test valgrind=no` or `NOVALGRIND=1 make test`.
+
 ## Extensions
 
 The current implementation provides extensions to specifications of **mustache**.
