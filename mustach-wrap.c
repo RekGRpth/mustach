@@ -20,6 +20,10 @@
 #include "mustach.h"
 #include "mustach-wrap.h"
 
+#if !defined(MUSTACH_LOAD_TEMPLATE)
+#define MUSTACH_LOAD_TEMPLATE 1
+#endif
+
 #if !defined(INCLUDE_PARTIAL_EXTENSION)
 # define INCLUDE_PARTIAL_EXTENSION ".mustache"
 #endif
@@ -325,6 +329,7 @@ static int get_callback(void *closure, const char *name, struct mustach_sbuf *sb
 	return MUSTACH_OK;
 }
 
+#if MUSTACH_LOAD_TEMPLATE
 static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 {
 	static char extension[] = INCLUDE_PARTIAL_EXTENSION;
@@ -375,6 +380,7 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 	fclose(file);
 	return MUSTACH_ERROR_SYSTEM;
 }
+#endif
 
 static int partial_callback(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
@@ -388,6 +394,7 @@ static int partial_callback(void *closure, const char *name, struct mustach_sbuf
 			return rc;
 		}
 	}
+#if MUSTACH_LOAD_TEMPLATE
 	if (w->flags & Mustach_With_PartialDataFirst) {
 		if (getoptional(w, name, sbuf) > 0)
 			rc = MUSTACH_OK;
@@ -399,6 +406,9 @@ static int partial_callback(void *closure, const char *name, struct mustach_sbuf
 		if (rc != MUSTACH_OK &&  getoptional(w, name, sbuf) > 0)
 			rc = MUSTACH_OK;
 	}
+#else
+	rc = getoptional(w, name, sbuf) > 0 ?  MUSTACH_OK : MUSTACH_ERROR_PARTIAL_NOT_FOUND;
+#endif
 	if (rc != MUSTACH_OK)
 		sbuf->value = "";
 	return MUSTACH_OK;

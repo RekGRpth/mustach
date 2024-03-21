@@ -4,6 +4,8 @@ next
 New:
  - fallback to default when mustach_wrap_get_partial
    returns MUSTACH_ERROR_PARTIAL_NOT_FOUND
+ - remove at compile time the load of files for templates
+   if MUSTACH_LOAD_TEMPLATE is defined as 0
 
 Fix:
  - selection of subitem by index (#47)
