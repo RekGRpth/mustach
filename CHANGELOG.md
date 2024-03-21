@@ -1,5 +1,5 @@
-next
-----
+1.2.7 (2024-03-21)
+------------------
 
 New:
  - fallback to default when mustach_wrap_get_partial
