@@ -20,8 +20,16 @@
 #include "mustach.h"
 #include "mustach-wrap.h"
 
-#if !defined(MUSTACH_LOAD_TEMPLATE)
-#define MUSTACH_LOAD_TEMPLATE 1
+/*
+* It was stated that allowing to include files
+* through template is not safe when the mustache
+* template is open to any value because it could
+* create leaks (example: {{>/etc/passwd}}).
+*/
+#if MUSTACH_SAFE
+# undef MUSTACH_LOAD_TEMPLATE
+#elif !defined(MUSTACH_LOAD_TEMPLATE)
+# define MUSTACH_LOAD_TEMPLATE 1
 #endif
 
 #if !defined(INCLUDE_PARTIAL_EXTENSION)

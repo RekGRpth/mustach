@@ -6,6 +6,8 @@ New:
    returns MUSTACH_ERROR_PARTIAL_NOT_FOUND
  - remove at compile time the load of files for templates
    if MUSTACH_LOAD_TEMPLATE is defined as 0
+ - add compile time flag MUSTACH_SAFE for enforcing
+   safety behaviours
 
 Fix:
  - selection of subitem by index (#47)
@@ -27,6 +29,7 @@ Minor:
 
 1.2.5 (2023-02-18)
 ------------------
+
 Fix:
  - Don't override CFLAGS in Makefile
  - Use of $(INSTALL) in Makefile for setting options
@@ -36,6 +39,7 @@ Minor:
 
 1.2.4 (2023-01-02)
 ------------------
+
 Fix:
  - Latent SIGSEGV using cJSON
 
