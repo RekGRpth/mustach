@@ -19,9 +19,14 @@ struct mustach_sbuf; /* see below */
 #define MUSTACH_VERSION_MINOR (MUSTACH_VERSION % 100)
 
 /**
- * Maximum nested imbrications supported
+ * Maximum nested section supported
  */
 #define MUSTACH_MAX_DEPTH  256
+
+/**
+ * Maximum nested template supported
+ */
+#define MUSTACH_MAX_NESTING  64
 
 /**
  * Maximum length of tags in mustaches {{...}}
@@ -57,6 +62,7 @@ struct mustach_sbuf; /* see below */
 #define MUSTACH_ERROR_ITEM_NOT_FOUND    -10
 #define MUSTACH_ERROR_PARTIAL_NOT_FOUND -11
 #define MUSTACH_ERROR_UNDEFINED_TAG     -12
+#define MUSTACH_ERROR_TOO_MUCH_NESTING  -13
 
 /*
  * You can use definition below for user specific error

@@ -33,6 +33,7 @@ struct iwrap {
 	int (*partial)(void *closure, const char *name, struct mustach_sbuf *sbuf);
 	void *closure_partial; /* closure for partial */
 	int flags;
+	int nesting;
 };
 
 struct prefix {
@@ -430,11 +431,17 @@ get_name:
 		case '>':
 			/* partials */
 			if (enabled) {
-				sbuf_reset(&sbuf);
-				rc = iwrap->partial(iwrap->closure_partial, name, &sbuf);
-				if (rc >= 0) {
-					rc = process(sbuf.value, sbuf_length(&sbuf), iwrap, file, &pref);
-					sbuf_release(&sbuf);
+				if (iwrap->nesting >= MUSTACH_MAX_NESTING)
+					rc = MUSTACH_ERROR_TOO_MUCH_NESTING;
+				else {
+					sbuf_reset(&sbuf);
+					rc = iwrap->partial(iwrap->closure_partial, name, &sbuf);
+					if (rc >= 0) {
+						iwrap->nesting++;
+						rc = process(sbuf.value, sbuf_length(&sbuf), iwrap, file, &pref);
+						sbuf_release(&sbuf);
+						iwrap->nesting--;
+					}
 				}
 				if (rc < 0)
 					return rc;
@@ -486,6 +493,7 @@ int mustach_file(const char *template, size_t length, const struct mustach_itf *
 	iwrap.leave = itf->leave;
 	iwrap.get = itf->get;
 	iwrap.flags = flags;
+	iwrap.nesting = 0;
 
 	/* process */
 	rc = itf->start ? itf->start(closure) : 0;
