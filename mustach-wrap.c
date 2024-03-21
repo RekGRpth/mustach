@@ -380,9 +380,15 @@ static int partial_callback(void *closure, const char *name, struct mustach_sbuf
 {
 	struct wrap *w = closure;
 	int rc;
-	if (mustach_wrap_get_partial != NULL)
+	if (mustach_wrap_get_partial != NULL) {
 		rc = mustach_wrap_get_partial(name, sbuf);
-	else if (w->flags & Mustach_With_PartialDataFirst) {
+		if (rc != MUSTACH_ERROR_PARTIAL_NOT_FOUND) {
+			if (rc != MUSTACH_OK)
+				sbuf->value = "";
+			return rc;
+		}
+	}
+	if (w->flags & Mustach_With_PartialDataFirst) {
 		if (getoptional(w, name, sbuf) > 0)
 			rc = MUSTACH_OK;
 		else

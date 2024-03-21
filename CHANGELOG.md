@@ -1,6 +1,10 @@
 next
 ----
 
+New:
+ - fallback to default when mustach_wrap_get_partial
+   returns MUSTACH_ERROR_PARTIAL_NOT_FOUND
+
 Fix:
  - selection of subitem by index (#47)
  - get latest iterated key when getting key name (#52)
