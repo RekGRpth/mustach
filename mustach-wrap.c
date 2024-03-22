@@ -20,6 +20,18 @@
 #include "mustach.h"
 #include "mustach-wrap.h"
 
+/*
+* It was stated that allowing to include files
+* through template is not safe when the mustache
+* template is open to any value because it could
+* create leaks (example: {{>/etc/passwd}}).
+*/
+#if MUSTACH_SAFE
+# undef MUSTACH_LOAD_TEMPLATE
+#elif !defined(MUSTACH_LOAD_TEMPLATE)
+# define MUSTACH_LOAD_TEMPLATE 1
+#endif
+
 #if !defined(INCLUDE_PARTIAL_EXTENSION)
 # define INCLUDE_PARTIAL_EXTENSION ".mustache"
 #endif
@@ -325,6 +337,7 @@ static int get_callback(void *closure, const char *name, struct mustach_sbuf *sb
 	return MUSTACH_OK;
 }
 
+#if MUSTACH_LOAD_TEMPLATE
 static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 {
 	static char extension[] = INCLUDE_PARTIAL_EXTENSION;
@@ -375,14 +388,22 @@ static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
 	fclose(file);
 	return MUSTACH_ERROR_SYSTEM;
 }
+#endif
 
 static int partial_callback(void *closure, const char *name, struct mustach_sbuf *sbuf)
 {
 	struct wrap *w = closure;
 	int rc;
-	if (mustach_wrap_get_partial != NULL)
+	if (mustach_wrap_get_partial != NULL) {
 		rc = mustach_wrap_get_partial(name, sbuf);
-	else if (w->flags & Mustach_With_PartialDataFirst) {
+		if (rc != MUSTACH_ERROR_PARTIAL_NOT_FOUND) {
+			if (rc != MUSTACH_OK)
+				sbuf->value = "";
+			return rc;
+		}
+	}
+#if MUSTACH_LOAD_TEMPLATE
+	if (w->flags & Mustach_With_PartialDataFirst) {
 		if (getoptional(w, name, sbuf) > 0)
 			rc = MUSTACH_OK;
 		else
@@ -393,6 +414,9 @@ static int partial_callback(void *closure, const char *name, struct mustach_sbuf
 		if (rc != MUSTACH_OK &&  getoptional(w, name, sbuf) > 0)
 			rc = MUSTACH_OK;
 	}
+#else
+	rc = getoptional(w, name, sbuf) > 0 ?  MUSTACH_OK : MUSTACH_ERROR_PARTIAL_NOT_FOUND;
+#endif
 	if (rc != MUSTACH_OK)
 		sbuf->value = "";
 	return MUSTACH_OK;

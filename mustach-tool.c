@@ -35,7 +35,8 @@ static const char *errors[] = {
 	"invalid interface",
 	"item not found",
 	"partial not found",
-	"undefined tag"
+	"undefined tag",
+	"too much template nesting"
 };
 
 static const char *errmsg = 0;

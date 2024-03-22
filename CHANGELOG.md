@@ -1,10 +1,19 @@
-next
-----
+1.2.7 (2024-03-21)
+------------------
+
+New:
+ - fallback to default when mustach_wrap_get_partial
+   returns MUSTACH_ERROR_PARTIAL_NOT_FOUND
+ - remove at compile time the load of files for templates
+   if MUSTACH_LOAD_TEMPLATE is defined as 0
+ - add compile time flag MUSTACH_SAFE for enforcing
+   safety behaviours
 
 Fix:
  - selection of subitem by index (#47)
  - get latest iterated key when getting key name (#52)
  - allow tests without valgrind
+ - avoid recursive template expansion (#55)
 
 1.2.6 (2024-01-08)
 ------------------
@@ -20,6 +29,7 @@ Minor:
 
 1.2.5 (2023-02-18)
 ------------------
+
 Fix:
  - Don't override CFLAGS in Makefile
  - Use of $(INSTALL) in Makefile for setting options
@@ -29,6 +39,7 @@ Minor:
 
 1.2.4 (2023-01-02)
 ------------------
+
 Fix:
  - Latent SIGSEGV using cJSON
 

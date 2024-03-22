@@ -146,7 +146,8 @@ extern const struct mustach_itf mustach_wrap_itf;
  * function replaces the default behaviour and is called to provide the partial
  * of the given 'name' in 'sbuf'.
  * The function must return MUSTACH_OK when it filled 'sbuf' with value of partial
- * or must return an error code if it failed.
+ * or must return an error code if it failed. But if MUSTACH_ERROR_PARTIAL_NOT_FOUND
+ * is returned, the default behavior is evaluated.
  */
 extern int (*mustach_wrap_get_partial)(const char *name, struct mustach_sbuf *sbuf);
 
