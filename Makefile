@@ -1,7 +1,7 @@
 # version
-MAJOR := 1
-MINOR := 2
-REVIS := 9
+MAJOR := 2
+MINOR := 0
+REVIS := 0
 
 # Mustache spec
 VSPEC := v1.4.1
@@ -24,15 +24,16 @@ VERSION := $(MAJOR).$(MINOR).$(REVIS)
 SOVER := .$(MAJOR)
 SOVEREV := .$(MAJOR).$(MINOR)
 
-HEADERS := mustach.h mustach-wrap.h
+HEADERS := mini-mustach.h mustach-helpers.h mustach2.h mustach.h mustach-wrap.h
 SPLITLIB := libmustach-core.so$(SOVEREV)
 SPLITPC := libmustach-core.pc
-COREOBJS := mustach.o mustach-wrap.o
+COREOBJS := mini-mustach.o mustach-helpers.o mustach2.o mustach.o mustach-wrap.o
 SINGLEOBJS := $(COREOBJS)
 SINGLEFLAGS :=
 SINGLELIBS :=
 TESTSPECS :=
 ALL := manuals
+TESTPARENT ?= 0
 
 # availability of CJSON
 ifneq ($(cjson),no)
@@ -195,22 +196,31 @@ libmustach-jansson.so$(SOVEREV): $(COREOBJS) mustach-jansson.o
 
 # objects
 
-mustach.o: mustach.c mustach.h
+mini-mustach.o: mini-mustach.c mini-mustach.h
 	$(CC) -c $(EFLAGS) $(CFLAGS) -o $@ $<
 
-mustach-wrap.o: mustach-wrap.c mustach.h mustach-wrap.h
+mustach.o: mustach.c mustach.h mini-mustach.h mustach2.h mustach-helpers.h
 	$(CC) -c $(EFLAGS) $(CFLAGS) -o $@ $<
 
-mustach-tool.o: mustach-tool.c mustach.h mustach-json-c.h $(TOOLDEP)
+mustach2.o: mustach2.c mini-mustach.h mustach2.h mustach-helpers.h
+	$(CC) -c $(EFLAGS) $(CFLAGS) -o $@ $<
+
+mustach-helpers.o: mustach-helpers.c mustach-helpers.h mini-mustach.h mustach2.h
+	$(CC) -c $(EFLAGS) $(CFLAGS) -o $@ $<
+
+mustach-wrap.o: mustach-wrap.c mini-mustach.h mustach2.h mustach.h mustach-wrap.h
+	$(CC) -c $(EFLAGS) $(CFLAGS) -o $@ $<
+
+mustach-tool.o: mustach-tool.c mini-mustach.h mustach2.h mustach-wrap.h $(TOOLDEP)
 	$(CC) -c $(EFLAGS) $(CFLAGS) $(TOOLFLAGS) -o $@ $<
 
-mustach-cjson.o: mustach-cjson.c mustach.h mustach-wrap.h mustach-cjson.h
+mustach-cjson.o: mustach-cjson.c mini-mustach.h mustach2.h mustach-wrap.h mustach-cjson.h
 	$(CC) -c $(EFLAGS) $(CFLAGS) $(cjson_cflags) -o $@ $<
 
-mustach-json-c.o: mustach-json-c.c mustach.h mustach-wrap.h mustach-json-c.h
+mustach-json-c.o: mustach-json-c.c mini-mustach.h mustach2.h mustach-wrap.h mustach-json-c.h
 	$(CC) -c $(EFLAGS) $(CFLAGS) $(jsonc_cflags) -o $@ $<
 
-mustach-jansson.o: mustach-jansson.c mustach.h mustach-wrap.h mustach-jansson.h
+mustach-jansson.o: mustach-jansson.c mini-mustach.h mustach2.h mustach-wrap.h mustach-jansson.h
 	$(CC) -c $(EFLAGS) $(CFLAGS) $(jansson_cflags) -o $@ $<
 
 # installing
@@ -261,11 +271,13 @@ basic-tests: mustach
 	@$(MAKE) -C test6 test
 	@$(MAKE) -C test7 test
 	@$(MAKE) -C test8 test
+	@test "$(TESTPARENT)" -eq 0 || $(MAKE) -C test9 test
 
 spec-tests: $(TESTSPECS)
 
 test-specs/test-specs-%: test-specs/%-test-specs test-specs/specs
 	./$< test-specs/spec/specs/[a-z]*.json > $@.last || true
+	test "$(TESTPARENT)" -eq 0 || ./$< test-specs/spec/specs/~inheritance.json >> $@.last || true
 	diff $@.ref $@.last
 
 test-specs/cjson-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-cjson.h
@@ -307,6 +319,7 @@ clean:
 	@$(MAKE) -C test6 clean
 	@$(MAKE) -C test7 clean
 	@$(MAKE) -C test8 clean
+	@$(MAKE) -C test9 clean
 
 # manpage
 .PHONY: manuals

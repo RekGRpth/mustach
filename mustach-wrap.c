@@ -12,13 +12,26 @@
 
 #include "mustach.h"
 #include "mustach-wrap.h"
+#include "mustach-helpers.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #ifdef _WIN32
 #include <malloc.h>
 #endif
+
+#define USING_MINI_MUSTACH  0
+#define USING_MUSTACH_V2    2
+
+#define MUSTACH_USED USING_MUSTACH_V2
+/*
+#define MUSTACH_USED USING_MINI_MUSTACH
+*/
+
+
 
 /*
 * It was stated that allowing to include files
@@ -55,6 +68,12 @@ struct wrap {
 
 	/* write callback */
 	mustach_write_cb_t *writecb;
+
+	/* extra closure for emiter or write callback */
+	void *extra;
+
+	/* the main template */
+	mustach_template_t *templ;
 };
 
 /* length given by masking with 3 */
@@ -148,7 +167,7 @@ static char *getkey(char **head, int sflags)
 	return result;
 }
 
-static enum sel sel(struct wrap *w, const char *name)
+static enum sel sel(struct wrap *w, const char *name, size_t length)
 {
 	enum sel result;
 	int i, j, sflags, scmp;
@@ -156,10 +175,10 @@ static enum sel sel(struct wrap *w, const char *name)
 	enum comp k;
 
 	/* make a local writeable copy */
-	size_t lenname = 1 + strlen(name);
-	char buffer[lenname];
+	char buffer[1 + length];
 	char *copy = buffer;
-	memcpy(copy, name, lenname);
+	memcpy(copy, name, length);
+	copy[length] = 0;
 
 	/* check if matches json pointer selection */
 	sflags = w->flags;
@@ -241,95 +260,37 @@ static enum sel sel(struct wrap *w, const char *name)
 	return result;
 }
 
-static int start_callback(void *closure)
+static int enter_cb(void *closure, const char *name, size_t length)
 {
 	struct wrap *w = closure;
-	return w->itf->start ? w->itf->start(w->closure) : MUSTACH_OK;
-}
-
-static void stop_callback(void *closure, int status)
-{
-	struct wrap *w = closure;
-	if (w->itf->stop)
-		w->itf->stop(w->closure, status);
-}
-
-static int emit(struct wrap *w, const char *buffer, size_t size, FILE *file)
-{
-	int r;
-
-	if (w->writecb)
-		r = w->writecb(file, buffer, size);
-	else
-		r = fwrite(buffer, 1, size, file) == size ? MUSTACH_OK : MUSTACH_ERROR_SYSTEM;
-	return r;
-}
-
-static int emit_callback(void *closure, const char *buffer, size_t size, int escape, FILE *file)
-{
-	struct wrap *w = closure;
-	int r;
-	size_t s, i;
-	char car;
-
-	if (w->emitcb)
-		r = w->emitcb(file, buffer, size, escape);
-	else if (!escape)
-		r = emit(w, buffer, size, file);
-	else {
-		i = 0;
-		r = MUSTACH_OK;
-		while(i < size && r == MUSTACH_OK) {
-			s = i;
-			while (i < size && (car = buffer[i]) != '<' && car != '>' && car != '&' && car != '"')
-				i++;
-			if (i != s)
-				r = emit(w, &buffer[s], i - s, file);
-			if (i < size && r == MUSTACH_OK) {
-				switch(car) {
-				case '<': r = emit(w, "&lt;", 4, file); break;
-				case '>': r = emit(w, "&gt;", 4, file); break;
-				case '&': r = emit(w, "&amp;", 5, file); break;
-				case '"': r = emit(w, "&quot;", 6, file); break;
-				}
-				i++;
-			}
-		}
-	}
-	return r;
-}
-
-static int enter_callback(void *closure, const char *name)
-{
-	struct wrap *w = closure;
-	enum sel s = sel(w, name);
+	enum sel s = sel(w, name, length);
 	return s == S_none ? 0 : w->itf->enter(w->closure, s & S_objiter);
 }
 
-static int next_callback(void *closure)
+static int next_cb(void *closure)
 {
 	struct wrap *w = closure;
 	return w->itf->next(w->closure);
 }
 
-static int leave_callback(void *closure)
+static int leave_cb(void *closure)
 {
 	struct wrap *w = closure;
 	return w->itf->leave(w->closure);
 }
 
-static int getoptional(struct wrap *w, const char *name, struct mustach_sbuf *sbuf)
+static int getoptional(struct wrap *w, const char *name, size_t length, struct mustach_sbuf *sbuf)
 {
-	enum sel s = sel(w, name);
+	enum sel s = sel(w, name, length);
 	if (!(s & S_ok))
 		return 0;
 	return w->itf->get(w->closure, sbuf, s & S_objiter);
 }
 
-static int get_callback(void *closure, const char *name, struct mustach_sbuf *sbuf)
+static int get_cb(void *closure, const char *name, size_t length, struct mustach_sbuf *sbuf)
 {
 	struct wrap *w = closure;
-	if (getoptional(w, name, sbuf) <= 0) {
+	if (getoptional(w, name, length, sbuf) <= 0) {
 		if (w->flags & Mustach_With_ErrorUndefined)
 			return MUSTACH_ERROR_UNDEFINED_TAG;
 		sbuf->value = "";
@@ -338,65 +299,37 @@ static int get_callback(void *closure, const char *name, struct mustach_sbuf *sb
 }
 
 #if MUSTACH_LOAD_TEMPLATE
-static int get_partial_from_file(const char *name, struct mustach_sbuf *sbuf)
+static int get_partial_from_file(const char *name, size_t length, struct mustach_sbuf *sbuf)
 {
 	static char extension[] = INCLUDE_PARTIAL_EXTENSION;
-	size_t s;
-	long pos;
-	FILE *file;
-	char *path, *buffer;
-
-	/* allocate path */
-	s = strlen(name);
-	path = malloc(s + sizeof extension);
-	if (path == NULL)
-		return MUSTACH_ERROR_SYSTEM;
+	char path[length + sizeof extension];
+	int rc;
 
 	/* try without extension first */
-	memcpy(path, name, s + 1);
-	file = fopen(path, "r");
-	if (file == NULL) {
-		memcpy(&path[s], extension, sizeof extension);
-		file = fopen(path, "r");
+	memcpy(path, name, length);
+	path[length] = 0;
+	rc = mustach_read_file(path, sbuf);
+	if (rc != MUSTACH_OK) {
+		memcpy(&path[length], extension, sizeof extension);
+		rc = mustach_read_file(path, sbuf);
 	}
-	free(path);
-
-	/* if file opened */
-	if (file == NULL)
-		return MUSTACH_ERROR_PARTIAL_NOT_FOUND;
-
-	/* compute file size */
-	if (fseek(file, 0, SEEK_END) >= 0
-	 && (pos = ftell(file)) >= 0
-	 && fseek(file, 0, SEEK_SET) >= 0) {
-		/* allocate value */
-		s = (size_t)pos;
-		buffer = malloc(s + 1);
-		if (buffer != NULL) {
-			/* read value */
-			if (1 == fread(buffer, s, 1, file)) {
-				/* force zero at end */
-				sbuf->value = buffer;
-				buffer[s] = 0;
-				sbuf->freecb = free;
-				fclose(file);
-				return MUSTACH_OK;
-			}
-			free(buffer);
-		}
-	}
-	fclose(file);
-	return MUSTACH_ERROR_SYSTEM;
+	return rc == MUSTACH_OK ? rc : MUSTACH_ERROR_NOT_FOUND;
 }
 #endif
 
-static int partial_callback(void *closure, const char *name, struct mustach_sbuf *sbuf)
-{
-	struct wrap *w = closure;
+static int get_partial_buf(
+		struct wrap *w,
+		const char *name,
+		size_t length,
+		struct mustach_sbuf *sbuf
+) {
 	int rc;
 	if (mustach_wrap_get_partial != NULL) {
-		rc = mustach_wrap_get_partial(name, sbuf);
-		if (rc != MUSTACH_ERROR_PARTIAL_NOT_FOUND) {
+		char path[length + 1];
+		memcpy(path, name, length);
+		path[length] = 0;
+		rc = mustach_wrap_get_partial(path, sbuf);
+		if (rc != MUSTACH_ERROR_NOT_FOUND) {
 			if (rc != MUSTACH_OK)
 				sbuf->value = "";
 			return rc;
@@ -404,79 +337,259 @@ static int partial_callback(void *closure, const char *name, struct mustach_sbuf
 	}
 #if MUSTACH_LOAD_TEMPLATE
 	if (w->flags & Mustach_With_PartialDataFirst) {
-		if (getoptional(w, name, sbuf) > 0)
+		if (getoptional(w, name, length, sbuf) > 0)
 			rc = MUSTACH_OK;
 		else
-			rc = get_partial_from_file(name, sbuf);
+			rc = get_partial_from_file(name, length, sbuf);
 	}
 	else {
-		rc = get_partial_from_file(name, sbuf);
-		if (rc != MUSTACH_OK &&  getoptional(w, name, sbuf) > 0)
+		rc = get_partial_from_file(name, length, sbuf);
+		if (rc != MUSTACH_OK &&  getoptional(w, name, 0, sbuf) > 0)
 			rc = MUSTACH_OK;
 	}
 #else
-	rc = getoptional(w, name, sbuf) > 0 ?  MUSTACH_OK : MUSTACH_ERROR_PARTIAL_NOT_FOUND;
+	rc = getoptional(w, name, length, sbuf) > 0 ?  MUSTACH_OK : MUSTACH_ERROR_NOT_FOUND;
 #endif
 	if (rc != MUSTACH_OK)
 		sbuf->value = "";
 	return MUSTACH_OK;
 }
 
-const struct mustach_itf mustach_wrap_itf = {
-	.start = start_callback,
-	.put = NULL,
-	.enter = enter_callback,
-	.next = next_callback,
-	.leave = leave_callback,
-	.partial = partial_callback,
-	.get = get_callback,
-	.emit = emit_callback,
-	.stop = stop_callback
+/**************************************************************************/
+/**************************************************************************/
+/** USING VERSION 2 *******************************************************/
+/**************************************************************************/
+/**************************************************************************/
+#if MUSTACH_USED == USING_MUSTACH_V2
+
+static int start_cb(void *closure)
+{
+	struct wrap *w = closure;
+	return w->itf->start ? w->itf->start(w->closure) : MUSTACH_OK;
+}
+
+static void stop_cb(void *closure, int status)
+{
+	struct wrap *w = closure;
+	if (w->itf->stop)
+		w->itf->stop(w->closure, status);
+}
+
+static int emit_raw_cb(void *closure, const char *buffer, size_t size)
+{
+	struct wrap *w = closure;
+	return w->writecb(w->extra, buffer, size);
+}
+
+static int emit_esc_cb(void *closure, const char *buffer, size_t size, int escape)
+{
+	struct wrap *w = closure;
+	return w->emitcb(w->extra, buffer, size, escape);
+}
+
+static int partial_get_cb(
+		void *closure,
+		const char *name,
+		size_t length,
+		mustach_template_t **partial
+) {
+	struct wrap *w = closure;
+	struct mustach_sbuf sbuf = SBUF_INITIALIZER;
+	int rc = get_partial_buf(w, name, length, &sbuf);
+	if (rc == MUSTACH_OK)
+		rc = mustach_make_template(partial, 0, &sbuf, NULL);
+	return rc;
+}
+
+static void partial_put_cb(void *closure, mustach_template_t *partial)
+{
+	(void)closure;/*make compiler happy #@!%!!*/
+	mustach_destroy_template(partial, NULL, NULL);
+}
+
+static const struct mustach_apply_itf itf_raw = {
+	.version = MUSTACH_APPLY_ITF_VERSION_1,
+	.error = NULL,
+	.start = start_cb,
+	.stop = stop_cb,
+	.emit_raw = emit_raw_cb,
+	.emit_esc = NULL,
+	.get = get_cb,
+	.enter = enter_cb,
+	.next = next_cb,
+	.leave = leave_cb,
+	.partial_get = partial_get_cb,
+	.partial_put = partial_put_cb
 };
 
-static void wrap_init(struct wrap *wrap, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, mustach_write_cb_t *writecb)
+static const struct mustach_apply_itf itf_esc = {
+	.version = MUSTACH_APPLY_ITF_VERSION_1,
+	.error = NULL,
+	.start = start_cb,
+	.stop = stop_cb,
+	.emit_raw = NULL,
+	.emit_esc = emit_esc_cb,
+	.get = get_cb,
+	.enter = enter_cb,
+	.next = next_cb,
+	.leave = leave_cb,
+	.partial_get = partial_get_cb,
+	.partial_put = partial_put_cb
+};
+
+static int get_template(mustach_template_t **templ, int flags, const char *template, size_t length)
 {
+	int flags2;
+	mustach_sbuf_t sbuf;
+
+	sbuf.value = template;
+	sbuf.length = length;
+	sbuf.freecb = NULL;
+
+	flags2 = 0;
+	if ((flags & Mustach_With_Colon) != 0)
+		flags2 |= Mustach_Build_With_Colon;
+	if ((flags & Mustach_With_EmptyTag) != 0)
+		flags2 |= Mustach_Build_With_EmptyTag;
+
+	return mustach_make_template(templ, flags2, &sbuf, NULL);
+}
+
+static int dowrap(
+		const char *template,
+		size_t length,
+		const struct mustach_wrap_itf *itf,
+		void *closure,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *extra
+) {
+	int rc, afl;
+	struct wrap wrap;
+	const struct mustach_apply_itf *itf2;
+
+	/* prepare the template */
+	rc = get_template(&wrap.templ, flags, template, length);
+	if (rc == MUSTACH_OK) {
+
+		/* init the wrap data */
+		if (flags & Mustach_With_Compare)
+			flags |= Mustach_With_Equal;
+		wrap.itf = itf;
+		wrap.closure = closure;
+		wrap.flags = flags;
+		wrap.emitcb = emitcb;
+		wrap.writecb = writecb;
+		wrap.extra = extra;
+		itf2 = wrap.emitcb == NULL ? &itf_raw : &itf_esc;
+
+		/* apply the template */
+		afl = 0;
+		if ((flags & Mustach_With_PartialDataFirst) == 0)
+			afl |= Mustach_Apply_GlobalPartialFirst;
+		rc = mustach_apply_template(wrap.templ, afl, itf2, &wrap);
+		mustach_destroy_template(wrap.templ, NULL, NULL);
+	}
+	return rc;
+}
+#endif
+/**************************************************************************/
+/**************************************************************************/
+/** USING MINI MUSTACH ****************************************************/
+/**************************************************************************/
+/**************************************************************************/
+#if MUSTACH_USED == USING_MINI_MUSTACH
+
+static int emit_cb(void *closure, const char *buffer, size_t size, int escape)
+{
+	struct wrap *wrap = closure;
+
+	if (wrap->emitcb)
+		return wrap->emitcb(wrap->extra, buffer, size, escape);
+
+	if (!escape)
+		return wrap->writecb(wrap->extra, buffer, size);
+
+	return mustach_escape(buffer, size, wrap->writecb, wrap->extra);
+}
+
+static int partial_cb(void *closure, const char *name, size_t length, struct mustach_sbuf *sbuf)
+{
+	struct wrap *w = closure;
+	return get_partial_buf(w, name, length, sbuf);
+}
+
+static const mini_mustach_itf_t mini_itf = {
+	.emit = emit_cb,
+	.get = get_cb,
+	.enter = enter_cb,
+	.next = next_cb,
+	.leave = leave_cb,
+	.partial = partial_cb,
+};
+
+static int dowrap(
+		const char *template,
+		size_t length,
+		const struct mustach_wrap_itf *itf,
+		void *closure,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *extra
+) {
+	int rc;
+	struct wrap wrap;
+
+	/* init the wrap data */
 	if (flags & Mustach_With_Compare)
 		flags |= Mustach_With_Equal;
-	wrap->closure = closure;
-	wrap->itf = itf;
-	wrap->flags = flags;
-	wrap->emitcb = emitcb;
-	wrap->writecb = writecb;
+	wrap.itf = itf;
+	wrap.closure = closure;
+	wrap.flags = flags;
+	wrap.emitcb = emitcb;
+	wrap.writecb = writecb;
+	wrap.extra = extra;
+
+	/* apply the template */
+	rc = wrap.itf->start == NULL ? MUSTACH_OK : wrap.itf->start(wrap.closure);
+	if (rc == MUSTACH_OK)
+		rc = mini_mustach(template, length, &mini_itf, &wrap);
+	if (wrap.itf->stop)
+		wrap.itf->stop(wrap.closure, rc);
+	return rc;
 }
+#endif
 
 int mustach_wrap_file(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, FILE *file)
 {
-	struct wrap w;
-	wrap_init(&w, itf, closure, flags, NULL, NULL);
-	return mustach_file(template, length, &mustach_wrap_itf, &w, flags, file);
+	return dowrap(template, length, itf, closure, flags, mustach_fwrite_cb, NULL, file);
 }
 
 int mustach_wrap_fd(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, int fd)
 {
-	struct wrap w;
-	wrap_init(&w, itf, closure, flags, NULL, NULL);
-	return mustach_fd(template, length, &mustach_wrap_itf, &w, flags, fd);
+	return dowrap(template, length, itf, closure, flags, mustach_write_cb, NULL, (void*)(intptr_t)fd);
 }
 
 int mustach_wrap_mem(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size)
 {
-	struct wrap w;
-	wrap_init(&w, itf, closure, flags, NULL, NULL);
-	return mustach_mem(template, length, &mustach_wrap_itf, &w, flags, result, size);
+	mustach_stream_t stream = MUSTACH_STREAM_INIT;
+	int rc = dowrap(template, length, itf, closure, flags, mustach_stream_write_cb, NULL, &stream);
+	if (rc == MUSTACH_OK)
+		mustach_stream_end(&stream, result, size);
+	else
+		mustach_stream_abort(&stream);
+	return rc;
 }
 
 int mustach_wrap_write(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure)
 {
-	struct wrap w;
-	wrap_init(&w, itf, closure, flags, NULL, writecb);
-	return mustach_file(template, length, &mustach_wrap_itf, &w, flags, writeclosure);
+	return dowrap(template, length, itf, closure, flags, writecb, NULL, writeclosure);
 }
 
 int mustach_wrap_emit(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure)
 {
-	struct wrap w;
-	wrap_init(&w, itf, closure, flags, emitcb, NULL);
-	return mustach_file(template, length, &mustach_wrap_itf, &w, flags, emitclosure);
+	return dowrap(template, length, itf, closure, flags, NULL, emitcb, emitclosure);
 }
 
