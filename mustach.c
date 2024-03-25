@@ -32,6 +32,7 @@ struct iwrap {
 	int (*get)(void *closure, const char *name, struct mustach_sbuf *sbuf);
 	int (*partial)(void *closure, const char *name, struct mustach_sbuf *sbuf);
 	void *closure_partial; /* closure for partial */
+	FILE *file;
 	int flags;
 	int nesting;
 };
@@ -226,17 +227,17 @@ static int iwrap_partial(void *closure, const char *name, struct mustach_sbuf *s
 	return rc;
 }
 
-static int emitprefix(struct iwrap *iwrap, FILE *file, struct prefix *prefix)
+static int emitprefix(struct iwrap *iwrap, struct prefix *prefix)
 {
 	if (prefix->prefix) {
-		int rc = emitprefix(iwrap, file, prefix->prefix);
+		int rc = emitprefix(iwrap, prefix->prefix);
 		if (rc < 0)
 			return rc;
 	}
-	return prefix->len ? iwrap->emit(iwrap->closure, prefix->start, prefix->len, 0, file) : 0;
+	return prefix->len ? iwrap->emit(iwrap->closure, prefix->start, prefix->len, 0, iwrap->file) : 0;
 }
 
-static int process(const char *template, size_t length, struct iwrap *iwrap, FILE *file, struct prefix *prefix)
+static int process(const char *template, size_t length, struct iwrap *iwrap, struct prefix *prefix)
 {
 	struct mustach_sbuf sbuf;
 	char opstr[MUSTACH_MAX_DELIM_LENGTH], clstr[MUSTACH_MAX_DELIM_LENGTH];
@@ -262,11 +263,11 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 				l = (beg != end) + (size_t)(beg - template);
 				if (stdalone != 2 && enabled) {
 					if (beg != template /* don't prefix empty lines */) {
-						rc = emitprefix(iwrap, file, &pref);
+						rc = emitprefix(iwrap, &pref);
 						if (rc < 0)
 							return rc;
 					}
-					rc = iwrap->emit(iwrap->closure, template, l, 0, file);
+					rc = iwrap->emit(iwrap->closure, template, l, 0, iwrap->file);
 					if (rc < 0)
 						return rc;
 				}
@@ -279,7 +280,7 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, FIL
 			}
 			else if (!isspace(c)) {
 				if (stdalone == 2 && enabled) {
-					rc = emitprefix(iwrap, file, &pref);
+					rc = emitprefix(iwrap, &pref);
 					if (rc < 0)
 						return rc;
 					pref.len = 0;
@@ -361,7 +362,7 @@ get_name:
 		if (stdalone)
 			stdalone = 2;
 		else if (enabled) {
-			rc = emitprefix(iwrap, file, &pref);
+			rc = emitprefix(iwrap, &pref);
 			if (rc < 0)
 				return rc;
 			pref.len = 0;
@@ -438,7 +439,7 @@ get_name:
 					rc = iwrap->partial(iwrap->closure_partial, name, &sbuf);
 					if (rc >= 0) {
 						iwrap->nesting++;
-						rc = process(sbuf.value, sbuf_length(&sbuf), iwrap, file, &pref);
+						rc = process(sbuf.value, sbuf_length(&sbuf), iwrap, &pref);
 						sbuf_release(&sbuf);
 						iwrap->nesting--;
 					}
@@ -450,7 +451,7 @@ get_name:
 		default:
 			/* replacement */
 			if (enabled) {
-				rc = iwrap->put(iwrap->closure_put, name, c != '&', file);
+				rc = iwrap->put(iwrap->closure_put, name, c != '&', iwrap->file);
 				if (rc < 0)
 					return rc;
 			}
@@ -492,13 +493,14 @@ int mustach_file(const char *template, size_t length, const struct mustach_itf *
 	iwrap.next = itf->next;
 	iwrap.leave = itf->leave;
 	iwrap.get = itf->get;
+	iwrap.file = file;
 	iwrap.flags = flags;
 	iwrap.nesting = 0;
 
 	/* process */
 	rc = itf->start ? itf->start(closure) : 0;
 	if (rc == 0)
-		rc = process(template, length, &iwrap, file, NULL);
+		rc = process(template, length, &iwrap, NULL);
 	if (itf->stop)
 		itf->stop(closure, rc);
 	return rc;
