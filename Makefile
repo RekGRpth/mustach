@@ -3,6 +3,9 @@ MAJOR := 1
 MINOR := 2
 REVIS := 7
 
+# Mustache spec
+VSPEC := v1.4.1
+
 # installation settings
 DESTDIR ?=
 PREFIX  ?= /usr/local
@@ -276,11 +279,10 @@ test-specs/jansson-test-specs: test-specs/jansson-test-specs.o mustach-jansson.o
 
 .PHONY: test-specs/specs
 test-specs/specs:
-	if test -d test-specs/spec; then \
-		git -C test-specs/spec pull; \
-	else \
+	if ! test -d test-specs/spec; then \
 		git -C test-specs clone https://github.com/mustache/spec.git; \
 	fi
+	git -C test-specs/spec checkout $(VSPEC) -B test;
 
 #cleaning
 .PHONY: clean

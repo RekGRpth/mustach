@@ -1,3 +1,13 @@
+next
+----
+
+New:
+ - test scripts now return failing status
+ - explicit version of mustache specs for test (#49)
+
+Fix:
+ - detection of valgrind (#56)
+
 1.2.7 (2024-03-21)
 ------------------
 
