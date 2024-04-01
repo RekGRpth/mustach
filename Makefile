@@ -237,14 +237,6 @@ uninstall:
 	rm -f $(DESTDIR)$(LIBDIR)/libmustach*.so*
 	rm -rf $(DESTDIR)$(INCLUDEDIR)/mustach
 
-# testing
-ifeq ($(valgrind),no)
- NOVALGRIND := 1
-else
- NOVALGRIND := $(shell which -s valgrind && echo 0 || echo 1)
-endif
-export NOVALGRIND
-
 .PHONY: test test-basic test-specs
 test: basic-tests spec-tests
 
@@ -311,4 +303,3 @@ manuals: mustach.1.gz
 
 mustach.1.gz: mustach.1.scd
 	if which scdoc >/dev/null 2>&1; then scdoc < mustach.1.scd | gzip > mustach.1.gz; fi
-
