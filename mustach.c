@@ -43,6 +43,13 @@ struct prefix {
 	struct prefix *prefix;
 };
 
+/*********************************************************
+* This section wraps implementation details of memory files.
+* It also takes care of adding a terminating zero to the
+* produced text.
+* When the function open_memstream exists, use it.
+* Otherwise emulate it using a temporary file.
+**********************************************************/
 #if !defined(NO_OPEN_MEMSTREAM)
 static FILE *memfile_open(char **buffer, size_t *size)
 {
@@ -120,6 +127,10 @@ static int memfile_close(FILE *file, char **buffer, size_t *size)
 }
 #endif
 
+/*********************************************************
+* This section has functions for managing instances of
+* struct mustach_sbuf.
+*********************************************************/
 static inline void sbuf_reset(struct mustach_sbuf *sbuf)
 {
 	sbuf->value = NULL;
@@ -142,6 +153,10 @@ static inline size_t sbuf_length(struct mustach_sbuf *sbuf)
 	return length;
 }
 
+/*********************************************************
+* This section is for default implementations of
+* optional callbacks that are although required
+*********************************************************/
 static int iwrap_emit(void *closure, const char *buffer, size_t size, int escape, FILE *file)
 {
 	size_t i, j, r;
@@ -227,6 +242,9 @@ static int iwrap_partial(void *closure, const char *name, struct mustach_sbuf *s
 	return rc;
 }
 
+/*********************************************************
+* Function for writing the indentation prefix
+*********************************************************/
 static int emitprefix(struct iwrap *iwrap, struct prefix *prefix)
 {
 	if (prefix->prefix) {
@@ -237,6 +255,10 @@ static int emitprefix(struct iwrap *iwrap, struct prefix *prefix)
 	return prefix->len ? iwrap->emit(iwrap->closure, prefix->start, prefix->len, 0, iwrap->file) : 0;
 }
 
+/*********************************************************
+* This section is for default implementations of
+* optional callbacks that are although required
+*********************************************************/
 static int process(const char *template, size_t length, struct iwrap *iwrap, struct prefix *prefix)
 {
 	struct mustach_sbuf sbuf;
@@ -460,6 +482,9 @@ get_name:
 	}
 }
 
+/*********************************************************
+* This section is for the public interface functions
+*********************************************************/
 int mustach_file(const char *template, size_t length, const struct mustach_itf *itf, void *closure, int flags, FILE *file)
 {
 	int rc;
