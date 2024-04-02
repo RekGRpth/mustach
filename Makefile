@@ -3,6 +3,9 @@ MAJOR := 1
 MINOR := 2
 REVIS := 7
 
+# Mustache spec
+VSPEC := v1.4.1
+
 # installation settings
 DESTDIR ?=
 PREFIX  ?= /usr/local
@@ -240,10 +243,11 @@ uninstall:
 # testing
 ifeq ($(valgrind),no)
  NOVALGRIND := 1
-else
- NOVALGRIND := $(shell which -s valgrind && echo 0 || echo 1)
+else ifeq ($(valgrind),yes)
+ VALGRIND := 1
 endif
 export NOVALGRIND
+export VALGRIND
 
 .PHONY: test test-basic test-specs
 test: basic-tests spec-tests
@@ -284,11 +288,10 @@ test-specs/jansson-test-specs: test-specs/jansson-test-specs.o mustach-jansson.o
 
 .PHONY: test-specs/specs
 test-specs/specs:
-	if test -d test-specs/spec; then \
-		git -C test-specs/spec pull; \
-	else \
+	if ! test -d test-specs/spec; then \
 		git -C test-specs clone https://github.com/mustache/spec.git; \
 	fi
+	git -C test-specs/spec checkout $(VSPEC) -B test;
 
 #cleaning
 .PHONY: clean
@@ -311,4 +314,3 @@ manuals: mustach.1.gz
 
 mustach.1.gz: mustach.1.scd
 	if which scdoc >/dev/null 2>&1; then scdoc < mustach.1.scd | gzip > mustach.1.gz; fi
-

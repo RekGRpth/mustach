@@ -159,7 +159,9 @@ hurt today because the code is small.
 The makefile offers the way to execute basic tests. Just type `make test`.
 
 By default, if valgrind is available, tests are using it. It can be disabled
-by typing `make test valgrind=no` or `NOVALGRIND=1 make test`.
+by typing `make test valgrind=no` or `NOVALGRIND=1 make test`. Conversely,
+use of valgrind can be enforced by typing `make test valgrind=yes` or
+`VALGRIND=1 make test`.
 
 ## Extensions
 
