@@ -4,6 +4,7 @@ next
 New:
  - test scripts now return failing status
  - explicit version of mustache specs for test (#49)
+ - handling of CR (iOS) and CRLF (windows) end of line styles
 
 Fix:
  - improved detection of valgrind (#56, #57)

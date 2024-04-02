@@ -280,7 +280,16 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, str
 	for (;;) {
 		/* search next openning delimiter */
 		for (beg = template ; ; beg++) {
-			c = beg == end ? '\n' : *beg;
+			if (beg == end)
+				c = '\n';
+			else {
+				c = *beg;
+				if (c == '\r') {
+					if ((beg + 1) != end && beg[1] == '\n')
+						beg++;
+					c = '\n';
+				}
+			}
 			if (c == '\n') {
 				l = (beg != end) + (size_t)(beg - template);
 				if (stdalone != 2 && enabled) {
