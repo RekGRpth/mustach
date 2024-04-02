@@ -6,7 +6,7 @@ New:
  - explicit version of mustache specs for test (#49)
 
 Fix:
- - detection of valgrind (#56)
+ - improved detection of valgrind (#56, #57)
 
 1.2.7 (2024-03-21)
 ------------------

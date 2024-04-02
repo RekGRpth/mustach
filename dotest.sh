@@ -6,9 +6,14 @@ exit_fail() {
     exit 1
 }
 
+if ! valgrind --version > /dev/null 2>&1
+then
+	[ "$VALGRIND" = 1 ] && exit_fail "no valgrind"
+	NOVALGRIND=1
+fi
 mustach="${mustach:-../mustach}"
 echo "starting test"
-if ! valgrind --version 2> /dev/null
+if [ "$NOVALGRIND" = 1 ]
 then
 	$mustach "$@" > resu.last || exit_fail "ERROR! mustach command failed ($?)!"
 else

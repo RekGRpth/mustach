@@ -240,6 +240,15 @@ uninstall:
 	rm -f $(DESTDIR)$(LIBDIR)/libmustach*.so*
 	rm -rf $(DESTDIR)$(INCLUDEDIR)/mustach
 
+# testing
+ifeq ($(valgrind),no)
+ NOVALGRIND := 1
+else ifeq ($(valgrind),yes)
+ VALGRIND := 1
+endif
+export NOVALGRIND
+export VALGRIND
+
 .PHONY: test test-basic test-specs
 test: basic-tests spec-tests
 
