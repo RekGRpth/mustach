@@ -10,6 +10,8 @@
 #define _GNU_SOURCE
 #endif
 
+#include "mustach.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,8 +20,6 @@
 #ifdef _WIN32
 #include <malloc.h>
 #endif
-
-#include "mustach.h"
 
 struct iwrap {
 	int (*emit)(void *closure, const char *buffer, size_t size, int escape, FILE *file);
