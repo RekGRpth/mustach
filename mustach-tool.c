@@ -10,6 +10,8 @@
 #define _GNU_SOURCE
 #endif
 
+#include "mustach-wrap.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -17,8 +19,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <libgen.h>
-
-#include "mustach-wrap.h"
 
 static const size_t BLOCKSIZE = 8192;
 

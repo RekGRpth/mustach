@@ -10,12 +10,12 @@
 #define _GNU_SOURCE
 #endif
 
-#include <stdio.h>
-#include <string.h>
-
 #include "mustach.h"
 #include "mustach-wrap.h"
 #include "mustach-jansson.h"
+
+#include <stdio.h>
+#include <string.h>
 
 struct expl {
 	json_t *root;

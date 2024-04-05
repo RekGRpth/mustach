@@ -10,13 +10,13 @@
 #define _GNU_SOURCE
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
 #include "mustach.h"
 #include "mustach-wrap.h"
 #include "mustach-cjson.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 struct expl {
 	cJSON null;

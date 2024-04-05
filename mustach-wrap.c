@@ -10,15 +10,15 @@
 #define _GNU_SOURCE
 #endif
 
+#include "mustach.h"
+#include "mustach-wrap.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #ifdef _WIN32
 #include <malloc.h>
 #endif
-
-#include "mustach.h"
-#include "mustach-wrap.h"
 
 /*
 * It was stated that allowing to include files
