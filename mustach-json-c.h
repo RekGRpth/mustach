@@ -3,7 +3,7 @@
 
  https://gitlab.com/jobol/mustach
 
- SPDX-License-Identifier: ISC
+ SPDX-License-Identifier: 0BSD
 */
 
 #ifndef _mustach_json_c_h_included_

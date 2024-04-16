@@ -6,8 +6,12 @@ New:
  - explicit version of mustache specs for test (#49)
  - handling of CR (iOS) and CRLF (windows) end of line styles
 
+Change:
+ - License of use is now Zero-Clause BSD
+
 Fix:
- - improved detection of valgrind (#56, #57)
+ - improved management and detection of valgrind (#56, #57)
+ - Headers without implicit dependency
 
 1.2.7 (2024-03-21)
 ------------------
