@@ -1,7 +1,7 @@
 # Introduction to Mustach 1.2
 
 `mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache")
-template specification.
+template specification, version 1.4.1, only the mandatory part.
 
 The main site for `mustach` is on [gitlab](https://gitlab.com/jobol/mustach).
 
