@@ -1,5 +1,5 @@
-next
-----
+1.2.8 (20-04-16)
+----------------
 
 New:
  - test scripts now return failing status

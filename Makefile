@@ -1,7 +1,7 @@
 # version
 MAJOR := 1
 MINOR := 2
-REVIS := 7
+REVIS := 8
 
 # Mustache spec
 VSPEC := v1.4.1
