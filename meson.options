@@ -1,0 +1,17 @@
+option(
+    'tool',
+    type: 'combo',
+    choices: ['auto', 'none', 'cjson', 'jsonc', 'jansson'],
+    value: 'auto',
+)
+
+option(
+    'libs',
+    type: 'combo',
+    choices: ['all', 'single', 'split', 'none'],
+    value: 'all',
+)
+
+option('cjson', type: 'feature', value: 'auto')
+option('jsonc', type: 'feature', value: 'auto')
+option('jansson', type: 'feature', value: 'auto')

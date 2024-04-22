@@ -1,0 +1,39 @@
+# build with meson
+
+## setup
+
+```
+$ meson setup builddir [--reconfigure]
+```
+
+it will create builddir to place build-files,
+
+use meson built-in options
+
+```
+$ meson setup builddir --prefix=PREFIX
+```
+
+use options defined in meson.options
+
+```
+$ meson setup builddir -Dtool={auto,none,cjson} -Dcjson={enabled,disabled,auto}
+```
+
+## compile
+
+```
+$ meson compile -C builddir 
+```
+
+## WIP test
+
+```
+$ meson test -C builddir [--wrap=valgrind]
+```
+
+## install
+
+```
+$ meson install -C builddir [-n]
+```
