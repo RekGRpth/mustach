@@ -154,6 +154,10 @@ The libraries that can be produced are:
 There is no dependencies of a library to an other. This is intended and doesn't
 hurt today because the code is small.
 
+### Compilation Using Meson
+
+Thanks to *qaqland* work, meson build is available. Please refer to **README.meson**.
+
 ### Testing
 
 The makefile offers the way to execute basic tests. Just type `make test`.
