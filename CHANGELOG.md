@@ -1,5 +1,11 @@
-1.2.8 (20-04-16)
-----------------
+1.2.9 (2024-06-04)
+------------------
+
+Change:
+ - meson.build updated
+
+1.2.8 (2024-04-16)
+------------------
 
 New:
  - test scripts now return failing status
