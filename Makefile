@@ -1,7 +1,7 @@
 # version
 MAJOR := 2
 MINOR := 0
-REVIS := 0
+REVIS := 0alpha
 
 # Mustache spec
 VSPEC := v1.4.1
@@ -102,7 +102,7 @@ ifneq ($(jansson),no)
 endif
 
 # tool
-TOOLOBJS = mustach-tool.o $(COREOBJS)
+TOOLOBJS = $(COREOBJS)
 tool ?= none
 ifneq ($(tool),none)
   ifeq ($(tool),cjson)
@@ -126,7 +126,7 @@ ifneq ($(tool),none)
   ifneq ($($(tool)),yes)
     $(error No library found for tool $(tool))
   endif
-  ALL += mustach
+  ALL += mustach mustachs
 endif
 
 # compute targets
@@ -171,8 +171,11 @@ endif
 .PHONY: all
 all: ${ALL}
 
-mustach: $(TOOLOBJS)
-	$(CC) $(LDFLAGS) $(TOOLFLAGS) -o mustach $(TOOLOBJS) $(TOOLLIBS)
+mustach: $(TOOLOBJS) mustach-tool.o
+	$(CC) $(LDFLAGS) $(TOOLFLAGS) -o mustach $^ $(TOOLLIBS)
+
+mustachs: $(TOOLOBJS) mustachs.o
+	$(CC) $(LDFLAGS) $(TOOLFLAGS) -o mustachs $^ $(TOOLLIBS)
 
 libmustach.so$(SOVEREV): $(SINGLEOBJS)
 	$(CC) -shared $(LDFLAGS) $(LDFLAGS_single) -o $@ $^ $(SINGLELIBS)
@@ -222,6 +225,9 @@ mustach-json-c.o: mustach-json-c.c mini-mustach.h mustach2.h mustach-wrap.h must
 
 mustach-jansson.o: mustach-jansson.c mini-mustach.h mustach2.h mustach-wrap.h mustach-jansson.h
 	$(CC) -c $(EFLAGS) $(CFLAGS) $(jansson_cflags) -o $@ $<
+
+mustachs.o: mustachs.c mini-mustach.h mustach2.h mustach-wrap.h $(TOOLDEP)
+	$(CC) -c $(EFLAGS) $(CFLAGS) $(TOOLFLAGS) -o $@ $<
 
 # installing
 .PHONY: install

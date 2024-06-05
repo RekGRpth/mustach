@@ -90,7 +90,7 @@ static int wrap_get(void *closure, const char *name, size_t length, struct musta
 static int wrap_partial_get(void *closure, const char *name, size_t length, mustach_template_t **part)
 {
 	struct wrap *wrap = closure;
-	mustach_sbuf_t sbuf = SBUF_INITIALIZER;
+	mustach_sbuf_t sbuf = MUSTACH_SBUF_INIT;
 	int rc = wrap->itf->partial(wrap->closure, name, &sbuf);
 	(void)length;/*make compiler happy #@!%!!*/
 	if (rc == MUSTACH_OK)

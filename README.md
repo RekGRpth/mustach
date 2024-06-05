@@ -1,12 +1,37 @@
-# Introduction to Mustach 1.2
+# Introduction to this preview of Mustach 2
 
-`mustach` is a C implementation of the [mustache](http://mustache.github.io "main site for mustache")
+CAUTION! ===================================================================
+
+CAUTION! THIS DOCUMENT IS A WORK IN PROGRESS README FOR THE COMING VERSION 2
+
+CAUTION! ===================================================================
+
+
+`mustach` is a C implementation of 
+[mustache](http://mustache.github.io "main site for mustache")
 template specification, version 1.4.1, only the mandatory part.
 
-The main site for `mustach` is on [gitlab](https://gitlab.com/jobol/mustach).
+The main site for `mustach` is [gitlab](https://gitlab.com/jobol/mustach).
 
-The simplest way to use mustach is to copy the files **mustach.h** and **mustach.c**
-directly into your project and use it.
+This version of mustach, the version 2, introduce many changes
+when compared to previous versions but is still upward compatible.
+So people used to previous versions should not be afraid by the changes
+because their code will continue to work as before.
+
+The version 2 comes with 3 flavours of the rendering algorithm:
+the minimal, the optimal and the legacy.
+
+The minimal rendering algorithm is a cleaned up rewrite of the previous
+versions. It does not make any memory allocation, it has a simple
+interface, it is well suited for little embedded systems.
+But it is not efficient for high volumes or stressfull usage of
+mustache templating. And at the moment it does not implement inheritance
+(parent and bloc).
+
+The simplest way to use minimal mustach implementation is to copy the files
+**mini-mustach.h** and **mini-mustach.c** directly into your project and to use it.
+
+...
 
 If you are using one of the JSON libraries listed below, you can get extended feature
 by also including **mustach-wrap.h**, **mustach-wrap.c**, **mustach-XXX.h** and

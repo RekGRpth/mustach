@@ -110,6 +110,8 @@
  *  DANGEROUS    : defined : defined : any     : YES or NO, depends on 'partial'
  *  INVALID      : NULL    : any     : NULL    : -
  *
+ * The current recommandation is to use the combination CUSTOM.
+ *
  * The DUCK case runs on one leg. 'get' is not used if 'partial' is defined
  * but is used for 'partial' if 'partial' is NULL. Thus for clarity, do not use
  * it that way but define 'partial' and let 'get' be NULL.
@@ -177,14 +179,6 @@ extern int mustach_mem(const char *template, size_t length, const struct mustach
 /***************************************************************************
 * compatibility with version before 1.0
 */
-#ifdef __GNUC__
-#define DEPRECATED_MUSTACH(func) func __attribute__ ((deprecated))
-#elif defined(_MSC_VER)
-#define DEPRECATED_MUSTACH(func) __declspec(deprecated) func
-#elif !defined(DEPRECATED_MUSTACH)
-#pragma message("WARNING: You need to implement DEPRECATED_MUSTACH for this compiler")
-#define DEPRECATED_MUSTACH(func) func
-#endif
 /**
  * OBSOLETE use mustach_file
  *

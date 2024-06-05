@@ -92,5 +92,14 @@ extern int mustach_cJSON_write(const char *template, size_t length, cJSON *root,
  */
 extern int mustach_cJSON_emit(const char *template, size_t length, cJSON *root, int flags, mustach_emit_cb_t *emitcb, void *closure);
 
+extern int mustach_cJSON_apply(
+		mustach_template_t *template,
+		cJSON *root,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *closure
+);
+
 #endif
 

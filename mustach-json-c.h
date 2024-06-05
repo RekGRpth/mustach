@@ -91,6 +91,15 @@ extern int mustach_json_c_write(const char *template, size_t length, struct json
  */
 extern int mustach_json_c_emit(const char *template, size_t length, struct json_object *root, int flags, mustach_emit_cb_t *emitcb, void *closure);
 
+extern int mustach_json_c_apply(
+		mustach_template_t *template,
+		struct json_object *root,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *closure
+);
+
 /***************************************************************************
 * compatibility with version before 1.0
 */
