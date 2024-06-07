@@ -23,6 +23,11 @@
 #define TEST_JSON_C  1
 #define TEST_JANSSON 2
 #define TEST_CJSON   3
+#define TEST_TEXT    4
+
+#define MUSTACH_DEFLIB_JSON_C  1
+#define MUSTACH_DEFLIB_JANSSON 2
+#define MUSTACH_DEFLIB_CJSON   3
 
 static const char *errors[] = {
 	"??? unreferenced ???",
@@ -59,7 +64,7 @@ static void help(char *prog)
 	exit(0);
 }
 
-#if TEST == TEST_CJSON
+#if TEST == TEST_CJSON || (TEST == TEST_TEXT && DEFLIB == MUSTACH_DEFLIB_CJSON)
 
 static const size_t BLOCKSIZE = 8192;
 
@@ -196,9 +201,15 @@ void emit(FILE *f, const char *s)
 	}
 }
 
-#if TEST == TEST_JSON_C
+#if TEST == TEST_JSON_C || (TEST == TEST_TEXT && DEFLIB == MUSTACH_DEFLIB_JSON_C)
 
+#if TEST == TEST_JSON_C
 #include "mustach-json-c.h"
+#else
+#include "mustach-text.h"
+#include <json-c/json.h>
+#endif
+
 
 static struct json_object *o;
 
@@ -262,7 +273,11 @@ static int process(counters *c)
 				partials = NULL;
 			t = json_object_get_string(template);
 			e = json_object_get_string(expected);
+#if TEST == TEST_JSON_C
 			s = mustach_json_c_mem(t, 0, data, flags, &got, &length);
+#else
+			s = mustach_text_mem(t, 0, json_object_to_json_string(data), 0, flags, &got, &length);
+#endif
 			if (s == 0 && strcmp(got, e) == 0) {
 				fprintf(output, "\t=> SUCCESS\n");
 				c->nsuccess++;
@@ -302,9 +317,14 @@ static void close_json()
 	json_object_put(o);
 }
 
-#elif TEST == TEST_JANSSON
+#elif TEST == TEST_JANSSON || (TEST == TEST_TEXT && DEFLIB == MUSTACH_DEFLIB_JANSSON)
 
+#if TEST == TEST_JANSSON
 #include "mustach-jansson.h"
+#else
+#include "mustach-text.h"
+#include <jansson.h>
+#endif
 
 static json_t *o;
 static json_error_t e;
@@ -364,7 +384,14 @@ static int process(counters *c)
 			partials = json_object_get(unit, "partials");
 			t = json_string_value(template);
 			e = json_string_value(expected);
+#if TEST == TEST_JANSSON
 			s = mustach_jansson_mem(t, 0, data, flags, &got, &length);
+#else
+			s = mustach_text_mem(t, 0, json_object_to_json_string(data), 0, flags, &got, &length);
+			tmp = json-dumps(data, 0);
+			s = mustach_text_mem(t, 0, tmp, 0, flags, &got, &length);
+			free(tmp);
+#endif
 			if (s == 0 && strcmp(got, e) == 0) {
 				fprintf(output, "\t=> SUCCESS\n");
 				c->nsuccess++;
@@ -409,9 +436,14 @@ static void close_json()
 	json_decref(o);
 }
 
-#elif TEST == TEST_CJSON
+#elif TEST == TEST_CJSON || (TEST == TEST_TEXT && DEFLIB == MUSTACH_DEFLIB_CJSON)
 
+#if TEST == TEST_CJSON
 #include "mustach-cjson.h"
+#else
+#include "mustach-text.h"
+#include <cjson/cJSON.h>
+#endif
 
 static cJSON *o;
 static cJSON *partials;
@@ -470,7 +502,13 @@ static int process(counters *c)
 			partials = cJSON_GetObjectItemCaseSensitive(unit, "partials");
 			t = template->valuestring;
 			e = expected->valuestring;
+#if TEST == TEST_CJSON
 			s = mustach_cJSON_mem(t, 0, data, flags, &got, &length);
+#else
+			tmp = cJSON_PrintUnformatted(data);
+			s = mustach_text_mem(t, 0, tmp, 0, flags, &got, &length);
+			free(tmp);
+#endif
 			if (s == 0 && strcmp(got, e) == 0) {
 				fprintf(output, "\t=> SUCCESS\n");
 				c->nsuccess++;

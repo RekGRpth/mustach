@@ -29,7 +29,7 @@
 #include <string.h>
 #include <libgen.h>
 
-#include "../mustach-json-c.h"
+#include "mustach-json-c.h"
 
 static const size_t BLOCKSIZE = 8192;
 
