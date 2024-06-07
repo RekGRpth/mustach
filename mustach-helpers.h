@@ -18,11 +18,11 @@
 /*********************************************************
 * This section has functions for managing instances of mustach_sbuf_t
 *********************************************************/
-#define SBUF_INITIALIZER ((mustach_sbuf_t){ NULL, { NULL }, NULL, 0 })
+#define MUSTACH_SBUF_INIT ((mustach_sbuf_t){ NULL, { NULL }, NULL, 0 })
 
 static inline void mustach_sbuf_reset(mustach_sbuf_t *sbuf)
 {
-	*sbuf = SBUF_INITIALIZER;
+	*sbuf = MUSTACH_SBUF_INIT;
 }
 
 static inline void mustach_sbuf_release(mustach_sbuf_t *sbuf)
@@ -58,7 +58,7 @@ extern int mustach_read_file(const char *path, mustach_sbuf_t *sbuf);
 extern int mustach_escape(
 	const char *buffer,
 	size_t size,
-	int (*emit)(void *, const char *, size_t),
+	int (*write)(void *, const char *, size_t),
 	void *closure
 );
 

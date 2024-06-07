@@ -151,6 +151,16 @@ extern const struct mustach_itf mustach_wrap_itf;
  */
 extern int (*mustach_wrap_get_partial)(const char *name, struct mustach_sbuf *sbuf);
 
+extern int mustach_wrap_apply(
+		mustach_template_t *template,
+		const struct mustach_wrap_itf *itf,
+		void *closure,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *wrclosure
+);
+
 /**
  * mustach_wrap_file - Renders the mustache 'template' in 'file' for an abstract
  * wrapper of interface 'itf' and 'closure'.

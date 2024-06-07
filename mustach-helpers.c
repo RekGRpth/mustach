@@ -110,24 +110,17 @@ int mustach_memfile_close(FILE *file, char **buffer, size_t *size)
 #ifndef SZINIT
 #define SZINIT 4000
 #endif
-int mustach_read_file(const char *path, mustach_sbuf_t *sbuf)
+static int read_file(FILE *file, mustach_sbuf_t *sbuf)
 {
 	int rc;
 	char *p, *buffer = NULL;
 	size_t rsz, nsz, all, idx = 0, sz = 0;
 
-	/* open the path */
-	FILE *file = fopen(path, "r");
-	if (file == NULL)
-		return MUSTACH_ERROR_NOT_FOUND;
-
 	/* file opened, compute file size */
 	if (fseek(file, 0, SEEK_END) >= 0) {
 		long pos = ftell(file);
-		if (pos < 0 || fseek(file, 0, SEEK_SET) < 0) {
-			fclose(file);
+		if (pos < 0 || fseek(file, 0, SEEK_SET) < 0)
 			return MUSTACH_ERROR_SYSTEM;
-		}
 		sz = (size_t)pos;
 	}
 
@@ -150,7 +143,6 @@ int mustach_read_file(const char *path, mustach_sbuf_t *sbuf)
 		}
 		if (sz == idx) {
 			/* read done, resize buffer if needed, init sbuf */
-			fclose(file);
 			if (all > idx + 1 && (p = realloc(buffer, idx + 1)) != NULL)
 				buffer = p;
 			sbuf->value = buffer;
@@ -161,9 +153,25 @@ int mustach_read_file(const char *path, mustach_sbuf_t *sbuf)
 		if (rsz == nsz)
 			all += all;
 	}
-	fclose(file);
 	free(buffer);
 	mustach_sbuf_reset(sbuf);
+	return rc;
+}
+
+int mustach_read_file(const char *path, mustach_sbuf_t *sbuf)
+{
+	int rc;
+	FILE *file;
+
+	if (strcmp(path, "-") == 0)
+		return read_file(stdin, sbuf);
+
+	/* open the path */
+	file = fopen(path, "r");
+	if (file == NULL)
+		return MUSTACH_ERROR_NOT_FOUND;
+	rc = read_file(file, sbuf);
+	fclose(file);
 	return rc;
 }
 

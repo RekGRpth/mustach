@@ -92,5 +92,15 @@ extern int mustach_jansson_write(const char *template, size_t length, json_t *ro
  */
 extern int mustach_jansson_emit(const char *template, size_t length, json_t *root, int flags, mustach_emit_cb_t *emitcb, void *closure);
 
+extern int mustach_jansson_apply(
+		mustach_template_t *template,
+		json_t *root,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *closure
+);
+
+
 #endif
 

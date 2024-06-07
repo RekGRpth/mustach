@@ -1644,7 +1644,7 @@ static int ap_text(ap_t *ap, word_t length)
 /* emit the value of the tag with or without escaping */
 static int ap_repl(ap_t *ap, word_t length, int escape)
 {
-	mustach_sbuf_t sbuf = SBUF_INITIALIZER;
+	mustach_sbuf_t sbuf = MUSTACH_SBUF_INIT;
 	const char *tag = get_tag(ap, length);
 	int rc = ap->itf->get(ap->closure, tag, length, &sbuf);
 	if (rc == MUSTACH_OK) {
@@ -1742,7 +1742,7 @@ static int ap_make_partial(
 		word_t length,
 		mustach_template_t **part
 ) {
-	mustach_sbuf_t sbuf = SBUF_INITIALIZER;
+	mustach_sbuf_t sbuf = MUSTACH_SBUF_INIT;
 	int rc = ap->itf->get(ap->closure, tag, length, &sbuf);
 	if (rc == MUSTACH_OK)
 		rc = mustach_build_template(

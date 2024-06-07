@@ -261,6 +261,19 @@ int mustach_json_c_emit(const char *template, size_t length, struct json_object 
 	return mustach_wrap_emit(template, length, &mustach_json_c_wrap_itf, &e, flags, emitcb, closure);
 }
 
+int mustach_json_c_apply(
+		mustach_template_t *template,
+		struct json_object *root,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *closure
+) {
+	struct expl e;
+	e.root = root;
+	return mustach_wrap_apply(template, &mustach_json_c_wrap_itf, &e, flags, writecb, emitcb, closure);
+}
+
 int fmustach_json_c(const char *template, struct json_object *root, FILE *file)
 {
 	return mustach_json_c_file(template, 0, root, -1, file);

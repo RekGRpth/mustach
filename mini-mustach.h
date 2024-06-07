@@ -284,6 +284,17 @@ struct mini_mustach_itf
 		size_t length,
 		mustach_sbuf_t *sbuf);
 };
+/***************************************************************************
+* for emitting deprecation messages
+*/
+#ifdef __GNUC__
+#define DEPRECATED_MUSTACH(func) func __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED_MUSTACH(func) __declspec(deprecated) func
+#elif !defined(DEPRECATED_MUSTACH)
+#pragma message("WARNING: You need to implement DEPRECATED_MUSTACH for this compiler")
+#define DEPRECATED_MUSTACH(func) func
+#endif
 
 #endif
 

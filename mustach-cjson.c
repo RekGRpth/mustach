@@ -256,3 +256,15 @@ int mustach_cJSON_emit(const char *template, size_t length, cJSON *root, int fla
 	return mustach_wrap_emit(template, length, &mustach_cJSON_wrap_itf, &e, flags, emitcb, closure);
 }
 
+int mustach_cJSON_apply(
+		mustach_template_t *template,
+		cJSON *root,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *closure
+) {
+	struct expl e;
+	e.root = root;
+	return mustach_wrap_apply(template, &mustach_cJSON_wrap_itf, &e, flags, writecb, emitcb, closure);
+}

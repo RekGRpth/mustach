@@ -70,7 +70,7 @@ struct wrap {
 	mustach_write_cb_t *writecb;
 
 	/* extra closure for emiter or write callback */
-	void *extra;
+	void *wrclosure;
 
 	/* the main template */
 	mustach_template_t *templ;
@@ -355,13 +355,6 @@ static int get_partial_buf(
 	return MUSTACH_OK;
 }
 
-/**************************************************************************/
-/**************************************************************************/
-/** USING VERSION 2 *******************************************************/
-/**************************************************************************/
-/**************************************************************************/
-#if MUSTACH_USED == USING_MUSTACH_V2
-
 static int start_cb(void *closure)
 {
 	struct wrap *w = closure;
@@ -378,13 +371,19 @@ static void stop_cb(void *closure, int status)
 static int emit_raw_cb(void *closure, const char *buffer, size_t size)
 {
 	struct wrap *w = closure;
-	return w->writecb(w->extra, buffer, size);
+	return w->writecb != NULL
+		? w->writecb(w->wrclosure, buffer, size)
+		: w->emitcb(w->wrclosure, buffer, size, 0);
 }
 
 static int emit_esc_cb(void *closure, const char *buffer, size_t size, int escape)
 {
 	struct wrap *w = closure;
-	return w->emitcb(w->extra, buffer, size, escape);
+	return w->emitcb != NULL
+		? w->emitcb(w->wrclosure, buffer, size, escape)
+		: escape
+			? mustach_escape(buffer, size, w->writecb, w->wrclosure)
+			: w->writecb(w->wrclosure, buffer, size);
 }
 
 static int partial_get_cb(
@@ -394,7 +393,7 @@ static int partial_get_cb(
 		mustach_template_t **partial
 ) {
 	struct wrap *w = closure;
-	struct mustach_sbuf sbuf = SBUF_INITIALIZER;
+	struct mustach_sbuf sbuf = MUSTACH_SBUF_INIT;
 	int rc = get_partial_buf(w, name, length, &sbuf);
 	if (rc == MUSTACH_OK)
 		rc = mustach_make_template(partial, 0, &sbuf, NULL);
@@ -407,27 +406,12 @@ static void partial_put_cb(void *closure, mustach_template_t *partial)
 	mustach_destroy_template(partial, NULL, NULL);
 }
 
-static const struct mustach_apply_itf itf_raw = {
+static const struct mustach_apply_itf itfw = {
 	.version = MUSTACH_APPLY_ITF_VERSION_1,
 	.error = NULL,
 	.start = start_cb,
 	.stop = stop_cb,
 	.emit_raw = emit_raw_cb,
-	.emit_esc = NULL,
-	.get = get_cb,
-	.enter = enter_cb,
-	.next = next_cb,
-	.leave = leave_cb,
-	.partial_get = partial_get_cb,
-	.partial_put = partial_put_cb
-};
-
-static const struct mustach_apply_itf itf_esc = {
-	.version = MUSTACH_APPLY_ITF_VERSION_1,
-	.error = NULL,
-	.start = start_cb,
-	.stop = stop_cb,
-	.emit_raw = NULL,
 	.emit_esc = emit_esc_cb,
 	.get = get_cb,
 	.enter = enter_cb,
@@ -436,6 +420,43 @@ static const struct mustach_apply_itf itf_esc = {
 	.partial_get = partial_get_cb,
 	.partial_put = partial_put_cb
 };
+
+int mustach_wrap_apply(
+		mustach_template_t *template,
+		const struct mustach_wrap_itf *itf,
+		void *closure,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *wrclosure
+) {
+	int afl;
+	struct wrap wrap;
+
+	/* init the wrap data */
+	if (flags & Mustach_With_Compare)
+		flags |= Mustach_With_Equal;
+	wrap.templ = template;
+	wrap.itf = itf;
+	wrap.closure = closure;
+	wrap.flags = flags;
+	wrap.emitcb = emitcb;
+	wrap.writecb = writecb;
+	wrap.wrclosure = wrclosure;
+
+	/* apply the template */
+	afl = 0;
+	if ((flags & Mustach_With_PartialDataFirst) == 0)
+		afl |= Mustach_Apply_GlobalPartialFirst;
+	return mustach_apply_template(wrap.templ, afl, &itfw, &wrap);
+}
+
+/**************************************************************************/
+/**************************************************************************/
+/** USING VERSION 2 *******************************************************/
+/**************************************************************************/
+/**************************************************************************/
+#if MUSTACH_USED == USING_MUSTACH_V2
 
 static int get_template(mustach_template_t **templ, int flags, const char *template, size_t length)
 {
@@ -463,33 +484,16 @@ static int dowrap(
 		int flags,
 		mustach_write_cb_t *writecb,
 		mustach_emit_cb_t *emitcb,
-		void *extra
+		void *wrclosure
 ) {
-	int rc, afl;
-	struct wrap wrap;
-	const struct mustach_apply_itf *itf2;
+	int rc;
+	mustach_template_t *templ;
 
 	/* prepare the template */
-	rc = get_template(&wrap.templ, flags, template, length);
+	rc = get_template(&templ, flags, template, length);
 	if (rc == MUSTACH_OK) {
-
-		/* init the wrap data */
-		if (flags & Mustach_With_Compare)
-			flags |= Mustach_With_Equal;
-		wrap.itf = itf;
-		wrap.closure = closure;
-		wrap.flags = flags;
-		wrap.emitcb = emitcb;
-		wrap.writecb = writecb;
-		wrap.extra = extra;
-		itf2 = wrap.emitcb == NULL ? &itf_raw : &itf_esc;
-
-		/* apply the template */
-		afl = 0;
-		if ((flags & Mustach_With_PartialDataFirst) == 0)
-			afl |= Mustach_Apply_GlobalPartialFirst;
-		rc = mustach_apply_template(wrap.templ, afl, itf2, &wrap);
-		mustach_destroy_template(wrap.templ, NULL, NULL);
+		rc = mustach_wrap_apply(templ, itf, closure, flags, writecb, emitcb, wrclosure);
+		mustach_destroy_template(templ, NULL, NULL);
 	}
 	return rc;
 }
@@ -506,12 +510,12 @@ static int emit_cb(void *closure, const char *buffer, size_t size, int escape)
 	struct wrap *wrap = closure;
 
 	if (wrap->emitcb)
-		return wrap->emitcb(wrap->extra, buffer, size, escape);
+		return wrap->emitcb(wrap->wrclosure, buffer, size, escape);
 
 	if (!escape)
-		return wrap->writecb(wrap->extra, buffer, size);
+		return wrap->writecb(wrap->wrclosure, buffer, size);
 
-	return mustach_escape(buffer, size, wrap->writecb, wrap->extra);
+	return mustach_escape(buffer, size, wrap->writecb, wrap->wrclosure);
 }
 
 static int partial_cb(void *closure, const char *name, size_t length, struct mustach_sbuf *sbuf)
@@ -537,7 +541,7 @@ static int dowrap(
 		int flags,
 		mustach_write_cb_t *writecb,
 		mustach_emit_cb_t *emitcb,
-		void *extra
+		void *wrclosure
 ) {
 	int rc;
 	struct wrap wrap;
@@ -550,7 +554,7 @@ static int dowrap(
 	wrap.flags = flags;
 	wrap.emitcb = emitcb;
 	wrap.writecb = writecb;
-	wrap.extra = extra;
+	wrap.wrclosure = wrclosure;
 
 	/* apply the template */
 	rc = wrap.itf->start == NULL ? MUSTACH_OK : wrap.itf->start(wrap.closure);
