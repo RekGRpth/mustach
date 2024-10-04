@@ -129,11 +129,12 @@ static char *readfile(const char *filename, size_t *length)
 
 static int load_json(const char *filename);
 static int process(const char *content, size_t length);
-static void close_json();
+static void close_json(void);
 
 int main(int ac, char **av)
 {
-	char *t, *f;
+	char *t;
+	const char *f;
 	char *prog = *av;
 	int s;
 	size_t length;
