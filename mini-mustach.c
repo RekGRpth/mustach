@@ -12,6 +12,7 @@
 
 #include "mini-mustach.h"
 
+#include <limits.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -65,7 +66,7 @@ static inline void mustach_sbuf_release(mustach_sbuf_t *sbuf)
 
 static inline size_t mustach_sbuf_length(const mustach_sbuf_t *sbuf)
 {
-	return sbuf->length ?: sbuf->value == NULL ? 0 : strlen(sbuf->value);
+	return sbuf->length ? sbuf->length : sbuf->value == NULL ? 0 : strlen(sbuf->value);
 }
 
 /*********************************************************
@@ -117,7 +118,8 @@ static int process(
 	pref.prefix = prefix;
 	end = &template[length];
 	stdalone = enabled = 1;
-	depth = pref.len = 0;
+	pref.len = 0;
+	depth = 0;
 	for (;;) {
 		/* search next openning delimiter */
 		for (beg = template ; ; beg++) {
@@ -132,20 +134,20 @@ static int process(
 				}
 			}
 			if (c == '\n') {
-				l = (beg != end) + (size_t)(beg - template);
+				sz = (beg != end) + (size_t)(beg - template);
 				if (stdalone != 2 && enabled) {
 					if (beg != template /* don't prefix empty lines */) {
 						rc = emitprefix(iwrap, &pref);
 						if (rc < 0)
 							return rc;
 					}
-					rc = iwrap->itf.emit(iwrap->closure, template, l, 0);
+					rc = iwrap->itf.emit(iwrap->closure, template, sz, 0);
 					if (rc < 0)
 						return rc;
 				}
 				if (beg == end) /* no more mustach */
 					return depth ? MUSTACH_ERROR_UNEXPECTED_END : MUSTACH_OK;
-				template += l;
+				template += sz;
 				stdalone = 1;
 				pref.len = 0;
 				pref.prefix = prefix;
@@ -183,7 +185,10 @@ static int process(
 			}
 		}
 		template = term + cllen;
-		len = (size_t)(term - beg);
+		sz = (size_t)(term - beg);
+		if (sz > UINT_MAX)
+			return MUSTACH_ERROR_TOO_BIG;
+		len = (unsigned)sz;
 		c = *beg;
 		switch(c) {
 #if MINI_MUSTACH_WITH_COLON
