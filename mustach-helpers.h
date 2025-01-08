@@ -33,7 +33,7 @@ static inline void mustach_sbuf_release(mustach_sbuf_t *sbuf)
 
 static inline size_t mustach_sbuf_length(const mustach_sbuf_t *sbuf)
 {
-	return sbuf->length ?: sbuf->value == NULL ? 0 : strlen(sbuf->value);
+	return sbuf->length ? sbuf->length : sbuf->value == NULL ? 0 : strlen(sbuf->value);
 }
 
 /*********************************************************
