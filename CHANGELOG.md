@@ -137,7 +137,7 @@ Fixes:
 1.1.0 (2021-05-01)
 ------------------
 New:
- - API refactored to take lengths to ease working with partial or 
+ - API refactored to take lengths to ease working with partial or
    non-NULL-terminated strings. (ABI break)
 
 Fixes:
@@ -161,7 +161,7 @@ Fixes:
 
 New:
  - Support for cJSON and jansson libraries.
- - Version info now embedded at build time and shown with mustach(1) 
+ - Version info now embedded at build time and shown with mustach(1)
    usage.
  - Versioned so-names (e.g. libxlsx.so.1.0).
  - BINDIR, LIBDIR and INCLUDEDIR variables in Makefile.

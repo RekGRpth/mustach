@@ -109,7 +109,7 @@ static int subsel(void *closure, const char *name)
 		if (!*end && idx < json_array_size(e->selection)) {
 			o = json_array_get(e->selection, idx);
 			r = 1;
-		}		
+		}
 	}
 	if (r)
 		e->selection = o;
