@@ -422,7 +422,7 @@ static const struct mustach_apply_itf itfw = {
 };
 
 int mustach_wrap_apply(
-		mustach_template_t *template,
+		mustach_template_t *templstr,
 		const struct mustach_wrap_itf *itf,
 		void *closure,
 		int flags,
@@ -436,7 +436,7 @@ int mustach_wrap_apply(
 	/* init the wrap data */
 	if (flags & Mustach_With_Compare)
 		flags |= Mustach_With_Equal;
-	wrap.templ = template;
+	wrap.templ = templstr;
 	wrap.itf = itf;
 	wrap.closure = closure;
 	wrap.flags = flags;
@@ -458,12 +458,12 @@ int mustach_wrap_apply(
 /**************************************************************************/
 #if MUSTACH_USED == USING_MUSTACH_V2
 
-static int get_template(mustach_template_t **templ, int flags, const char *template, size_t length)
+static int get_template(mustach_template_t **templ, int flags, const char *templstr, size_t length)
 {
 	int flags2;
 	mustach_sbuf_t sbuf;
 
-	sbuf.value = template;
+	sbuf.value = templstr;
 	sbuf.length = length;
 	sbuf.freecb = NULL;
 
@@ -477,7 +477,7 @@ static int get_template(mustach_template_t **templ, int flags, const char *templ
 }
 
 static int dowrap(
-		const char *template,
+		const char *templstr,
 		size_t length,
 		const struct mustach_wrap_itf *itf,
 		void *closure,
@@ -490,7 +490,7 @@ static int dowrap(
 	mustach_template_t *templ;
 
 	/* prepare the template */
-	rc = get_template(&templ, flags, template, length);
+	rc = get_template(&templ, flags, templstr, length);
 	if (rc == MUSTACH_OK) {
 		rc = mustach_wrap_apply(templ, itf, closure, flags, writecb, emitcb, wrclosure);
 		mustach_destroy_template(templ, NULL, NULL);
@@ -534,7 +534,7 @@ static const mini_mustach_itf_t mini_itf = {
 };
 
 static int dowrap(
-		const char *template,
+		const char *templstr,
 		size_t length,
 		const struct mustach_wrap_itf *itf,
 		void *closure,
@@ -559,27 +559,27 @@ static int dowrap(
 	/* apply the template */
 	rc = wrap.itf->start == NULL ? MUSTACH_OK : wrap.itf->start(wrap.closure);
 	if (rc == MUSTACH_OK)
-		rc = mini_mustach(template, length, &mini_itf, &wrap);
+		rc = mini_mustach(templstr, length, &mini_itf, &wrap);
 	if (wrap.itf->stop)
 		wrap.itf->stop(wrap.closure, rc);
 	return rc;
 }
 #endif
 
-int mustach_wrap_file(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, FILE *file)
+int mustach_wrap_file(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, FILE *file)
 {
-	return dowrap(template, length, itf, closure, flags, mustach_fwrite_cb, NULL, file);
+	return dowrap(templstr, length, itf, closure, flags, mustach_fwrite_cb, NULL, file);
 }
 
-int mustach_wrap_fd(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, int fd)
+int mustach_wrap_fd(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, int fd)
 {
-	return dowrap(template, length, itf, closure, flags, mustach_write_cb, NULL, (void*)(intptr_t)fd);
+	return dowrap(templstr, length, itf, closure, flags, mustach_write_cb, NULL, (void*)(intptr_t)fd);
 }
 
-int mustach_wrap_mem(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size)
+int mustach_wrap_mem(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size)
 {
 	mustach_stream_t stream = MUSTACH_STREAM_INIT;
-	int rc = dowrap(template, length, itf, closure, flags, mustach_stream_write_cb, NULL, &stream);
+	int rc = dowrap(templstr, length, itf, closure, flags, mustach_stream_write_cb, NULL, &stream);
 	if (rc == MUSTACH_OK)
 		mustach_stream_end(&stream, result, size);
 	else
@@ -587,13 +587,13 @@ int mustach_wrap_mem(const char *template, size_t length, const struct mustach_w
 	return rc;
 }
 
-int mustach_wrap_write(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure)
+int mustach_wrap_write(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure)
 {
-	return dowrap(template, length, itf, closure, flags, writecb, NULL, writeclosure);
+	return dowrap(templstr, length, itf, closure, flags, writecb, NULL, writeclosure);
 }
 
-int mustach_wrap_emit(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure)
+int mustach_wrap_emit(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure)
 {
-	return dowrap(template, length, itf, closure, flags, NULL, emitcb, emitclosure);
+	return dowrap(templstr, length, itf, closure, flags, NULL, emitcb, emitclosure);
 }
 

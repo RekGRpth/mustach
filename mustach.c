@@ -111,7 +111,7 @@ static void wrap_partial_put(void *closure, mustach_template_t *part)
 	mustach_destroy_template(part, NULL, NULL);
 }
 
-int mustach_file(const char *template, size_t length, const struct mustach_itf *itf, void *closure, int flags, FILE *file)
+int mustach_file(const char *templstr, size_t length, const struct mustach_itf *itf, void *closure, int flags, FILE *file)
 {
 	int rc, flags2;
 	struct wrap wrap;
@@ -148,7 +148,7 @@ int mustach_file(const char *template, size_t length, const struct mustach_itf *
 	/* process */
 	rc = itf->start ? itf->start(closure) : 0;
 	if (rc == 0) {
-		sbuf.value = template;
+		sbuf.value = templstr;
 		sbuf.length = length;
 		sbuf.freecb = NULL;
 
@@ -227,7 +227,7 @@ static int emitprefix(struct iwrap *iwrap, const struct prefix *prefix)
 * This section is for default implementations of
 * optional callbacks that are although required
 *********************************************************/
-static int process(const char *template, size_t length, struct iwrap *iwrap, struct prefix *prefix)
+static int process(const char *templstr, size_t length, struct iwrap *iwrap, struct prefix *prefix)
 {
 	struct mustach_sbuf sbuf;
 	char opstr[MUSTACH_MAX_DELIM_LENGTH], clstr[MUSTACH_MAX_DELIM_LENGTH];
@@ -239,7 +239,7 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, str
 	struct prefix pref;
 
 	pref.prefix = prefix;
-	end = template + (length ? length : strlen(template));
+	end = templstr + (length ? length : strlen(templstr));
 	opstr[0] = opstr[1] = '{';
 	clstr[0] = clstr[1] = '}';
 	oplen = cllen = 2;
@@ -247,7 +247,7 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, str
 	depth = pref.len = 0;
 	for (;;) {
 		/* search next openning delimiter */
-		for (beg = template ; ; beg++) {
+		for (beg = templstr ; ; beg++) {
 			if (beg == end)
 				c = '\n';
 			else {
@@ -259,20 +259,20 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, str
 				}
 			}
 			if (c == '\n') {
-				l = (beg != end) + (size_t)(beg - template);
+				l = (beg != end) + (size_t)(beg - templstr);
 				if (stdalone != 2 && enabled) {
-					if (beg != template /* don't prefix empty lines */) {
+					if (beg != templstr /* don't prefix empty lines */) {
 						rc = emitprefix(iwrap, &pref);
 						if (rc < 0)
 							return rc;
 					}
-					rc = iwrap->emit(iwrap->closure, template, l, 0, iwrap->file);
+					rc = iwrap->emit(iwrap->closure, templstr, l, 0, iwrap->file);
 					if (rc < 0)
 						return rc;
 				}
 				if (beg == end) /* no more mustach */
 					return depth ? MUSTACH_ERROR_UNEXPECTED_END : MUSTACH_OK;
-				template += l;
+				templstr += l;
 				stdalone = 1;
 				pref.len = 0;
 				pref.prefix = prefix;
@@ -295,8 +295,8 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, str
 			}
 		}
 
-		pref.start = template;
-		pref.len = enabled ? (size_t)(beg - template) : 0;
+		pref.start = templstr;
+		pref.len = enabled ? (size_t)(beg - templstr) : 0;
 		beg += oplen;
 
 		/* search next closing delimiter */
@@ -309,7 +309,7 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, str
 					break;
 			}
 		}
-		template = term + cllen;
+		templstr = term + cllen;
 		len = (size_t)(term - beg);
 		c = *beg;
 		switch(c) {
@@ -330,7 +330,7 @@ static int process(const char *template, size_t length, struct iwrap *iwrap, str
 			} else {
 				if (term[l] != '}')
 					return MUSTACH_ERROR_BAD_UNESCAPE_TAG;
-				template++;
+				templstr++;
 			}
 			c = '&';
 			/*@fallthrough@*/
@@ -405,7 +405,7 @@ get_name:
 					return rc;
 			}
 			stack[depth].name = beg;
-			stack[depth].again = template;
+			stack[depth].again = templstr;
 			stack[depth].length = len;
 			stack[depth].enabled = enabled != 0;
 			stack[depth].entered = rc != 0;
@@ -421,7 +421,7 @@ get_name:
 			if (rc < 0)
 				return rc;
 			if (rc) {
-				template = stack[depth++].again;
+				templstr = stack[depth++].again;
 			} else {
 				enabled = stack[depth].enabled;
 				if (enabled && stack[depth].entered)
@@ -524,7 +524,7 @@ static int iwrap_partial(void *closure, const char *name, struct mustach_sbuf *s
 /*********************************************************
 * This section is for the public interface functions
 *********************************************************/
-int mustach_file(const char *template, size_t length, const struct mustach_itf *itf, void *closure, int flags, FILE *file)
+int mustach_file(const char *templstr, size_t length, const struct mustach_itf *itf, void *closure, int flags, FILE *file)
 {
 	int rc;
 	struct iwrap iwrap;
@@ -564,7 +564,7 @@ int mustach_file(const char *template, size_t length, const struct mustach_itf *
 	/* process */
 	rc = itf->start ? itf->start(closure) : 0;
 	if (rc == 0)
-		rc = process(template, length, &iwrap, NULL);
+		rc = process(templstr, length, &iwrap, NULL);
 	if (itf->stop)
 		itf->stop(closure, rc);
 	return rc;
@@ -636,7 +636,7 @@ static int wrap_partial(void *closure, const char *name, size_t length, struct m
 	return wrap->itf->partial(wrap->closure, copy, sbuf);
 }
 
-int mustach_file(const char *template, size_t length, const struct mustach_itf *itf, void *closure, int flags, FILE *file)
+int mustach_file(const char *templstr, size_t length, const struct mustach_itf *itf, void *closure, int flags, FILE *file)
 {
 	int rc;
 	struct wrap wrap;
@@ -666,7 +666,7 @@ int mustach_file(const char *template, size_t length, const struct mustach_itf *
 	/* process */
 	rc = itf->start ? itf->start(closure) : 0;
 	if (rc == 0)
-		rc = mini_mustach(template, length, &itf2, &wrap);
+		rc = mini_mustach(templstr, length, &itf2, &wrap);
 	if (itf->stop)
 		itf->stop(closure, rc);
 	return rc;
@@ -678,7 +678,7 @@ int mustach_file(const char *template, size_t length, const struct mustach_itf *
 /** COMMON PART ***********************************************************/
 /**************************************************************************/
 /**************************************************************************/
-int mustach_fd(const char *template, size_t length, const struct mustach_itf *itf, void *closure, int flags, int fd)
+int mustach_fd(const char *templstr, size_t length, const struct mustach_itf *itf, void *closure, int flags, int fd)
 {
 	int rc;
 	FILE *file;
@@ -688,13 +688,13 @@ int mustach_fd(const char *template, size_t length, const struct mustach_itf *it
 		rc = MUSTACH_ERROR_SYSTEM;
 		errno = ENOMEM;
 	} else {
-		rc = mustach_file(template, length, itf, closure, flags, file);
+		rc = mustach_file(templstr, length, itf, closure, flags, file);
 		fclose(file);
 	}
 	return rc;
 }
 
-int mustach_mem(const char *template, size_t length, const struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size)
+int mustach_mem(const char *templstr, size_t length, const struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size)
 {
 	int rc;
 	FILE *file;
@@ -707,7 +707,7 @@ int mustach_mem(const char *template, size_t length, const struct mustach_itf *i
 	if (file == NULL)
 		rc = MUSTACH_ERROR_SYSTEM;
 	else {
-		rc = mustach_file(template, length, itf, closure, flags, file);
+		rc = mustach_file(templstr, length, itf, closure, flags, file);
 		if (rc < 0)
 			mustach_memfile_abort(file, result, size);
 		else
@@ -716,18 +716,18 @@ int mustach_mem(const char *template, size_t length, const struct mustach_itf *i
 	return rc;
 }
 
-int fmustach(const char *template, const struct mustach_itf *itf, void *closure, FILE *file)
+int fmustach(const char *templstr, const struct mustach_itf *itf, void *closure, FILE *file)
 {
-	return mustach_file(template, 0, itf, closure, Mustach_With_AllExtensions, file);
+	return mustach_file(templstr, 0, itf, closure, Mustach_With_AllExtensions, file);
 }
 
-int fdmustach(const char *template, const struct mustach_itf *itf, void *closure, int fd)
+int fdmustach(const char *templstr, const struct mustach_itf *itf, void *closure, int fd)
 {
-	return mustach_fd(template, 0, itf, closure, Mustach_With_AllExtensions, fd);
+	return mustach_fd(templstr, 0, itf, closure, Mustach_With_AllExtensions, fd);
 }
 
-int mustach(const char *template, const struct mustach_itf *itf, void *closure, char **result, size_t *size)
+int mustach(const char *templstr, const struct mustach_itf *itf, void *closure, char **result, size_t *size)
 {
-	return mustach_mem(template, 0, itf, closure, Mustach_With_AllExtensions, result, size);
+	return mustach_mem(templstr, 0, itf, closure, Mustach_With_AllExtensions, result, size);
 }
 
