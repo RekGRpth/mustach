@@ -37,6 +37,11 @@ static inline size_t mustach_sbuf_length(const mustach_sbuf_t *sbuf)
 }
 
 /*********************************************************
+* Getting standard error text
+*********************************************************/
+extern const char *mustach_strerror(int code);
+
+/*********************************************************
 * This section wraps implementation details of memory files.
 * It also takes care of adding a terminating zero to the
 * produced text.

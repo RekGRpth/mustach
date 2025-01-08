@@ -20,6 +20,34 @@
 #endif
 
 /*********************************************************
+**********************************************************/
+static const char *errtxts[] = {
+	"?",
+	"system",
+	"unexpected end",
+	"empty tag",
+	"too big",
+	"bad delimiter",
+	"too deep",
+	"closing",
+	"bad unescape tag",
+	"invalid interface",
+	"not found",
+	"undefined tag",
+	"too much nesting",
+	"out of memory",
+	"bad input data"
+};
+
+const char *mustach_strerror(int code)
+{
+	int idx = -code;
+	if (idx < 0 || idx > (int)(sizeof errtxts / sizeof *errtxts))
+		idx = 0;
+	return errtxts[idx];
+}
+
+/*********************************************************
 * This section wraps implementation details of memory files.
 * It also takes care of adding a terminating zero to the
 * produced text.
