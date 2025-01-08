@@ -142,15 +142,35 @@ struct mustach_wrap_itf {
 extern const struct mustach_itf mustach_wrap_itf;
 
 /**
- * Global hook for providing partials. When set to a not NULL value, the pointed
- * function replaces the default behaviour and is called to provide the partial
- * of the given 'name' in 'sbuf'.
- * The function must return MUSTACH_OK when it filled 'sbuf' with value of partial
- * or must return an error code if it failed. But if MUSTACH_ERROR_PARTIAL_NOT_FOUND
- * is returned, the default behavior is evaluated.
+ * Global hook for providing partials. When set to a not NULL value,
+ * the pointed function replaces the default behaviour and is called
+ * to provide the partial of the given 'name' in 'sbuf'.
+ *
+ * The function must return MUSTACH_OK when it filled 'sbuf'
+ * with value of partial or must return an error code if it failed.
+ *
+ * But if MUSTACH_ERROR_PARTIAL_NOT_FOUND is returned,
+ * the default behavior is evaluated.
  */
 extern int (*mustach_wrap_get_partial)(const char *name, struct mustach_sbuf *sbuf);
 
+/**
+ * mustach_wrap_apply - Renders the prepared mustache 'templstr'
+ * for an abstract wrapper of interface 'itf' and 'closure'
+ * and being writen using one or both of the emitters 'writecb'
+ * or 'emitcb' and the closure 'wrclosure'.
+ *
+ * @templstr:  the template string to instantiate
+ * @itf:       the interface of the abstract wrapper
+ * @closure:   the closure for itf
+ * @flags:     rendering flags
+ * @writecb:   raw emitting callback
+ * @emitcb:    escaping emitting callback
+ * @wrclosure: closure for emitting callbacks
+ *
+ * Returns 0 in case of success, -1 with errno set in case of system error
+ * a other negative value in case of error.
+ */
 extern int mustach_wrap_apply(
 		mustach_template_t *templstr,
 		const struct mustach_wrap_itf *itf,
