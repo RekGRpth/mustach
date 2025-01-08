@@ -27,7 +27,12 @@ struct expl {
 		struct json_object_iterator iter;
 		struct json_object_iterator enditer;
 		int is_objiter;
+#if JSON_C_VERSION_NUM >= 0x000d00
+		size_t index, count;
+#else
 		int index, count;
+#endif
+
 	} stack[MUSTACH_MAX_DEPTH];
 };
 
