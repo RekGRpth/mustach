@@ -117,6 +117,8 @@ extern int mini_mustach(
  *   of recursivity
  *
  * - MUSTACH_ERROR_OUT_OF_MEMORY: memory exhausted
+ *
+ * - MUSTACH_ERROR_BAD_DATA: error in input data (JSON)
  */
 #define MUSTACH_OK                       0
 #define MUSTACH_ERROR_SYSTEM            -1
@@ -132,6 +134,7 @@ extern int mini_mustach(
 #define MUSTACH_ERROR_UNDEFINED_TAG     -12
 #define MUSTACH_ERROR_TOO_MUCH_NESTING  -13
 #define MUSTACH_ERROR_OUT_OF_MEMORY     -14
+#define MUSTACH_ERROR_BAD_DATA          -15
 /*
  * You can use definition below for user specific error
  *
