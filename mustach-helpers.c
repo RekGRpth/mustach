@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdint.h>
 #ifdef _WIN32
 #include <malloc.h>
 #endif
@@ -150,10 +151,19 @@ static int read_file(FILE *file, mustach_sbuf_t *sbuf)
 		if (pos < 0 || fseek(file, 0, SEEK_SET) < 0)
 			return MUSTACH_ERROR_SYSTEM;
 		sz = (size_t)pos;
+		if (pos != (long)sz)/*detecting truncation*/
+			return MUSTACH_ERROR_TOO_BIG;
 	}
 
 	/* initial size */
-	all = sz != 0 ? 1 + sz : SZINIT;
+	if (sz == 0)
+		all = SZINIT;
+	else {
+		all = 1 + sz;
+		if (all < sz)/*detecting truncation*/
+			return MUSTACH_ERROR_TOO_BIG;
+	}
+
 	/* allocates buffer */
 	rc = MUSTACH_ERROR_OUT_OF_MEMORY;
 	while ((p = realloc(buffer, all)) != NULL) {
@@ -178,8 +188,17 @@ static int read_file(FILE *file, mustach_sbuf_t *sbuf)
 			sbuf->freecb = free;
 			return MUSTACH_OK;
 		}
-		if (rsz == nsz)
-			all += all;
+		if (rsz == nsz) {
+			/* at end of buffer, growth needed */
+			if (all + all > all)
+				all = all + all;
+			else if (all != SIZE_MAX)
+				all = SIZE_MAX;
+			else {
+				free(buffer);
+				return MUSTACH_ERROR_TOO_BIG;
+			}
+		}
 	}
 	free(buffer);
 	mustach_sbuf_reset(sbuf);
