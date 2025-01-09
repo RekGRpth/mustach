@@ -347,9 +347,14 @@ int mustach_stream_write(
 ) {
 	if (size >0) {
 		size_t nlen = stream->length + size;
+		if (nlen < size)/*detect overflow*/
+			return MUSTACH_ERROR_TOO_BIG;
 		if (nlen > stream->avail) {
 			size_t nava = nlen + SZBLK;
-			void *nbuf = realloc(stream->buffer, nava + 1);
+			void *nbuf;
+			if (nava < nlen || nava + 1 < nava)/*avoid overflow*/
+				nava = SIZE_MAX - 1;
+			nbuf = realloc(stream->buffer, nava + 1);
 			if (nbuf == NULL)
 				return MUSTACH_ERROR_OUT_OF_MEMORY;
 			stream->buffer = nbuf;
