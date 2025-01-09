@@ -102,32 +102,13 @@ void mustach_memfile_abort(FILE *file, char **buffer, size_t *size)
 	*buffer = NULL;
 	*size = 0;
 }
+static int read_file(FILE *file, mustach_sbuf_t *sbuf);
 int mustach_memfile_close(FILE *file, char **buffer, size_t *size)
 {
-	int rc;
-	size_t s;
-	char *b;
-
-	s = (size_t)ftell(file);
-	b = malloc(s + 1);
-	if (b == NULL) {
-		rc = MUSTACH_ERROR_SYSTEM;
-		errno = ENOMEM;
-		s = 0;
-	} else {
-		rewind(file);
-		if (1 == fread(b, s, 1, file)) {
-			rc = 0;
-			b[s] = 0;
-		} else {
-			rc = MUSTACH_ERROR_SYSTEM;
-			free(b);
-			b = NULL;
-			s = 0;
-		}
-	}
-	*buffer = b;
-	*size = s;
+	mustach_sbuf_t buf;
+	int rc = read_file(file, &buf);
+		*buffer = (char*)buf.value;
+		*size = buf.length;
 	return rc;
 }
 #endif
@@ -186,6 +167,7 @@ static int read_file(FILE *file, mustach_sbuf_t *sbuf)
 			sbuf->value = buffer;
 			buffer[sbuf->length = idx] = 0;
 			sbuf->freecb = free;
+			sbuf->closure = NULL;
 			return MUSTACH_OK;
 		}
 		if (rsz == nsz) {
