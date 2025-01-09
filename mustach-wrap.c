@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #ifdef _WIN32
 #include <malloc.h>
 #endif
@@ -302,10 +303,12 @@ static int get_cb(void *closure, const char *name, size_t length, struct mustach
 static int get_partial_from_file(const char *name, size_t length, struct mustach_sbuf *sbuf)
 {
 	static char extension[] = INCLUDE_PARTIAL_EXTENSION;
-	char path[length + sizeof extension];
+	char path[PATH_MAX];
 	int rc;
 
 	/* try without extension first */
+	if (length + sizeof extension > sizeof path)
+		return MUSTACH_ERROR_TOO_BIG;
 	memcpy(path, name, length);
 	path[length] = 0;
 	rc = mustach_read_file(path, sbuf);
@@ -325,7 +328,9 @@ static int get_partial_buf(
 ) {
 	int rc;
 	if (mustach_wrap_get_partial != NULL) {
-		char path[length + 1];
+		char path[PATH_MAX];
+		if (length + 1 > sizeof path)
+			return MUSTACH_ERROR_TOO_BIG;
 		memcpy(path, name, length);
 		path[length] = 0;
 		rc = mustach_wrap_get_partial(path, sbuf);
