@@ -91,115 +91,124 @@ processing file test-specs/spec/specs/interpolation.json
 [1] Basic Interpolation
 	Unadorned tags should interpolate content into the template.
 	=> SUCCESS
-[2] HTML Escaping
+[2] No Re-interpolation
+	Interpolated tag output should not be re-interpolated.
+	=> SUCCESS
+[3] HTML Escaping
 	Basic interpolation should be HTML escaped.
 	=> SUCCESS
-[3] Triple Mustache
+[4] Triple Mustache
 	Triple mustaches should interpolate without HTML escaping.
 	=> SUCCESS
-[4] Ampersand
+[5] Ampersand
 	Ampersand should interpolate without HTML escaping.
 	=> SUCCESS
-[5] Basic Integer Interpolation
+[6] Basic Integer Interpolation
 	Integers should interpolate seamlessly.
 	=> SUCCESS
-[6] Triple Mustache Integer Interpolation
+[7] Triple Mustache Integer Interpolation
 	Integers should interpolate seamlessly.
 	=> SUCCESS
-[7] Ampersand Integer Interpolation
+[8] Ampersand Integer Interpolation
 	Integers should interpolate seamlessly.
 	=> SUCCESS
-[8] Basic Decimal Interpolation
+[9] Basic Decimal Interpolation
 	Decimals should interpolate seamlessly with proper significance.
 	=> SUCCESS
-[9] Triple Mustache Decimal Interpolation
+[10] Triple Mustache Decimal Interpolation
 	Decimals should interpolate seamlessly with proper significance.
 	=> SUCCESS
-[10] Ampersand Decimal Interpolation
+[11] Ampersand Decimal Interpolation
 	Decimals should interpolate seamlessly with proper significance.
 	=> SUCCESS
-[11] Basic Null Interpolation
+[12] Basic Null Interpolation
 	Nulls should interpolate as the empty string.
 	=> SUCCESS
-[12] Triple Mustache Null Interpolation
+[13] Triple Mustache Null Interpolation
 	Nulls should interpolate as the empty string.
 	=> SUCCESS
-[13] Ampersand Null Interpolation
+[14] Ampersand Null Interpolation
 	Nulls should interpolate as the empty string.
 	=> SUCCESS
-[14] Basic Context Miss Interpolation
+[15] Basic Context Miss Interpolation
 	Failed context lookups should default to empty strings.
 	=> SUCCESS
-[15] Triple Mustache Context Miss Interpolation
+[16] Triple Mustache Context Miss Interpolation
 	Failed context lookups should default to empty strings.
 	=> SUCCESS
-[16] Ampersand Context Miss Interpolation
+[17] Ampersand Context Miss Interpolation
 	Failed context lookups should default to empty strings.
 	=> SUCCESS
-[17] Dotted Names - Basic Interpolation
+[18] Dotted Names - Basic Interpolation
 	Dotted names should be considered a form of shorthand for sections.
 	=> SUCCESS
-[18] Dotted Names - Triple Mustache Interpolation
+[19] Dotted Names - Triple Mustache Interpolation
 	Dotted names should be considered a form of shorthand for sections.
 	=> SUCCESS
-[19] Dotted Names - Ampersand Interpolation
+[20] Dotted Names - Ampersand Interpolation
 	Dotted names should be considered a form of shorthand for sections.
 	=> SUCCESS
-[20] Dotted Names - Arbitrary Depth
+[21] Dotted Names - Arbitrary Depth
 	Dotted names should be functional to any level of nesting.
 	=> SUCCESS
-[21] Dotted Names - Broken Chains
+[22] Dotted Names - Broken Chains
 	Any falsey value prior to the last part of the name should yield ''.
 	=> SUCCESS
-[22] Dotted Names - Broken Chain Resolution
+[23] Dotted Names - Broken Chain Resolution
 	Each part of a dotted name should resolve only against its parent.
 	=> SUCCESS
-[23] Dotted Names - Initial Resolution
+[24] Dotted Names - Initial Resolution
 	The first part of a dotted name should resolve as any other name.
 	=> SUCCESS
-[24] Dotted Names - Context Precedence
+[25] Dotted Names - Context Precedence
 	Dotted names should be resolved against former resolutions.
 	=> SUCCESS
-[25] Implicit Iterators - Basic Interpolation
+[26] Dotted Names are never single keys
+	Dotted names shall not be parsed as single, atomic keys
+	=> SUCCESS
+[27] Dotted Names - No Masking
+	Dotted Names in a given context are unvavailable due to dot splitting
+	=> SUCCESS
+[28] Implicit Iterators - Basic Interpolation
 	Unadorned tags should interpolate content into the template.
 	=> SUCCESS
-[26] Implicit Iterators - HTML Escaping
+[29] Implicit Iterators - HTML Escaping
 	Basic interpolation should be HTML escaped.
 	=> SUCCESS
-[27] Implicit Iterators - Triple Mustache
+[30] Implicit Iterators - Triple Mustache
 	Triple mustaches should interpolate without HTML escaping.
 	=> SUCCESS
-[28] Implicit Iterators - Ampersand
+[31] Implicit Iterators - Ampersand
 	Ampersand should interpolate without HTML escaping.
 	=> SUCCESS
-[29] Implicit Iterators - Basic Integer Interpolation
+[32] Implicit Iterators - Basic Integer Interpolation
 	Integers should interpolate seamlessly.
 	=> SUCCESS
-[30] Interpolation - Surrounding Whitespace
+[33] Interpolation - Surrounding Whitespace
 	Interpolation should not alter surrounding whitespace.
 	=> SUCCESS
-[31] Triple Mustache - Surrounding Whitespace
+[34] Triple Mustache - Surrounding Whitespace
 	Interpolation should not alter surrounding whitespace.
 	=> SUCCESS
-[32] Ampersand - Surrounding Whitespace
+[35] Ampersand - Surrounding Whitespace
 	Interpolation should not alter surrounding whitespace.
 	=> SUCCESS
-[33] Interpolation - Standalone
+[36] Interpolation - Standalone
 	Standalone interpolation should not alter surrounding whitespace.
 	=> SUCCESS
-[34] Triple Mustache - Standalone
+[37] Triple Mustache - Standalone
 	Standalone interpolation should not alter surrounding whitespace.
 	=> SUCCESS
-[35] Ampersand - Standalone
+[38] Ampersand - Standalone
 	Standalone interpolation should not alter surrounding whitespace.
 	=> SUCCESS
-[36] Interpolation With Padding
+[39] Interpolation With Padding
 	Superfluous in-tag whitespace should be ignored.
 	=> SUCCESS
-[37] Triple Mustache With Padding
+[40] Triple Mustache With Padding
 	Superfluous in-tag whitespace should be ignored.
 	=> SUCCESS
-[38] Ampersand With Padding
+[41] Ampersand With Padding
 	Superfluous in-tag whitespace should be ignored.
 	=> SUCCESS
 
@@ -426,4 +435,4 @@ a simple way to display content conditionally if a variable exists.
 summary:
   error   0
   differ  1
-  success 132
+  success 135

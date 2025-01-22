@@ -4,7 +4,7 @@ MINOR := 0
 REVIS := 0alpha
 
 # Mustache spec
-VSPEC := v1.4.1
+VSPEC := v1.4.2
 
 # installation settings
 DESTDIR ?=
