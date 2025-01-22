@@ -13,7 +13,7 @@ export VALGRIND
 .PHONY: test test-basic test-specs
 test: basic-tests spec-tests
 
-basic-tests: $P/mustach
+basic-tests: # $P/mustach
 	@$(MAKE) -C test1 test
 	@$(MAKE) -C test2 test
 	@$(MAKE) -C test3 test

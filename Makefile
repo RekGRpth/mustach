@@ -258,8 +258,8 @@ uninstall:
 
 .PHONY: test
 
-test: all
-	@$(MAKE) -C tests test \
+test: mustach
+	@$(MAKE) -C tests test VSPEC="$(VSPEC)" \
 		TESTSPECS="$(TESTSPECS)"  TESTPARENT="$(TESTPARENT)" \
 		CFLAGS="$(CFLAGS)" EFLAGS="$(EFLAGS)" LDFLAGS="$(LDFLAGS) -L.." \
 		cjson_cflags="$(cjson_cflags)" cjson_libs="$(cjson_libs)" \
