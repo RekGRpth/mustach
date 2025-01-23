@@ -11,7 +11,7 @@ then
 	[ "$VALGRIND" = 1 ] && exit_fail "no valgrind"
 	NOVALGRIND=1
 fi
-mustach="${mustach:-../mustach}"
+mustach="${mustach:-../../mustach}"
 echo "starting test"
 if [ "$NOVALGRIND" = 1 ]
 then

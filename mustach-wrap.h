@@ -142,17 +142,37 @@ struct mustach_wrap_itf {
 extern const struct mustach_itf mustach_wrap_itf;
 
 /**
- * Global hook for providing partials. When set to a not NULL value, the pointed
- * function replaces the default behaviour and is called to provide the partial
- * of the given 'name' in 'sbuf'.
- * The function must return MUSTACH_OK when it filled 'sbuf' with value of partial
- * or must return an error code if it failed. But if MUSTACH_ERROR_PARTIAL_NOT_FOUND
- * is returned, the default behavior is evaluated.
+ * Global hook for providing partials. When set to a not NULL value,
+ * the pointed function replaces the default behaviour and is called
+ * to provide the partial of the given 'name' in 'sbuf'.
+ *
+ * The function must return MUSTACH_OK when it filled 'sbuf'
+ * with value of partial or must return an error code if it failed.
+ *
+ * But if MUSTACH_ERROR_PARTIAL_NOT_FOUND is returned,
+ * the default behavior is evaluated.
  */
 extern int (*mustach_wrap_get_partial)(const char *name, struct mustach_sbuf *sbuf);
 
+/**
+ * mustach_wrap_apply - Renders the prepared mustache 'templstr'
+ * for an abstract wrapper of interface 'itf' and 'closure'
+ * and being writen using one or both of the emitters 'writecb'
+ * or 'emitcb' and the closure 'wrclosure'.
+ *
+ * @templstr:  the template string to instantiate
+ * @itf:       the interface of the abstract wrapper
+ * @closure:   the closure for itf
+ * @flags:     rendering flags
+ * @writecb:   raw emitting callback
+ * @emitcb:    escaping emitting callback
+ * @wrclosure: closure for emitting callbacks
+ *
+ * Returns 0 in case of success, -1 with errno set in case of system error
+ * a other negative value in case of error.
+ */
 extern int mustach_wrap_apply(
-		mustach_template_t *template,
+		mustach_template_t *templstr,
 		const struct mustach_wrap_itf *itf,
 		void *closure,
 		int flags,
@@ -162,10 +182,10 @@ extern int mustach_wrap_apply(
 );
 
 /**
- * mustach_wrap_file - Renders the mustache 'template' in 'file' for an abstract
+ * mustach_wrap_file - Renders the mustache 'templstr' in 'file' for an abstract
  * wrapper of interface 'itf' and 'closure'.
  *
- * @template: the template string to instantiate
+ * @templstr: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface of the abstract wrapper
  * @closure:  the closure of the abstract wrapper
@@ -174,13 +194,13 @@ extern int mustach_wrap_apply(
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_file(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, FILE *file);
+extern int mustach_wrap_file(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, FILE *file);
 
 /**
- * mustach_wrap_fd - Renders the mustache 'template' in 'fd' for an abstract
+ * mustach_wrap_fd - Renders the mustache 'templstr' in 'fd' for an abstract
  * wrapper of interface 'itf' and 'closure'.
  *
- * @template: the template string to instantiate
+ * @templstr: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface of the abstract wrapper
  * @closure:  the closure of the abstract wrapper
@@ -189,13 +209,13 @@ extern int mustach_wrap_file(const char *template, size_t length, const struct m
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_fd(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, int fd);
+extern int mustach_wrap_fd(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, int fd);
 
 /**
- * mustach_wrap_mem - Renders the mustache 'template' in 'result' for an abstract
+ * mustach_wrap_mem - Renders the mustache 'templstr' in 'result' for an abstract
  * wrapper of interface 'itf' and 'closure'.
  *
- * @template: the template string to instantiate
+ * @templstr: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface of the abstract wrapper
  * @closure:  the closure of the abstract wrapper
@@ -205,14 +225,14 @@ extern int mustach_wrap_fd(const char *template, size_t length, const struct mus
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_mem(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size);
+extern int mustach_wrap_mem(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, char **result, size_t *size);
 
 /**
- * mustach_wrap_write - Renders the mustache 'template' for an abstract
+ * mustach_wrap_write - Renders the mustache 'templstr' for an abstract
  * wrapper of interface 'itf' and 'closure' to custom writer
  * 'writecb' with 'writeclosure'.
  *
- * @template: the template string to instantiate
+ * @templstr: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface of the abstract wrapper
  * @closure:  the closure of the abstract wrapper
@@ -222,14 +242,14 @@ extern int mustach_wrap_mem(const char *template, size_t length, const struct mu
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_write(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure);
+extern int mustach_wrap_write(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_write_cb_t *writecb, void *writeclosure);
 
 /**
- * mustach_wrap_emit - Renders the mustache 'template' for an abstract
+ * mustach_wrap_emit - Renders the mustache 'templstr' for an abstract
  * wrapper of interface 'itf' and 'closure' to custom emiter 'emitcb'
  * with 'emitclosure'.
  *
- * @template: the template string to instantiate
+ * @templstr: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface of the abstract wrapper
  * @closure:  the closure of the abstract wrapper
@@ -239,7 +259,7 @@ extern int mustach_wrap_write(const char *template, size_t length, const struct 
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_wrap_emit(const char *template, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure);
+extern int mustach_wrap_emit(const char *templstr, size_t length, const struct mustach_wrap_itf *itf, void *closure, int flags, mustach_emit_cb_t *emitcb, void *emitclosure);
 
 #endif
 

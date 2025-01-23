@@ -91,7 +91,7 @@ static int emitprefix(struct iwrap *iwrap, const struct prefix *prefix)
 * optional callbacks that are although required
 *********************************************************/
 static int process(
-		const char *template,
+		const char *templstr,
 		size_t length,
 		struct iwrap *iwrap,
 		struct prefix *prefix
@@ -116,13 +116,13 @@ static int process(
 	size_t sz;
 
 	pref.prefix = prefix;
-	end = &template[length];
+	end = &templstr[length];
 	stdalone = enabled = 1;
 	pref.len = 0;
 	depth = 0;
 	for (;;) {
 		/* search next openning delimiter */
-		for (beg = template ; ; beg++) {
+		for (beg = templstr ; ; beg++) {
 			if (beg == end)
 				c = '\n';
 			else {
@@ -134,20 +134,20 @@ static int process(
 				}
 			}
 			if (c == '\n') {
-				sz = (beg != end) + (size_t)(beg - template);
+				sz = (beg != end) + (size_t)(beg - templstr);
 				if (stdalone != 2 && enabled) {
-					if (beg != template /* don't prefix empty lines */) {
+					if (beg != templstr /* don't prefix empty lines */) {
 						rc = emitprefix(iwrap, &pref);
 						if (rc < 0)
 							return rc;
 					}
-					rc = iwrap->itf.emit(iwrap->closure, template, sz, 0);
+					rc = iwrap->itf.emit(iwrap->closure, templstr, sz, 0);
 					if (rc < 0)
 						return rc;
 				}
 				if (beg == end) /* no more mustach */
 					return depth ? MUSTACH_ERROR_UNEXPECTED_END : MUSTACH_OK;
-				template += sz;
+				templstr += sz;
 				stdalone = 1;
 				pref.len = 0;
 				pref.prefix = prefix;
@@ -170,8 +170,8 @@ static int process(
 			}
 		}
 
-		pref.start = template;
-		pref.len = enabled ? (size_t)(beg - template) : 0;
+		pref.start = templstr;
+		pref.len = enabled ? (size_t)(beg - templstr) : 0;
 		beg += oplen;
 
 		/* search next closing delimiter */
@@ -184,7 +184,7 @@ static int process(
 					break;
 			}
 		}
-		template = term + cllen;
+		templstr = term + cllen;
 		sz = (size_t)(term - beg);
 		if (sz > UINT_MAX)
 			return MUSTACH_ERROR_TOO_BIG;
@@ -208,7 +208,7 @@ static int process(
 			} else {
 				if (term[l] != '}')
 					return MUSTACH_ERROR_BAD_UNESCAPE_TAG;
-				template++;
+				templstr++;
 			}
 			c = '&';
 			/*@fallthrough@*/
@@ -281,7 +281,7 @@ get_name:
 					return rc;
 			}
 			stack[depth].name = beg;
-			stack[depth].again = template;
+			stack[depth].again = templstr;
 			stack[depth].length = len;
 			stack[depth].enabled = enabled != 0;
 			stack[depth].entered = rc != 0;
@@ -300,7 +300,7 @@ get_name:
 			if (rc < 0)
 				return rc;
 			if (rc) {
-				template = stack[depth++].again;
+				templstr = stack[depth++].again;
 			} else {
 				enabled = stack[depth].enabled;
 				if (enabled && stack[depth].entered)
@@ -349,7 +349,7 @@ get_name:
 * This section is for the public interface functions
 *********************************************************/
 int mini_mustach(
-	const char *template,
+	const char *templstr,
 	size_t length,
 	const mini_mustach_itf_t *itf,
 	void *closure
@@ -369,7 +369,7 @@ int mini_mustach(
 
 	/* process */
 	if (length == 0)
-		length = strlen(template);
-	return process(template, length, &iwrap, NULL);
+		length = strlen(templstr);
+	return process(templstr, length, &iwrap, NULL);
 }
 

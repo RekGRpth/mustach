@@ -4,7 +4,7 @@ MINOR := 0
 REVIS := 0alpha
 
 # Mustache spec
-VSPEC := v1.4.1
+VSPEC := v1.4.2
 
 # installation settings
 DESTDIR ?=
@@ -256,60 +256,15 @@ uninstall:
 	rm -f $(DESTDIR)$(LIBDIR)/libmustach*.so*
 	rm -rf $(DESTDIR)$(INCLUDEDIR)/mustach
 
-# testing
-ifeq ($(valgrind),no)
- NOVALGRIND := 1
-else ifeq ($(valgrind),yes)
- VALGRIND := 1
-endif
-export NOVALGRIND
-export VALGRIND
+.PHONY: test
 
-.PHONY: test test-basic test-specs
-test: basic-tests spec-tests
-
-basic-tests: mustach
-	@$(MAKE) -C test1 test
-	@$(MAKE) -C test2 test
-	@$(MAKE) -C test3 test
-	@$(MAKE) -C test4 test
-	@$(MAKE) -C test5 test
-	@$(MAKE) -C test6 test
-	@$(MAKE) -C test7 test
-	@$(MAKE) -C test8 test
-	@test "$(TESTPARENT)" -eq 0 || $(MAKE) -C test9 test
-
-spec-tests: $(TESTSPECS)
-
-test-specs/test-specs-%: test-specs/%-test-specs test-specs/specs
-	./$< test-specs/spec/specs/[a-z]*.json > $@.last || true
-	test "$(TESTPARENT)" -eq 0 || ./$< test-specs/spec/specs/~inheritance.json >> $@.last || true
-	diff $@.ref $@.last
-
-test-specs/cjson-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-cjson.h
-	$(CC) -I. -c $(EFLAGS) $(CFLAGS) $(cjson_cflags) -DTEST=TEST_CJSON -o $@ $<
-
-test-specs/cjson-test-specs: test-specs/cjson-test-specs.o mustach-cjson.o $(COREOBJS)
-	$(CC) $(LDFLAGS) -o $@ $^ $(cjson_libs)
-
-test-specs/json-c-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-json-c.h
-	$(CC) -I. -c $(EFLAGS) $(CFLAGS) $(jsonc_cflags) -DTEST=TEST_JSON_C -o $@ $<
-
-test-specs/json-c-test-specs: test-specs/json-c-test-specs.o mustach-json-c.o $(COREOBJS)
-	$(CC) $(LDFLAGS) -o $@ $^ $(jsonc_libs)
-
-test-specs/jansson-test-specs.o: test-specs/test-specs.c mustach.h mustach-wrap.h mustach-jansson.h
-	$(CC) -I. -c $(EFLAGS) $(CFLAGS) $(jansson_cflags) -DTEST=TEST_JANSSON -o $@ $<
-
-test-specs/jansson-test-specs: test-specs/jansson-test-specs.o mustach-jansson.o $(COREOBJS)
-	$(CC) $(LDFLAGS) -o $@ $^ $(jansson_libs)
-
-.PHONY: test-specs/specs
-test-specs/specs:
-	if ! test -d test-specs/spec; then \
-		git -C test-specs clone https://github.com/mustache/spec.git; \
-	fi
-	git -C test-specs/spec checkout $(VSPEC) -B test;
+test: mustach
+	@$(MAKE) -C tests test VSPEC="$(VSPEC)" \
+		TESTSPECS="$(TESTSPECS)"  TESTPARENT="$(TESTPARENT)" \
+		CFLAGS="$(CFLAGS)" EFLAGS="$(EFLAGS)" LDFLAGS="$(LDFLAGS) -L.." \
+		cjson_cflags="$(cjson_cflags)" cjson_libs="$(cjson_libs)" \
+		json_cflags="$(jsonc_cflags)" jsonc_libs="$(jsonc_libs)" \
+		jansson_cflags="$(jansson_cflags)" jansson_libs="$(jansson_libs)"
 
 #cleaning
 .PHONY: clean
@@ -317,15 +272,7 @@ clean:
 	rm -f mustach libmustach*.so* *.o *.pc
 	rm -f test-specs/*-test-specs test-specs/test-specs-*.last
 	rm -rf *.gcno *.gcda coverage.info gcov-latest
-	@$(MAKE) -C test1 clean
-	@$(MAKE) -C test2 clean
-	@$(MAKE) -C test3 clean
-	@$(MAKE) -C test4 clean
-	@$(MAKE) -C test5 clean
-	@$(MAKE) -C test6 clean
-	@$(MAKE) -C test7 clean
-	@$(MAKE) -C test8 clean
-	@$(MAKE) -C test9 clean
+	@$(MAKE) -C tests clean
 
 # manpage
 .PHONY: manuals

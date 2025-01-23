@@ -134,9 +134,9 @@ struct mustach_itf {
 };
 
 /**
- * mustach_file - Renders the mustache 'template' in 'file' for 'itf' and 'closure'.
+ * mustach_file - Renders the mustache 'templstr' in 'file' for 'itf' and 'closure'.
  *
- * @template: the template string to instantiate
+ * @templstr: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
@@ -145,12 +145,12 @@ struct mustach_itf {
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_file(const char *template, size_t length, const struct mustach_itf *itf, void *closure, int flags, FILE *file);
+extern int mustach_file(const char *templstr, size_t length, const struct mustach_itf *itf, void *closure, int flags, FILE *file);
 
 /**
- * mustach_fd - Renders the mustache 'template' in 'fd' for 'itf' and 'closure'.
+ * mustach_fd - Renders the mustache 'templstr' in 'fd' for 'itf' and 'closure'.
  *
- * @template: the template string to instantiate
+ * @templstr: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
@@ -159,12 +159,12 @@ extern int mustach_file(const char *template, size_t length, const struct mustac
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_fd(const char *template, size_t length, const struct mustach_itf *itf, void *closure, int flags, int fd);
+extern int mustach_fd(const char *templstr, size_t length, const struct mustach_itf *itf, void *closure, int flags, int fd);
 
 /**
- * mustach_mem - Renders the mustache 'template' in 'result' for 'itf' and 'closure'.
+ * mustach_mem - Renders the mustache 'templstr' in 'result' for 'itf' and 'closure'.
  *
- * @template: the template string to instantiate
+ * @templstr: the template string to instantiate
  * @length:   length of the template or zero if unknown and template null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
@@ -174,7 +174,7 @@ extern int mustach_fd(const char *template, size_t length, const struct mustach_
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-extern int mustach_mem(const char *template, size_t length, const struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size);
+extern int mustach_mem(const char *templstr, size_t length, const struct mustach_itf *itf, void *closure, int flags, char **result, size_t *size);
 
 /***************************************************************************
 * compatibility with version before 1.0
@@ -182,9 +182,9 @@ extern int mustach_mem(const char *template, size_t length, const struct mustach
 /**
  * OBSOLETE use mustach_file
  *
- * fmustach - Renders the mustache 'template' in 'file' for 'itf' and 'closure'.
+ * fmustach - Renders the mustache 'templstr' in 'file' for 'itf' and 'closure'.
  *
- * @template: the template string to instantiate, null terminated
+ * @templstr: the template string to instantiate, null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
  * @file:     the file where to write the result
@@ -192,14 +192,14 @@ extern int mustach_mem(const char *template, size_t length, const struct mustach
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-DEPRECATED_MUSTACH(extern int fmustach(const char *template, const struct mustach_itf *itf, void *closure, FILE *file));
+DEPRECATED_MUSTACH(extern int fmustach(const char *templstr, const struct mustach_itf *itf, void *closure, FILE *file));
 
 /**
  * OBSOLETE use mustach_fd
  *
- * fdmustach - Renders the mustache 'template' in 'fd' for 'itf' and 'closure'.
+ * fdmustach - Renders the mustache 'templstr' in 'fd' for 'itf' and 'closure'.
  *
- * @template: the template string to instantiate, null terminated
+ * @templstr: the template string to instantiate, null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
  * @fd:       the file descriptor number where to write the result
@@ -207,14 +207,14 @@ DEPRECATED_MUSTACH(extern int fmustach(const char *template, const struct mustac
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-DEPRECATED_MUSTACH(extern int fdmustach(const char *template, const struct mustach_itf *itf, void *closure, int fd));
+DEPRECATED_MUSTACH(extern int fdmustach(const char *templstr, const struct mustach_itf *itf, void *closure, int fd));
 
 /**
  * OBSOLETE use mustach_mem
  *
- * mustach - Renders the mustache 'template' in 'result' for 'itf' and 'closure'.
+ * mustach - Renders the mustache 'templstr' in 'result' for 'itf' and 'closure'.
  *
- * @template: the template string to instantiate, null terminated
+ * @templstr: the template string to instantiate, null terminated
  * @itf:      the interface to the functions that mustach calls
  * @closure:  the closure to pass to functions called
  * @result:   the pointer receiving the result when 0 is returned
@@ -223,7 +223,7 @@ DEPRECATED_MUSTACH(extern int fdmustach(const char *template, const struct musta
  * Returns 0 in case of success, -1 with errno set in case of system error
  * a other negative value in case of error.
  */
-DEPRECATED_MUSTACH(extern int mustach(const char *template, const struct mustach_itf *itf, void *closure, char **result, size_t *size));
+DEPRECATED_MUSTACH(extern int mustach(const char *templstr, const struct mustach_itf *itf, void *closure, char **result, size_t *size));
 
 #endif
 

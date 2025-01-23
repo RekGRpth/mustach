@@ -15,9 +15,38 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdint.h>
 #ifdef _WIN32
 #include <malloc.h>
 #endif
+
+/*********************************************************
+**********************************************************/
+static const char *errtxts[] = {
+	"?",
+	"system",
+	"unexpected end",
+	"empty tag",
+	"too big",
+	"bad delimiter",
+	"too deep",
+	"closing",
+	"bad unescape tag",
+	"invalid interface",
+	"not found",
+	"undefined tag",
+	"too much nesting",
+	"out of memory",
+	"bad input data"
+};
+
+const char *mustach_strerror(int code)
+{
+	int idx = -code;
+	if (idx < 0 || idx > (int)(sizeof errtxts / sizeof *errtxts))
+		idx = 0;
+	return errtxts[idx];
+}
 
 /*********************************************************
 * This section wraps implementation details of memory files.
@@ -73,32 +102,13 @@ void mustach_memfile_abort(FILE *file, char **buffer, size_t *size)
 	*buffer = NULL;
 	*size = 0;
 }
+static int read_file(FILE *file, mustach_sbuf_t *sbuf);
 int mustach_memfile_close(FILE *file, char **buffer, size_t *size)
 {
-	int rc;
-	size_t s;
-	char *b;
-
-	s = (size_t)ftell(file);
-	b = malloc(s + 1);
-	if (b == NULL) {
-		rc = MUSTACH_ERROR_SYSTEM;
-		errno = ENOMEM;
-		s = 0;
-	} else {
-		rewind(file);
-		if (1 == fread(b, s, 1, file)) {
-			rc = 0;
-			b[s] = 0;
-		} else {
-			rc = MUSTACH_ERROR_SYSTEM;
-			free(b);
-			b = NULL;
-			s = 0;
-		}
-	}
-	*buffer = b;
-	*size = s;
+	mustach_sbuf_t buf;
+	int rc = read_file(file, &buf);
+		*buffer = (char*)buf.value;
+		*size = buf.length;
 	return rc;
 }
 #endif
@@ -122,10 +132,19 @@ static int read_file(FILE *file, mustach_sbuf_t *sbuf)
 		if (pos < 0 || fseek(file, 0, SEEK_SET) < 0)
 			return MUSTACH_ERROR_SYSTEM;
 		sz = (size_t)pos;
+		if (pos != (long)sz)/*detecting truncation*/
+			return MUSTACH_ERROR_TOO_BIG;
 	}
 
 	/* initial size */
-	all = sz != 0 ? 1 + sz : SZINIT;
+	if (sz == 0)
+		all = SZINIT;
+	else {
+		all = 1 + sz;
+		if (all < sz)/*detecting truncation*/
+			return MUSTACH_ERROR_TOO_BIG;
+	}
+
 	/* allocates buffer */
 	rc = MUSTACH_ERROR_OUT_OF_MEMORY;
 	while ((p = realloc(buffer, all)) != NULL) {
@@ -148,10 +167,20 @@ static int read_file(FILE *file, mustach_sbuf_t *sbuf)
 			sbuf->value = buffer;
 			buffer[sbuf->length = idx] = 0;
 			sbuf->freecb = free;
+			sbuf->closure = NULL;
 			return MUSTACH_OK;
 		}
-		if (rsz == nsz)
-			all += all;
+		if (rsz == nsz) {
+			/* at end of buffer, growth needed */
+			if (all + all > all)
+				all = all + all;
+			else if (all != SIZE_MAX)
+				all = SIZE_MAX;
+			else {
+				free(buffer);
+				return MUSTACH_ERROR_TOO_BIG;
+			}
+		}
 	}
 	free(buffer);
 	mustach_sbuf_reset(sbuf);
@@ -318,9 +347,14 @@ int mustach_stream_write(
 ) {
 	if (size >0) {
 		size_t nlen = stream->length + size;
+		if (nlen < size)/*detect overflow*/
+			return MUSTACH_ERROR_TOO_BIG;
 		if (nlen > stream->avail) {
 			size_t nava = nlen + SZBLK;
-			void *nbuf = realloc(stream->buffer, nava + 1);
+			void *nbuf;
+			if (nava < nlen || nava + 1 < nava)/*avoid overflow*/
+				nava = SIZE_MAX - 1;
+			nbuf = realloc(stream->buffer, nava + 1);
 			if (nbuf == NULL)
 				return MUSTACH_ERROR_OUT_OF_MEMORY;
 			stream->buffer = nbuf;

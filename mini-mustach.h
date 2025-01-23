@@ -79,44 +79,46 @@ extern int mini_mustach(
 		void *closure);
 /*
  * Definition of status codes returned by mustach:
- * 
+ *
  * - MUSTACH_OK: no error status
- * 
+ *
  * - MUSTACH_ERROR_SYSTEM: predefined error code for any error of the
  *   operating system, normally completed by errno and some context
- * 
+ *
  * - MUSTACH_ERROR_UNEXPECTED_END: end of the template string in some
  *   started section
- *   
+ *
  * - MUSTACH_ERROR_EMPTY_TAG: the tag is empty
- * 
+ *
  * - MUSTACH_ERROR_TOO_BIG: something in the template is too big to
  *   be processed
- * 
+ *
  * - MUSTACH_ERROR_BAD_DELIMITER: the definition of new delimiters is
  *   invalid
- * 
+ *
  * - MUSTACH_ERROR_TOO_DEEP: the depth of imbricated sections
  *   is too big (see limit MUSTACH_MAX_DEPTH)
- * 
+ *
  * - MUSTACH_ERROR_CLOSING: the closing tag doesn't match the opening one
- * 
+ *
  * - MUSTACH_ERROR_BAD_UNESCAPE_TAG: the unescape tag {{{ }}} is
  *   syntacticly invalid
- * 
+ *
  * - MUSTACH_ERROR_INVALID_ITF: the callback interface doesn't match the
  *   requirements
- * 
+ *
  * - MUSTACH_ERROR_NOT_FOUND: a partial or parent is not found
- * 
+ *
  * - MUSTACH_ERROR_UNDEFINED_TAG: an expected tag is not defined in the
  *   model
- * 
+ *
  * - MUSTACH_ERROR_TOO_MUCH_NESTING: the depth of partial imbrication
  *   is too big (see limit MUSTACH_MAX_NESTING) probably reached because
  *   of recursivity
- * 
+ *
  * - MUSTACH_ERROR_OUT_OF_MEMORY: memory exhausted
+ *
+ * - MUSTACH_ERROR_BAD_DATA: error in input data (JSON)
  */
 #define MUSTACH_OK                       0
 #define MUSTACH_ERROR_SYSTEM            -1
@@ -132,6 +134,7 @@ extern int mini_mustach(
 #define MUSTACH_ERROR_UNDEFINED_TAG     -12
 #define MUSTACH_ERROR_TOO_MUCH_NESTING  -13
 #define MUSTACH_ERROR_OUT_OF_MEMORY     -14
+#define MUSTACH_ERROR_BAD_DATA          -15
 /*
  * You can use definition below for user specific error
  *

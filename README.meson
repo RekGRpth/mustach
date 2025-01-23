@@ -23,7 +23,7 @@ $ meson setup builddir -Dtool={auto,none,cjson} -Dcjson={enabled,disabled,auto}
 ## compile
 
 ```
-$ meson compile -C builddir 
+$ meson compile -C builddir
 ```
 
 ## WIP test
