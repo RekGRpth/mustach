@@ -6,12 +6,16 @@ exit_fail() {
     exit 1
 }
 
+# check valgrind
 if ! valgrind --version > /dev/null 2>&1
 then
 	[ "$VALGRIND" = 1 ] && exit_fail "no valgrind"
 	NOVALGRIND=1
 fi
+
+# check mustach
 mustach="${mustach:-../../mustach}"
+backend=$($mustach --backend) || exit_fail "ERROR! Can't get mustach backend!"
 echo "starting test"
 if [ "$NOVALGRIND" = 1 ]
 then
@@ -21,7 +25,10 @@ else
 	sed -i 's:^==[0-9]*== ::' vg.last
 	awk '/^ *total heap usage: .* allocs, .* frees,.*/{if($$4-$$6)exit(1)}' vg.last || exit_fail "ERROR! Alloc/Free issue"
 fi
-if diff -w resu.ref resu.last
+
+# check the ref
+test -f resu.ref.$backend && ref=resu.ref.$backend || ref=resu.ref
+if diff -w $ref resu.last
 then
 	echo "result ok"
 else

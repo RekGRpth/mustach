@@ -57,7 +57,8 @@ static void help(char *prog)
 		"    %s [FLAGS] <json-file> <mustach-templates...>\n"
 		"\n"
 		"FLAGS:\n"
-		"    -h, --help     Prints help information\n"
+		"    -h, --help     Prints help information and exit\n"
+		"    -b, --backend  Prints backend name and exit\n"
 		"    -s, --strict   Error when a tag is undefined\n"
 		"\n"
 		"ARGS: (if a file is -, read standard input)\n"
@@ -130,6 +131,7 @@ static char *readfile(const char *filename, size_t *length)
 static int load_json(const char *filename);
 static int process(const char *content, size_t length);
 static void close_json(void);
+static const char backend[];
 
 int main(int ac, char **av)
 {
@@ -146,6 +148,10 @@ int main(int ac, char **av)
 	for( ++av ; av[0] && av[0][0] == '-' && av[0][1] != 0 ; av++) {
 		if (!strcmp(*av, "-h") || !strcmp(*av, "--help"))
 			help(prog);
+		if (!strcmp(*av, "-b") || !strcmp(*av, "--backend")) {
+			printf("%s\n", backend);;
+			exit(0);
+		}
 		if (!strcmp(*av, "-s") || !strcmp(*av, "--strict"))
 			flags |= Mustach_With_ErrorUndefined;
 	}
@@ -181,6 +187,8 @@ int main(int ac, char **av)
 
 #if TOOL == MUSTACH_TOOL_JSON_C
 
+static const char backend[] = "json-c";
+
 #include "mustach-json-c.h"
 
 static struct json_object *o;
@@ -209,6 +217,8 @@ static void close_json()
 
 #elif TOOL == MUSTACH_TOOL_JANSSON
 
+static const char backend[] = "jansson";
+
 #include "mustach-jansson.h"
 
 static json_t *o;
@@ -233,6 +243,8 @@ static void close_json()
 
 #elif TOOL == MUSTACH_TOOL_CJSON
 
+static const char backend[] = "cJSON";
+
 #include "mustach-cjson.h"
 
 static cJSON *o;
@@ -256,6 +268,8 @@ static void close_json()
 }
 
 #elif TOOL == MUSTACH_TOOL_JSMN
+
+static const char backend[] = "jsmn";
 
 #include "mustach-jsmn.h"
 

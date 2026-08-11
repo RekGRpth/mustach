@@ -55,11 +55,11 @@ test-specs/jansson-test-specs.o: test-specs/test-specs.c $P/mustach.h $P/mustach
 test-specs/jansson-test-specs: test-specs/jansson-test-specs.o $P/mustach-jansson.o $(COREOBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(jansson_libs)
 
-test-specs/jsmn-test-specs.o: test-specs/test-specs.c $P/mustach.h $P/mustach-wrap.h $P/mustach-jsmn.h
-	$(CC) -I.. -c $(EFLAGS) $(CFLAGS) -DTEST=TEST_JSMN -o $@ $<
+test-specs/jsmn-test-specs.o: test-specs/test-specs.c $P/mustach.h $P/mustach-wrap.h $P/mustach-jsmn.h $P/jsmn.h
+	$(CC) -I.. -c $(EFLAGS) $(CFLAGS) $(jsmn_cflags) -DTEST=TEST_JSMN -o $@ $<
 
 test-specs/jsmn-test-specs: test-specs/jsmn-test-specs.o $P/mustach-jsmn.o $(COREOBJS)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^ $(jsmn_libs)
 
 .PHONY: test-specs/specs
 test-specs/specs:

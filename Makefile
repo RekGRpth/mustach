@@ -35,6 +35,19 @@ TESTSPECS :=
 ALL := manuals
 TESTPARENT ?= 0
 
+# availability of JSMN (vendored header-only parser, no external dependency)
+ifneq ($(jsmn),no)
+ jsmn := yes
+ tool ?= jsmn
+ HEADERS += mustach-jsmn.h jsmn.h
+ SPLITLIB += libmustach-jsmn.so$(SOVEREV)
+ SPLITPC += libmustach-jsmn.pc
+ SINGLEOBJS += mustach-jsmn.o
+ TESTSPECS += test-specs/test-specs-jsmn
+else
+ jsmn := no
+endif
+
 # availability of CJSON
 ifneq ($(cjson),no)
  cjson_cflags := $(shell pkg-config --silence-errors --cflags libcjson)
@@ -99,19 +112,6 @@ ifneq ($(jansson),no)
   endif
   jansson := no
  endif
-endif
-
-# availability of JSMN (vendored header-only parser, no external dependency)
-ifneq ($(jsmn),no)
- jsmn := yes
- tool ?= jsmn
- HEADERS += mustach-jsmn.h jsmn.h
- SPLITLIB += libmustach-jsmn.so$(SOVEREV)
- SPLITPC += libmustach-jsmn.pc
- SINGLEOBJS += mustach-jsmn.o
- TESTSPECS += test-specs/test-specs-jsmn
-else
- jsmn := no
 endif
 
 # tool
@@ -291,7 +291,8 @@ test: mustach
 		CFLAGS="$(CFLAGS)" EFLAGS="$(EFLAGS)" LDFLAGS="$(LDFLAGS) -L.." \
 		cjson_cflags="$(cjson_cflags)" cjson_libs="$(cjson_libs)" \
 		json_cflags="$(jsonc_cflags)" jsonc_libs="$(jsonc_libs)" \
-		jansson_cflags="$(jansson_cflags)" jansson_libs="$(jansson_libs)"
+		jansson_cflags="$(jansson_cflags)" jansson_libs="$(jansson_libs)" \
+		jsmn_cflags="$(jsmn_cflags)" jsmn_libs="$(jsmn_libs)"
 
 #cleaning
 .PHONY: clean

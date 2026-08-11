@@ -7,7 +7,7 @@ CAUTION! THIS DOCUMENT IS A WORK IN PROGRESS README FOR THE COMING VERSION 2
 CAUTION! ===================================================================
 
 
-`mustach` is a C implementation of 
+`mustach` is a C implementation of
 [mustache](http://mustache.github.io "main site for mustache")
 template specification, version 1.4.1, only the mandatory part.
 
@@ -40,7 +40,7 @@ by also including **mustach-wrap.h**, **mustach-wrap.c**, **mustach-XXX.h** and
 - [json-c](https://github.com/json-c/json-c): use **XXX** = **json-c**
 - [jansson](http://www.digip.org/jansson/): use **XXX** = **jansson**
 - [cJSON](https://github.com/DaveGamble/cJSON): use **XXX** = **cjson**
-- [jsmn](https://github.com/zserge/jsmn): use **XXX** = **jsmn** (vendored in this repository, no external dependency)
+- [jsmn](https://github.com/zserge/jsmn): use **XXX** = **jsmn** (vendored in this repository, no external dependency, MIT license)
 
 Alternatively, make and meson files are provided for building `mustach` and
 `libmustach.so` shared library.
@@ -90,7 +90,8 @@ The current source files are:
 - **mustach-cjson.h** header file for using the tiny cJSON wrapper
 - **mustach-jansson.c** tiny json wrapper of mustach using [jansson](https://www.digip.org/jansson/)
 - **mustach-jansson.h** header file for using the tiny jansson wrapper
-- **mustach-jsmn.c** tiny json wrapper of mustach using the vendored [jsmn](https://github.com/zserge/jsmn) (no external dependency)
+- **jsmn.h** inline one file JSON library from [jsmn](https://github.com/zserge/jsmn) (no external dependency)
+- **mustach-jsmn.c** tiny json wrapper of mustach using the vendored [jsmn](https://github.com/zserge/jsmn) (no external dependency, just jsmn.h)
 - **mustach-jsmn.h** header file for using the tiny jsmn wrapper
 - **mustach-tool.c** simple tool for applying template files to one JSON file
 
@@ -99,7 +100,7 @@ The file **mustach-json-c.c** is the historical example of use of **mustach** an
 It uses the library json-c. (NOTE for Mac OS: available through homebrew).
 
 Since version 1.0, the project also provide integration of other JSON libraries:
-**cJSON** and **jansson**.
+**cJSON**, **jansson** and **jsmn**.
 
 *If you integrate a new library with* **mustach**, *your contribution will be
 welcome here*.
@@ -160,8 +161,8 @@ The makefile knows following switches (\*: default):
      jsmn         | (unset) | Compile for jsmn (vendored, no dependency, always available)
                   | no      | Don't compile for jsmn
     --------------+---------+-----------------------------------------------
-     tool         | (unset) | Auto detection: cjson, jsonc or jansson if found,
-                  |         | else jsmn as a dependency-free fallback
+     tool         | (unset) | If jsmn=no, auto detection: use first found of cjson, jsonc
+                  |         | and jansson. Otherwise, use jsmn because it has no dependency.
                   | cjson   | Use cjson library
                   | jsonc   | Use jsonc library
                   | jansson | Use jansson library
