@@ -55,6 +55,16 @@ foreach opt, value : json_dict
     endif
 endforeach
 
+# jsmn is vendored (header-only, no external dependency): unlike the
+# other backends it needs no dependency() probe, just a feature switch.
+if not get_option('jsmn').disabled()
+    all_src += 'mustach-jsmn.c'
+    if get_option('libs') in ['all', 'split']
+        library('mustach-jsmn', [core_src, 'mustach-jsmn.c'], install: true)
+    endif
+    install_headers(['mustach-jsmn.h', 'jsmn.h'], subdir: 'mustach')
+endif
+
 if get_option('libs') in ['all', 'single']
     library('mustach', all_src, dependencies: all_dep, install: true)
 endif

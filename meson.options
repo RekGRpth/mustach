@@ -15,3 +15,4 @@ option(
 option('cjson', type: 'feature', value: 'auto')
 option('jsonc', type: 'feature', value: 'auto')
 option('jansson', type: 'feature', value: 'auto')
+option('jsmn', type: 'feature', value: 'enabled')
