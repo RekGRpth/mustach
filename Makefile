@@ -109,6 +109,7 @@ ifneq ($(jsmn),no)
  SPLITLIB += libmustach-jsmn.so$(SOVEREV)
  SPLITPC += libmustach-jsmn.pc
  SINGLEOBJS += mustach-jsmn.o
+ TESTSPECS += test-specs/test-specs-jsmn
 else
  jsmn := no
 endif

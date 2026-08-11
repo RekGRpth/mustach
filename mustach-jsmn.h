@@ -56,6 +56,61 @@ extern const struct mustach_wrap_itf mustach_jsmn_wrap_itf;
  */
 extern int mustach_jsmn_parse(const char *json, size_t length, jsmntok_t **tokens, int *count);
 
+/*
+ * The functions below are the minimal navigation primitives jsmn itself
+ * doesn't provide (it only produces the flat tokens array). They are what
+ * mustach-jsmn.c uses internally to walk objects and arrays, and are
+ * exposed because any caller holding a 'tokens' array from
+ * mustach_jsmn_parse needs the same primitives to pick fields out of it
+ * (for example a test harness reaching into a parsed document to fetch
+ * named sub-values).
+ */
+
+/**
+ * mustach_jsmn_length - Returns the length in bytes of the raw text
+ * spanned by token 't' (its start/end, unescaped).
+ */
+static inline int mustach_jsmn_length(const jsmntok_t *t) { return t->end - t->start; }
+
+/**
+ * mustach_jsmn_find - Looks up the member named 'name' in the object at
+ * 'tokens[container]'.
+ *
+ * @json:      the json text that was parsed
+ * @tokens:    the tokens array produced by parsing 'json'
+ * @container: index of an object token in 'tokens'
+ * @name:      the member name to look for
+ *
+ * Returns the token index of the member's value, or -1 if 'container'
+ * isn't an object or has no such member.
+ */
+extern int mustach_jsmn_find(const char *json, jsmntok_t *tokens, int container, const char *name);
+
+/**
+ * mustach_jsmn_index - Returns the token index of the 'n'th element
+ * (0-based) of the array at 'tokens[container]'.
+ *
+ * @tokens:    the tokens array produced by parsing 'json'
+ * @container: index of an array token in 'tokens'
+ * @n:         the 0-based element index; must be < tokens[container].size
+ */
+extern int mustach_jsmn_index(jsmntok_t *tokens, int container, int n);
+
+/**
+ * mustach_jsmn_string - Decodes the json string token 't' (unescaping
+ * backslash sequences) into a NUL-less buffer.
+ *
+ * @json:    the json text that was parsed
+ * @t:       the string token to decode (e.g. &tokens[idx])
+ * @length:  pointer receiving the length in bytes of the decoded string
+ * @alloc:   pointer receiving 1 if the caller must free() the returned
+ *           pointer, or 0 if it's a direct slice of 'json' (the common,
+ *           escape-free case)
+ *
+ * Returns a pointer to the decoded string (not NUL terminated).
+ */
+extern const char *mustach_jsmn_string(const char *json, jsmntok_t *t, size_t *length, int *alloc);
+
 /**
  * mustach_jsmn_file - Renders the mustache 'templstr' in 'file' for the
  * document made of 'json' and its parsed 'tokens'.

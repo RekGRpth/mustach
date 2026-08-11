@@ -24,6 +24,7 @@
 #define TEST_JANSSON 2
 #define TEST_CJSON   3
 #define TEST_TEXT    4
+#define TEST_JSMN    5
 
 #define MUSTACH_DEFLIB_JSON_C  1
 #define MUSTACH_DEFLIB_JANSSON 2
@@ -64,7 +65,7 @@ static void help(char *prog)
 	exit(0);
 }
 
-#if TEST == TEST_CJSON || (TEST == TEST_TEXT && DEFLIB == MUSTACH_DEFLIB_CJSON)
+#if TEST == TEST_CJSON || TEST == TEST_JSMN || (TEST == TEST_TEXT && DEFLIB == MUSTACH_DEFLIB_CJSON)
 
 static const size_t BLOCKSIZE = 8192;
 
@@ -551,6 +552,166 @@ static int process(counters *c)
 static void close_json()
 {
 	cJSON_Delete(o);
+}
+
+#elif TEST == TEST_JSMN
+
+#include "mustach-jsmn.h"
+
+static char *json;
+static jsmntok_t *tokens;
+
+/* NULL, or tokens+partials_idx: a self-contained subtree slice (see the
+ * comment near its use in process()) whose local index 0 is the object
+ * given as the "partials" field of the currently processed test unit. */
+static jsmntok_t *partials;
+
+static int get_partial(const char *name, struct mustach_sbuf *sbuf)
+{
+	int idx;
+	size_t len;
+	int alloc;
+
+	if (partials == NULL)
+		return MUSTACH_ERROR_PARTIAL_NOT_FOUND;
+	idx = mustach_jsmn_find(json, partials, 0, name);
+	if (idx < 0)
+		return MUSTACH_ERROR_PARTIAL_NOT_FOUND;
+	sbuf->value = mustach_jsmn_string(json, &partials[idx], &len, &alloc);
+	sbuf->length = len;
+	if (alloc)
+		sbuf->freecb = free;
+	return MUSTACH_OK;
+}
+
+static int load_json(const char *filename)
+{
+	size_t length;
+	int count;
+
+	json = readfile(filename, &length);
+	if (mustach_jsmn_parse(json, length, &tokens, &count) != 0) {
+		errmsg = "invalid json";
+		return -1;
+	}
+	return 0;
+}
+
+/* Same escaping as emit(), but for a jsmn-decoded (name, length) span
+ * instead of a NUL terminated string. */
+static void emitn(FILE *f, const char *s, size_t n)
+{
+	size_t i;
+	for (i = 0; i < n; i++) {
+		switch (s[i]) {
+		case '\\': fprintf(f, "\\\\"); break;
+		case '\t': fprintf(f, "\\t"); break;
+		case '\n': fprintf(f, "\\n"); break;
+		case '\r': fprintf(f, "\\r"); break;
+		default: fprintf(f, "%c", s[i]); break;
+		}
+	}
+}
+
+static int process(counters *c)
+{
+	const char *t, *e, *nm, *ds;
+	char *got;
+	unsigned i, n;
+	size_t length, tlen, elen, nlen, dlen;
+	int s, alloc_t, alloc_e, alloc_n, alloc_d;
+	int tests_idx, unit_idx, name_idx, desc_idx, data_idx, template_idx, expected_idx, partials_idx;
+
+	tests_idx = mustach_jsmn_find(json, tokens, 0, "tests");
+	if (tests_idx < 0 || tokens[tests_idx].type != JSMN_ARRAY)
+		return -1;
+
+	i = 0;
+	n = (unsigned) tokens[tests_idx].size;
+	while (i < n) {
+		unit_idx = mustach_jsmn_index(tokens, tests_idx, (int) i);
+		if (tokens[unit_idx].type != JSMN_OBJECT
+		 || (name_idx = mustach_jsmn_find(json, tokens, unit_idx, "name")) < 0
+		 || (desc_idx = mustach_jsmn_find(json, tokens, unit_idx, "desc")) < 0
+		 || (data_idx = mustach_jsmn_find(json, tokens, unit_idx, "data")) < 0
+		 || (template_idx = mustach_jsmn_find(json, tokens, unit_idx, "template")) < 0
+		 || (expected_idx = mustach_jsmn_find(json, tokens, unit_idx, "expected")) < 0
+		 || tokens[name_idx].type != JSMN_STRING
+		 || tokens[desc_idx].type != JSMN_STRING
+		 || tokens[template_idx].type != JSMN_STRING
+		 || tokens[expected_idx].type != JSMN_STRING) {
+			fprintf(stderr, "invalid test %u\n", i);
+			c->ninvalid++;
+		}
+		else {
+			nm = mustach_jsmn_string(json, &tokens[name_idx], &nlen, &alloc_n);
+			ds = mustach_jsmn_string(json, &tokens[desc_idx], &dlen, &alloc_d);
+			fprintf(output, "[%u] %.*s\n", i, (int) nlen, nm);
+			fprintf(output, "\t%.*s\n", (int) dlen, ds);
+			if (alloc_n) free((void *) nm);
+			if (alloc_d) free((void *) ds);
+
+			partials_idx = mustach_jsmn_find(json, tokens, unit_idx, "partials");
+			partials = (partials_idx >= 0 && tokens[partials_idx].type == JSMN_OBJECT) ? tokens + partials_idx : NULL;
+
+			t = mustach_jsmn_string(json, &tokens[template_idx], &tlen, &alloc_t);
+			e = mustach_jsmn_string(json, &tokens[expected_idx], &elen, &alloc_e);
+
+			got = NULL;
+			/* tokens+data_idx is a self-contained subtree slice: jsmn's
+			 * tree encoding is purely relative (each token's children
+			 * immediately follow it, counted by .size), so re-basing the
+			 * tokens pointer at 'data_idx' makes it look like a fresh
+			 * array whose local index 0 is the "data" value -- no
+			 * re-parsing needed, offsets into 'json' stay valid as-is. */
+			s = mustach_jsmn_mem(t, tlen, json, tokens + data_idx, flags, &got, &length);
+
+			if (s == 0 && length == elen && (elen == 0 || !memcmp(got, e, elen))) {
+				fprintf(output, "\t=> SUCCESS\n");
+				c->nsuccess++;
+			}
+			else {
+				if (s < 0) {
+					fprintf(output, "\t=> ERROR %s\n", mustach_error_string(s));
+					c->nerror++;
+				}
+				else {
+					fprintf(output, "\t=> DIFFERS\n");
+					c->ndiffers++;
+				}
+				if (partials) {
+					fprintf(output, "\t.. PARTIALS[");
+					emitn(output, json + tokens[partials_idx].start, (size_t) mustach_jsmn_length(&tokens[partials_idx]));
+					fprintf(output, "]\n");
+				}
+				fprintf(output, "\t..     DATA[");
+				emitn(output, json + tokens[data_idx].start, (size_t) mustach_jsmn_length(&tokens[data_idx]));
+				fprintf(output, "]\n");
+				fprintf(output, "\t.. TEMPLATE[");
+				emitn(output, t, tlen);
+				fprintf(output, "]\n");
+				fprintf(output, "\t.. EXPECTED[");
+				emitn(output, e, elen);
+				fprintf(output, "]\n");
+				if (s == 0) {
+					fprintf(output, "\t..      GOT[");
+					emit(output, got);
+					fprintf(output, "]\n");
+				}
+			}
+			if (alloc_t) free((void *) t);
+			if (alloc_e) free((void *) e);
+			free(got);
+			partials = NULL;
+		}
+		i++;
+	}
+	return 0;
+}
+static void close_json()
+{
+	free(tokens);
+	free(json);
 }
 
 #else

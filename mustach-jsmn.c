@@ -28,9 +28,9 @@ struct expl {
 
 static int tok_len(jsmntok_t *t) { return t->end - t->start; }
 
-static int tok_eq(struct expl *e, int idx, const char *name, size_t namelen) {
-    jsmntok_t *t = &e->tokens[idx];
-    return (size_t) tok_len(t) == namelen && !memcmp(e->json + t->start, name, namelen);
+static int tok_eq(const char *json, jsmntok_t *tokens, int idx, const char *name, size_t namelen) {
+    jsmntok_t *t = &tokens[idx];
+    return (size_t) tok_len(t) == namelen && !memcmp(json + t->start, name, namelen);
 }
 
 /* Skip past the whole subtree rooted at tokens[i], returning the index of
@@ -46,19 +46,20 @@ static int skip(jsmntok_t *tokens, int i) {
     return end;
 }
 
-static int find_member(struct expl *e, int container, const char *name, size_t namelen) {
-    int idx = container + 1, j, n = e->tokens[container].size;
+int mustach_jsmn_find(const char *json, jsmntok_t *tokens, int container, const char *name) {
+    size_t namelen = strlen(name);
+    int idx = container + 1, j, n = tokens[container].size;
     for (j = 0; j < n; j++) {
         int key = idx, value = key + 1;
-        if (tok_eq(e, key, name, namelen)) return value;
-        idx = skip(e->tokens, value);
+        if (tok_eq(json, tokens, key, name, namelen)) return value;
+        idx = skip(tokens, value);
     }
     return -1;
 }
 
-static int nth_element(struct expl *e, int container, int n) {
+int mustach_jsmn_index(jsmntok_t *tokens, int container, int n) {
     int idx = container + 1, j;
-    for (j = 0; j < n; j++) idx = skip(e->tokens, idx);
+    for (j = 0; j < n; j++) idx = skip(tokens, idx);
     return idx;
 }
 
@@ -90,16 +91,20 @@ static int is_truthy(struct expl *e, int idx) {
     }
 }
 
-/* Decode a jsmn string token's JSON escapes into a fresh NUL-less buffer.
- * Returns a pointer suitable for sbuf->value/length; sets *alloc to 1 if
- * the caller must free() it (only needed when the token actually
- * contained a backslash escape -- the common escape-free case is
- * returned as a direct slice of the original json buffer, no copy). */
-static const char *decode_string(const char *json, jsmntok_t *t, size_t *outlen, int *alloc) {
+const char *mustach_jsmn_string(const char *json, jsmntok_t *t, size_t *outlen, int *alloc) {
     const char *s = json + t->start;
     int len = tok_len(t), i;
     char *out, *o;
     *alloc = 0;
+    if (len == 0) {
+        /* struct mustach_sbuf convention: length 0 with a non-NULL value
+         * means "value is NUL-terminated, take its strlen()". A slice
+         * into 'json' at this point isn't NUL-terminated, so returning
+         * it here would make callers read past the intended empty
+         * string into whatever follows in the json buffer. */
+        *outlen = 0;
+        return "";
+    }
     for (i = 0; i < len; i++)
         if (s[i] == '\\')
             break;
@@ -197,7 +202,7 @@ static int compare(void *closure, const char *value) {
             if (tok_len(t) == 4 && !memcmp(s, "null", 4)) return strcmp("null", value);
             { double d = atof(s) - atof(value); return d < 0 ? -1 : d > 0 ? 1 : 0; }
         case JSMN_STRING:
-            s = decode_string(e->json, t, &slen, &alloc);
+            s = mustach_jsmn_string(e->json, t, &slen, &alloc);
             vlen = strlen(value);
             minlen = slen < vlen ? slen : vlen;
             c = minlen ? memcmp(s, value, minlen) : 0;
@@ -212,16 +217,14 @@ static int compare(void *closure, const char *value) {
 static int sel(void *closure, const char *name) {
     struct expl *e = closure;
     int i, r = 0, o = -1;
-    size_t namelen;
     if (name == NULL) {
         o = e->stack[e->depth].value;
         r = 1;
     } else {
-        namelen = strlen(name);
         for (i = e->depth; i >= 0 && !r; i--) {
             int cur = e->stack[i].value;
             if (cur >= 0 && e->tokens[cur].type == JSMN_OBJECT) {
-                o = find_member(e, cur, name, namelen);
+                o = mustach_jsmn_find(e->json, e->tokens, cur, name);
                 r = o >= 0;
             }
         }
@@ -237,13 +240,13 @@ static int subsel(void *closure, const char *name) {
     if (e->selection >= 0) {
         t = &e->tokens[e->selection];
         if (t->type == JSMN_OBJECT) {
-            o = find_member(e, e->selection, name, strlen(name));
+            o = mustach_jsmn_find(e->json, e->tokens, e->selection, name);
             r = o >= 0;
         } else if (t->type == JSMN_ARRAY && *name) {
             char *end;
             long idx = strtol(name, &end, 10);
             if (!*end && idx >= 0 && idx < t->size) {
-                o = nth_element(e, e->selection, (int) idx);
+                o = mustach_jsmn_index(e->tokens, e->selection, (int) idx);
                 r = 1;
             }
         }
@@ -323,7 +326,7 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key) {
         for (d = e->depth; d >= 0; d--)
             if (e->stack[d].is_objiter) { k = e->stack[d].key; break; }
         if (k >= 0) {
-            s = decode_string(e->json, &e->tokens[k], &slen, &alloc);
+            s = mustach_jsmn_string(e->json, &e->tokens[k], &slen, &alloc);
             sbuf->value = s;
             sbuf->length = slen;
             if (alloc) sbuf->freecb = free;
@@ -341,7 +344,7 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key) {
     t = &e->tokens[e->selection];
     switch (t->type) {
         case JSMN_STRING:
-            s = decode_string(e->json, t, &slen, &alloc);
+            s = mustach_jsmn_string(e->json, t, &slen, &alloc);
             sbuf->value = s;
             sbuf->length = slen;
             if (alloc) sbuf->freecb = free;
