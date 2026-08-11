@@ -40,6 +40,7 @@ by also including **mustach-wrap.h**, **mustach-wrap.c**, **mustach-XXX.h** and
 - [json-c](https://github.com/json-c/json-c): use **XXX** = **json-c**
 - [jansson](http://www.digip.org/jansson/): use **XXX** = **jansson**
 - [cJSON](https://github.com/DaveGamble/cJSON): use **XXX** = **cjson**
+- [jsmn](https://github.com/zserge/jsmn): use **XXX** = **jsmn** (vendored in this repository, no external dependency)
 
 Alternatively, make and meson files are provided for building `mustach` and
 `libmustach.so` shared library.
@@ -89,6 +90,8 @@ The current source files are:
 - **mustach-cjson.h** header file for using the tiny cJSON wrapper
 - **mustach-jansson.c** tiny json wrapper of mustach using [jansson](https://www.digip.org/jansson/)
 - **mustach-jansson.h** header file for using the tiny jansson wrapper
+- **mustach-jsmn.c** tiny json wrapper of mustach using the vendored [jsmn](https://github.com/zserge/jsmn) (no external dependency)
+- **mustach-jsmn.h** header file for using the tiny jsmn wrapper
 - **mustach-tool.c** simple tool for applying template files to one JSON file
 
 The file **mustach-json-c.c** is the historical example of use of **mustach** and
@@ -154,10 +157,15 @@ The makefile knows following switches (\*: default):
                   | no      | Don't compile for jansson
                   | yes     | Compile for jansson that must exist
     --------------+---------+-----------------------------------------------
-     tool         | (unset) | Auto detection
+     jsmn         | (unset) | Compile for jsmn (vendored, no dependency, always available)
+                  | no      | Don't compile for jsmn
+    --------------+---------+-----------------------------------------------
+     tool         | (unset) | Auto detection: cjson, jsonc or jansson if found,
+                  |         | else jsmn as a dependency-free fallback
                   | cjson   | Use cjson library
                   | jsonc   | Use jsonc library
                   | jansson | Use jansson library
+                  | jsmn    | Use jsmn library
                   | none    | Don't compile the tool
     --------------+---------+----------------------------------------------
      libs         | (unset) | Like 'all'
@@ -174,7 +182,8 @@ The libraries that can be produced are:
      libmustach-cjson   | mustach.c mustach-wrap.c mustach-cjson.c
      libmustach-jsonc   | mustach.c mustach-wrap.c mustach-json-c.c
      libmustach-jansson | mustach.c mustach-wrap.c mustach-jansson.c
-     libmustach         | mustach.c mustach-wrap.c mustach-{cjson,json-c,jansson}.c
+     libmustach-jsmn    | mustach.c mustach-wrap.c mustach-jsmn.c
+     libmustach         | mustach.c mustach-wrap.c mustach-{cjson,json-c,jansson,jsmn}.c
 
 There is no dependencies of a library to an other. This is intended and doesn't
 hurt today because the code is small.
