@@ -131,6 +131,7 @@ int main(int ac, char **av)
 #define MUSTACH_TOOL_JSON_C  1
 #define MUSTACH_TOOL_JANSSON 2
 #define MUSTACH_TOOL_CJSON   3
+#define MUSTACH_TOOL_JSMN    4
 
 #if TOOL == MUSTACH_TOOL_JSON_C
 
@@ -204,6 +205,34 @@ static int apply()
 static void close_json()
 {
 	cJSON_Delete(o);
+}
+
+#elif TOOL == MUSTACH_TOOL_JSMN
+
+#include "mustach-jsmn.h"
+
+static mustach_sbuf_t buf = MUSTACH_SBUF_INIT;
+static jsmntok_t *tokens;
+static int load_json(const char *filename)
+{
+	int count, s = mustach_read_file(filename, &buf);
+	if (s != MUSTACH_OK)
+		return s;
+	s = mustach_jsmn_parse(buf.value, mustach_sbuf_length(&buf), &tokens, &count);
+	if (s != MUSTACH_OK) {
+		errmsg = "invalid json";
+		mustach_sbuf_release(&buf);
+	}
+	return s;
+}
+static int apply()
+{
+	return mustach_jsmn_apply(templ, buf.value, tokens, flags, mustach_fwrite_cb, NULL, output);
+}
+static void close_json()
+{
+	free(tokens);
+	mustach_sbuf_release(&buf);
 }
 
 #else

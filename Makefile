@@ -104,6 +104,7 @@ endif
 # availability of JSMN (vendored header-only parser, no external dependency)
 ifneq ($(jsmn),no)
  jsmn := yes
+ tool ?= jsmn
  HEADERS += mustach-jsmn.h jsmn.h
  SPLITLIB += libmustach-jsmn.so$(SOVEREV)
  SPLITPC += libmustach-jsmn.pc
@@ -131,6 +132,11 @@ ifneq ($(tool),none)
     TOOLFLAGS := ${jansson_cflags} -DTOOL=MUSTACH_TOOL_JANSSON
     TOOLLIBS := ${jansson_libs}
     TOOLDEP := mustach-jansson.h
+  else ifeq ($(tool),jsmn)
+    TOOLOBJS += mustach-jsmn.o
+    TOOLFLAGS := -DTOOL=MUSTACH_TOOL_JSMN
+    TOOLLIBS :=
+    TOOLDEP := mustach-jsmn.h
   else
    $(error Unknown library $(tool) for tool)
   endif
