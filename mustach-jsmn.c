@@ -1,14 +1,13 @@
 #define JSMN_STATIC
 #include "jsmn.h"
 
-#include <mustach/mustach.h>
-#include <mustach/mustach-wrap.h>
+#include "mustach.h"
+#include "mustach-wrap.h"
+#include "mustach-jsmn.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-int mustach_process_jsmn(const char *template, size_t length, const char *json, size_t jsonlen, int flags, FILE *file, char **err);
 
 struct frame {
     int container;   /* token index of the array being iterated, or -1 */
@@ -367,7 +366,7 @@ static int get(void *closure, struct mustach_sbuf *sbuf, int key) {
     return 1;
 }
 
-static const struct mustach_wrap_itf mustach_jsmn_wrap_itf = {
+const struct mustach_wrap_itf mustach_jsmn_wrap_itf = {
     .start = start,
     .stop = NULL,
     .compare = compare,
@@ -379,26 +378,72 @@ static const struct mustach_wrap_itf mustach_jsmn_wrap_itf = {
     .get = get
 };
 
-int mustach_process_jsmn(const char *template, size_t length, const char *json, size_t jsonlen, int flags, FILE *file, char **err) {
+int mustach_jsmn_parse(const char *json, size_t length, jsmntok_t **tokens, int *count) {
     jsmn_parser p;
-    jsmntok_t *tokens;
-    int ntok, rc;
+    jsmntok_t *toks;
+    int ntok;
+
+    if (!length) { json = "{}"; length = 2; }
+
+    jsmn_init(&p);
+    ntok = jsmn_parse(&p, json, length, NULL, 0);
+    if (ntok < 0) return MUSTACH_ERROR_BAD_DATA;
+    if (!(toks = malloc((size_t) (ntok ? ntok : 1) * sizeof(*toks)))) return MUSTACH_ERROR_SYSTEM;
+
+    jsmn_init(&p);
+    if (jsmn_parse(&p, json, length, toks, (unsigned) ntok) < 0) { free(toks); return MUSTACH_ERROR_BAD_DATA; }
+
+    *tokens = toks;
+    *count = ntok;
+    return MUSTACH_OK;
+}
+
+int mustach_jsmn_file(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, FILE *file) {
     struct expl e;
-
-    if (!jsonlen) { json = "{}"; jsonlen = 2; }
-
-    jsmn_init(&p);
-    ntok = jsmn_parse(&p, json, jsonlen, NULL, 0);
-    if (ntok < 0) { *err = "invalid json"; fclose(file); return MUSTACH_ERROR_USER(1); }
-    if (!(tokens = malloc((size_t) (ntok ? ntok : 1) * sizeof(*tokens)))) { fclose(file); return MUSTACH_ERROR_SYSTEM; }
-
-    jsmn_init(&p);
-    if (jsmn_parse(&p, json, jsonlen, tokens, (unsigned) ntok) < 0) { free(tokens); *err = "invalid json"; fclose(file); return MUSTACH_ERROR_USER(1); }
-
     e.json = json;
     e.tokens = tokens;
-    rc = mustach_wrap_file(template, length, &mustach_jsmn_wrap_itf, &e, flags, file);
-    free(tokens);
-    fclose(file);
-    return rc;
+    return mustach_wrap_file(templstr, length, &mustach_jsmn_wrap_itf, &e, flags, file);
+}
+
+int mustach_jsmn_fd(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, int fd) {
+    struct expl e;
+    e.json = json;
+    e.tokens = tokens;
+    return mustach_wrap_fd(templstr, length, &mustach_jsmn_wrap_itf, &e, flags, fd);
+}
+
+int mustach_jsmn_mem(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, char **result, size_t *size) {
+    struct expl e;
+    e.json = json;
+    e.tokens = tokens;
+    return mustach_wrap_mem(templstr, length, &mustach_jsmn_wrap_itf, &e, flags, result, size);
+}
+
+int mustach_jsmn_write(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, mustach_write_cb_t *writecb, void *closure) {
+    struct expl e;
+    e.json = json;
+    e.tokens = tokens;
+    return mustach_wrap_write(templstr, length, &mustach_jsmn_wrap_itf, &e, flags, writecb, closure);
+}
+
+int mustach_jsmn_emit(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, mustach_emit_cb_t *emitcb, void *closure) {
+    struct expl e;
+    e.json = json;
+    e.tokens = tokens;
+    return mustach_wrap_emit(templstr, length, &mustach_jsmn_wrap_itf, &e, flags, emitcb, closure);
+}
+
+int mustach_jsmn_apply(
+        mustach_template_t *templstr,
+        const char *json,
+        jsmntok_t *tokens,
+        int flags,
+        mustach_write_cb_t *writecb,
+        mustach_emit_cb_t *emitcb,
+        void *closure
+) {
+    struct expl e;
+    e.json = json;
+    e.tokens = tokens;
+    return mustach_wrap_apply(templstr, &mustach_jsmn_wrap_itf, &e, flags, writecb, emitcb, closure);
 }
