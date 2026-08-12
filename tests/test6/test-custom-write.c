@@ -122,6 +122,10 @@ int main(int ac, char **av)
 	int s;
 
 	if (*++av) {
+		if  (!strcmp(*av, "-b") || !strcmp(*av, "--backend")) {
+			printf("json-c\n");
+			exit(0);
+		}
 		o = json_object_from_file(av[0]);
 		if (o == NULL) {
 			fprintf(stderr, "Aborted: null json (file %s)\n", av[0]);

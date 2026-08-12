@@ -33,3 +33,10 @@ Description: C Mustach library for jansson
 Cflags: -Imustach
 Libs: -lmustach-jansson
 
+==libmustach-jsmn.pc==
+Name: libmustach-jsmn
+Version: VERSION
+Description: C Mustach library for jsmn
+Cflags: -Imustach
+Libs: -lmustach-jsmn
+

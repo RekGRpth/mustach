@@ -1,3 +1,12 @@
+Unreleased
+----------
+
+New:
+ - mustach-jsmn: new backend using the vendored jsmn parser, no
+   external dependency; wired into the Makefile/meson build, the
+   mustach/mustachs tools (as a dependency-free fallback when no
+   other JSON library is found), and the spec test suite
+
 1.2.10 (2024-10-03)
 -------------------
 

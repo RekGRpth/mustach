@@ -1,0 +1,204 @@
+/*
+ Author: Georgy Shelkovy
+
+ https://gitlab.com/jobol/mustach
+
+ SPDX-License-Identifier: 0BSD
+*/
+
+#ifndef _mustach_jsmn_h_included_
+#define _mustach_jsmn_h_included_
+
+/*
+ * mustach-jsmn is intended to make integration of the jsmn
+ * library by providing integrated functions.
+ *
+ * Unlike other backends, jsmn doesn't build a tree of objects:
+ * jsmn_parse only fills a flat array of tokens ('jsmntok_t') that
+ * index into the original json text. So instead of a single root
+ * object, the "root" of a jsmn document is the pair made of the
+ * original json text and its parsed tokens array.
+ *
+ * jsmn.h is a single-header library. This header only pulls its
+ * type declarations (JSMN_HEADER, no function bodies) so it can be
+ * safely included from several translation units. If your code
+ * needs to call jsmn_parse itself (instead of using the
+ * mustach_jsmn_parse helper below), include "jsmn.h" the usual way
+ * (defining JSMN_STATIC, or providing one non-static instantiation
+ * project wide).
+ */
+#ifndef JSMN_HEADER
+#define JSMN_HEADER
+#endif
+#include "jsmn.h"
+
+#include "mustach-wrap.h"
+
+/**
+ * Wrap interface used internally by mustach jsmn functions.
+ * Can be used for overriding behaviour.
+ */
+extern const struct mustach_wrap_itf mustach_jsmn_wrap_itf;
+
+/**
+ * mustach_jsmn_parse - Parses the 'json' text of 'length' bytes and
+ * returns in 'tokens' a freshly allocated array of parsed tokens
+ * (the root of the document is always tokens[0]).
+ *
+ * @json:    the json text to parse
+ * @length:  length of the json text
+ * @tokens:  pointer receiving the allocated tokens array when 0 is returned
+ * @count:   pointer receiving the count of tokens when 0 is returned
+ *
+ * Returns 0 in case of success. The caller then owns '*tokens' and must
+ * free() it. Returns MUSTACH_ERROR_SYSTEM in case of allocation failure,
+ * or MUSTACH_ERROR_BAD_DATA if the json text is invalid or incomplete.
+ */
+extern int mustach_jsmn_parse(const char *json, size_t length, jsmntok_t **tokens, int *count);
+
+/*
+ * The functions below are the minimal navigation primitives jsmn itself
+ * doesn't provide (it only produces the flat tokens array). They are what
+ * mustach-jsmn.c uses internally to walk objects and arrays, and are
+ * exposed because any caller holding a 'tokens' array from
+ * mustach_jsmn_parse needs the same primitives to pick fields out of it
+ * (for example a test harness reaching into a parsed document to fetch
+ * named sub-values).
+ */
+
+/**
+ * mustach_jsmn_length - Returns the length in bytes of the raw text
+ * spanned by token 't' (its start/end, unescaped).
+ */
+static inline int mustach_jsmn_length(const jsmntok_t *t) { return t->end - t->start; }
+
+/**
+ * mustach_jsmn_find - Looks up the member named 'name' in the object at
+ * 'tokens[container]'.
+ *
+ * @json:      the json text that was parsed
+ * @tokens:    the tokens array produced by parsing 'json'
+ * @container: index of an object token in 'tokens'
+ * @name:      the member name to look for
+ *
+ * Returns the token index of the member's value, or -1 if 'container'
+ * isn't an object or has no such member.
+ */
+extern int mustach_jsmn_find(const char *json, jsmntok_t *tokens, int container, const char *name);
+
+/**
+ * mustach_jsmn_index - Returns the token index of the 'n'th element
+ * (0-based) of the array at 'tokens[container]'.
+ *
+ * @tokens:    the tokens array produced by parsing 'json'
+ * @container: index of an array token in 'tokens'
+ * @n:         the 0-based element index; must be < tokens[container].size
+ */
+extern int mustach_jsmn_index(jsmntok_t *tokens, int container, int n);
+
+/**
+ * mustach_jsmn_string - Decodes the json string token 't' (unescaping
+ * backslash sequences) into a NUL-less buffer.
+ *
+ * @json:    the json text that was parsed
+ * @t:       the string token to decode (e.g. &tokens[idx])
+ * @length:  pointer receiving the length in bytes of the decoded string
+ * @alloc:   pointer receiving 1 if the caller must free() the returned
+ *           pointer, or 0 if it's a direct slice of 'json' (the common,
+ *           escape-free case)
+ *
+ * Returns a pointer to the decoded string (not NUL terminated).
+ */
+extern const char *mustach_jsmn_string(const char *json, jsmntok_t *t, size_t *length, int *alloc);
+
+/**
+ * mustach_jsmn_file - Renders the mustache 'templstr' in 'file' for the
+ * document made of 'json' and its parsed 'tokens'.
+ *
+ * @templstr: the template string to instantiate
+ * @length:   length of the template or zero if unknown and template null terminated
+ * @json:     the json text that was parsed
+ * @tokens:   the tokens array produced by parsing 'json' (see mustach_jsmn_parse)
+ * @file:     the file where to write the result
+ *
+ * Returns 0 in case of success, -1 with errno set in case of system error
+ * a other negative value in case of error.
+ */
+extern int mustach_jsmn_file(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, FILE *file);
+
+/**
+ * mustach_jsmn_fd - Renders the mustache 'templstr' in 'fd' for the
+ * document made of 'json' and its parsed 'tokens'.
+ *
+ * @templstr: the template string to instantiate
+ * @length:   length of the template or zero if unknown and template null terminated
+ * @json:     the json text that was parsed
+ * @tokens:   the tokens array produced by parsing 'json' (see mustach_jsmn_parse)
+ * @fd:       the file descriptor number where to write the result
+ *
+ * Returns 0 in case of success, -1 with errno set in case of system error
+ * a other negative value in case of error.
+ */
+extern int mustach_jsmn_fd(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, int fd);
+
+/**
+ * mustach_jsmn_mem - Renders the mustache 'templstr' in 'result' for the
+ * document made of 'json' and its parsed 'tokens'.
+ *
+ * @templstr: the template string to instantiate
+ * @length:   length of the template or zero if unknown and template null terminated
+ * @json:     the json text that was parsed
+ * @tokens:   the tokens array produced by parsing 'json' (see mustach_jsmn_parse)
+ * @result:   the pointer receiving the result when 0 is returned
+ * @size:     the size of the returned result
+ *
+ * Returns 0 in case of success, -1 with errno set in case of system error
+ * a other negative value in case of error.
+ */
+extern int mustach_jsmn_mem(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, char **result, size_t *size);
+
+/**
+ * mustach_jsmn_write - Renders the mustache 'templstr' for the document
+ * made of 'json' and its parsed 'tokens' to custom writer 'writecb' with
+ * 'closure'.
+ *
+ * @templstr: the template string to instantiate
+ * @length:   length of the template or zero if unknown and template null terminated
+ * @json:     the json text that was parsed
+ * @tokens:   the tokens array produced by parsing 'json' (see mustach_jsmn_parse)
+ * @writecb:  the function that write values
+ * @closure:  the closure for the write function
+ *
+ * Returns 0 in case of success, -1 with errno set in case of system error
+ * a other negative value in case of error.
+ */
+extern int mustach_jsmn_write(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, mustach_write_cb_t *writecb, void *closure);
+
+/**
+ * mustach_jsmn_emit - Renders the mustache 'templstr' for the document
+ * made of 'json' and its parsed 'tokens' to custom emiter 'emitcb' with
+ * 'closure'.
+ *
+ * @templstr: the template string to instantiate
+ * @length:   length of the template or zero if unknown and template null terminated
+ * @json:     the json text that was parsed
+ * @tokens:   the tokens array produced by parsing 'json' (see mustach_jsmn_parse)
+ * @emitcb:   the function that emit values
+ * @closure:  the closure for the write function
+ *
+ * Returns 0 in case of success, -1 with errno set in case of system error
+ * a other negative value in case of error.
+ */
+extern int mustach_jsmn_emit(const char *templstr, size_t length, const char *json, jsmntok_t *tokens, int flags, mustach_emit_cb_t *emitcb, void *closure);
+
+extern int mustach_jsmn_apply(
+		mustach_template_t *templstr,
+		const char *json,
+		jsmntok_t *tokens,
+		int flags,
+		mustach_write_cb_t *writecb,
+		mustach_emit_cb_t *emitcb,
+		void *closure
+);
+
+#endif

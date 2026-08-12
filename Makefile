@@ -35,6 +35,19 @@ TESTSPECS :=
 ALL := manuals
 TESTPARENT ?= 0
 
+# availability of JSMN (vendored header-only parser, no external dependency)
+ifneq ($(jsmn),no)
+ jsmn := yes
+ tool ?= jsmn
+ HEADERS += mustach-jsmn.h jsmn.h
+ SPLITLIB += libmustach-jsmn.so$(SOVEREV)
+ SPLITPC += libmustach-jsmn.pc
+ SINGLEOBJS += mustach-jsmn.o
+ TESTSPECS += test-specs/test-specs-jsmn
+else
+ jsmn := no
+endif
+
 # availability of CJSON
 ifneq ($(cjson),no)
  cjson_cflags := $(shell pkg-config --silence-errors --cflags libcjson)
@@ -120,6 +133,11 @@ ifneq ($(tool),none)
     TOOLFLAGS := ${jansson_cflags} -DTOOL=MUSTACH_TOOL_JANSSON
     TOOLLIBS := ${jansson_libs}
     TOOLDEP := mustach-jansson.h
+  else ifeq ($(tool),jsmn)
+    TOOLOBJS += mustach-jsmn.o
+    TOOLFLAGS := -DTOOL=MUSTACH_TOOL_JSMN
+    TOOLLIBS :=
+    TOOLDEP := mustach-jsmn.h
   else
    $(error Unknown library $(tool) for tool)
   endif
@@ -147,6 +165,7 @@ $(info libs    = ${libs})
 $(info jsonc   = ${jsonc})
 $(info jansson = ${jansson})
 $(info cjson   = ${cjson})
+$(info jsmn    = ${jsmn})
 
 # settings
 
@@ -158,12 +177,14 @@ ifeq ($(shell uname),Darwin)
  LDFLAGS_cjson   += -install_name $(LIBDIR)/libmustach-cjson.so$(SOVEREV)
  LDFLAGS_jsonc   += -install_name $(LIBDIR)/libmustach-json-c.so$(SOVEREV)
  LDFLAGS_jansson += -install_name $(LIBDIR)/libmustach-jansson.so$(SOVEREV)
+ LDFLAGS_jsmn    += -install_name $(LIBDIR)/libmustach-jsmn.so$(SOVEREV)
 else
  LDFLAGS_single  += -Wl,-soname,libmustach.so$(SOVER)
  LDFLAGS_core    += -Wl,-soname,libmustach-core.so$(SOVER)
  LDFLAGS_cjson   += -Wl,-soname,libmustach-cjson.so$(SOVER)
  LDFLAGS_jsonc   += -Wl,-soname,libmustach-json-c.so$(SOVER)
  LDFLAGS_jansson += -Wl,-soname,libmustach-jansson.so$(SOVER)
+ LDFLAGS_jsmn    += -Wl,-soname,libmustach-jsmn.so$(SOVER)
 endif
 
 # targets
@@ -191,6 +212,9 @@ libmustach-json-c.so$(SOVEREV): $(COREOBJS) mustach-json-c.o
 
 libmustach-jansson.so$(SOVEREV): $(COREOBJS) mustach-jansson.o
 	$(CC) -shared $(LDFLAGS) $(LDFLAGS_jansson) -o $@ $^ $(jansson_libs)
+
+libmustach-jsmn.so$(SOVEREV): $(COREOBJS) mustach-jsmn.o
+	$(CC) -shared $(LDFLAGS) $(LDFLAGS_jsmn) -o $@ $^
 
 # pkgconfigs
 
@@ -225,6 +249,9 @@ mustach-json-c.o: mustach-json-c.c mini-mustach.h mustach2.h mustach-wrap.h must
 
 mustach-jansson.o: mustach-jansson.c mini-mustach.h mustach2.h mustach-wrap.h mustach-jansson.h
 	$(CC) -c $(EFLAGS) $(CFLAGS) $(jansson_cflags) -o $@ $<
+
+mustach-jsmn.o: mustach-jsmn.c jsmn.h mini-mustach.h mustach2.h mustach-wrap.h mustach-jsmn.h
+	$(CC) -c $(EFLAGS) $(CFLAGS) -o $@ $<
 
 mustachs.o: mustachs.c mini-mustach.h mustach2.h mustach-wrap.h $(TOOLDEP)
 	$(CC) -c $(EFLAGS) $(CFLAGS) $(TOOLFLAGS) -o $@ $<
@@ -264,7 +291,8 @@ test: mustach
 		CFLAGS="$(CFLAGS)" EFLAGS="$(EFLAGS)" LDFLAGS="$(LDFLAGS) -L.." \
 		cjson_cflags="$(cjson_cflags)" cjson_libs="$(cjson_libs)" \
 		json_cflags="$(jsonc_cflags)" jsonc_libs="$(jsonc_libs)" \
-		jansson_cflags="$(jansson_cflags)" jansson_libs="$(jansson_libs)"
+		jansson_cflags="$(jansson_cflags)" jansson_libs="$(jansson_libs)" \
+		jsmn_cflags="$(jsmn_cflags)" jsmn_libs="$(jsmn_libs)"
 
 #cleaning
 .PHONY: clean
