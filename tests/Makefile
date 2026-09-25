@@ -22,6 +22,7 @@ basic-tests: # $P/mustach
 	@$(MAKE) -C test6 test
 	@$(MAKE) -C test7 test
 	@$(MAKE) -C test8 test
+	@$(MAKE) -C test10 test
 	@test "$(TESTPARENT)" -eq 0 || $(MAKE) -C test9 test
 
 spec-tests: $(TESTSPECS)
@@ -80,4 +81,5 @@ clean:
 	@$(MAKE) -C test7 clean
 	@$(MAKE) -C test8 clean
 	@$(MAKE) -C test9 clean
+	@$(MAKE) -C test10 clean
 

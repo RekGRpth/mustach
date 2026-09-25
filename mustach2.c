@@ -669,6 +669,18 @@ static int put_op(ex_t *ex, op_t op, unsigned value)
 		: put_word(ex, MKW(op, value));
 }
 
+/* return a pointer to the word at the given address
+ * address is a couple of block index and offset in the block */
+static word_t *ex_word_at(ex_t *ex, word_t addr)
+{
+	unsigned blk = ABLK(addr);
+	block_t *it;
+	if (blk == ex->curblk)
+		return &ex->words[AOFF(addr)];
+	for (it = ex->prvblk ; ++blk != ex->curblk ; it = it->prev);
+	return &it->words[AOFF(addr)];
+}
+
 /* return the address of the nex write
  * address is a couple of block index and offset in the block */
 static word_t get_put_addr(ex_t *ex)
@@ -887,7 +899,7 @@ static int put_end(ex_t *ex, const char *tag, word_t length)
 	/* values of section's begin */
 	op_t op;
 	const char *txtptr;
-	word_t txtlen, *pjend;
+	word_t txtlen, jend;
 
 	/* retrieve saved addr of section's begin */
 	rc = ex_pop(ex, &addr);
@@ -938,8 +950,10 @@ static int put_end(ex_t *ex, const char *tag, word_t length)
 			}
 			break;
 		case 2:
-			/* address of end */
-			pjend = &words[off];
+			/* address of end: kept as an address, not a pointer, as
+			 * putting the end op below may store the current block,
+			 * moving its words out of ex->words */
+			jend = MKA(blk, off);
 			break;
 		}
 		/* compute next address */
@@ -992,7 +1006,7 @@ static int put_end(ex_t *ex, const char *tag, word_t length)
 	}
 
 	/* record the jump to end address */
-	*pjend = get_put_addr(ex);
+	*ex_word_at(ex, jend) = get_put_addr(ex);
 
 	/* ensure line is set on continuation */
 	invalid_line(ex);
@@ -1537,7 +1551,7 @@ static void ap_goto(ap_t *ap, unsigned addr)
 		else
 			do {
 				ap->blk = ap->blk->next;
-			} while (iblk < ++ap->iblk);
+			} while (iblk > ++ap->iblk);
 		/* update copies */
 		ap->words = ap->blk->words;
 		ap->count = ap->blk->count;		
