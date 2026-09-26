@@ -7,6 +7,11 @@ New:
    mustach/mustachs tools (as a dependency-free fallback when no
    other JSON library is found), and the spec test suite
 
+Fix:
+ - fix of jumps across block boundaries, a bug that occured on
+   big templates (see merge request !36)
+   (special thanks to Georgy Shelkovy)
+
 1.2.10 (2024-10-03)
 -------------------
 
